@@ -46,7 +46,7 @@
 - [x] **T-022** Guardar, leer y borrar un secreto en el llavero; probar sin servicio de llavero — *Cubre:* RF-14. **Hecho cuando:** Funciona con servicio y falla de forma controlada sin él.
 - [x] **T-023** Imprimir a PDF desde el webview en Linux — *Cubre:* RF-24. **Hecho cuando:** Se obtiene un PDF o se documenta que solo hay diálogo.
 - [x] **T-024** Empaquetar AppImage y `.deb` del spike e instalarlo — *Cubre:* RF-19. **Hecho cuando:** La app instalada arranca.
-- [ ] **T-025** Compilar el spike en Windows y macOS desde CI — *Cubre:* RNF-8. **Hecho cuando:** El workflow termina en verde en ambos sistemas.
+- [x] **T-025** Compilar el spike en Windows y macOS desde CI — *Cubre:* RNF-8. **Hecho cuando:** El workflow termina en verde en ambos sistemas.
 - [x] **T-026** Redactar informe Go/No-Go y decidir Tauri o Electron — *Cubre:* art. 1. **Hecho cuando:** Cada fila del plan (sección 10, Hito 0) tiene resultado y hay decisión escrita.
 
 ---
@@ -63,8 +63,8 @@
 - [x] **T-029** Configurar Vitest con un proyecto por paquete — *Cubre:* art. 4. **Hecho cuando:** `bun run test` ejecuta una prueba trivial por paquete.
 - [x] **T-030** Crear `brand.config` y su lector en el núcleo — *Cubre:* RF-20. **Hecho cuando:** Un test lee el nombre del producto desde la configuración.
 - [x] **T-031** Test que falla si el nombre del producto está escrito fuera de `brand.config` — *Cubre:* RF-20. **Hecho cuando:** El test pasa y falla al insertar el nombre a propósito.
-- [ ] **T-032** Workflow de CI en Linux con typecheck y test — *Cubre:* RNF-8. **Hecho cuando:** El workflow queda verde en el primer push.
-- [ ] **T-033** Ampliar CI a Windows y macOS — *Cubre:* RNF-8. **Hecho cuando:** El workflow queda verde en los tres sistemas.
+- [x] **T-032** Workflow de CI en Linux con typecheck y test — *Cubre:* RNF-8. **Hecho cuando:** El workflow queda verde en el primer push.
+- [x] **T-033** Ampliar CI a Windows y macOS — *Cubre:* RNF-8. **Hecho cuando:** El workflow queda verde en los tres sistemas.
 - [x] **T-034** Tipo `Result` y catálogo de códigos de error del núcleo — *Cubre:* art. 3. **Hecho cuando:** Tests de construcción y comparación de errores pasan.
 - [x] **T-035** Puerto `Clock` y reloj simulado — *Cubre:* art. 4. **Hecho cuando:** Test avanza el reloj simulado y lee la hora nueva.
 - [x] **T-036** Generador de ids estables — *Cubre:* RF-1. **Hecho cuando:** Test de unicidad con 10 000 ids.
@@ -351,7 +351,7 @@
 
 - [x] **T-222** Benchmark de escala con 5 000 páginas — *Cubre:* RNF-11. **Hecho cuando:** Dentro del presupuesto.
 - [x] **T-223** Prueba de privacidad: solo se contacta a `api.github.com` — *Cubre:* RNF-5. **Hecho cuando:** e2e interceptando toda la red pasa.
-- [ ] **T-224** Empaquetado en CI: AppImage, `.deb` y `.msi` — *Cubre:* RF-19. **Hecho cuando:** Artefactos descargables del workflow.
+- [x] **T-224** Empaquetado en CI: AppImage, `.deb` y `.msi` — *Cubre:* RF-19. **Hecho cuando:** Artefactos descargables del workflow.
 - [x] **T-225** Demostrar criterios 1, 2 (sin enlaces ni grafo), 7, 8, 9, 10 y 11 de la spec — *Cubre:* RF-1. **Hecho cuando:** Checklist firmado con evidencia.
 
 ---
