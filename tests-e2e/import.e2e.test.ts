@@ -46,6 +46,8 @@ describe("importar en la aplicación real", () => {
   it("T-397: cancelar a la mitad no deja nada importado", async () => {
     const p = await web.open();
     await ensureSpace(p);
+    // T-398 comparte almacenamiento con esta prueba: se compara con lo que ya había, no con «nada».
+    const before = await p.eval<number>("document.querySelectorAll('[role=treeitem]').length");
     const many = Array.from({ length: 4000 }, (_, i) => ({ path: `Carpeta ${i % 40}/Nota ${i}.md`, data: new TextEncoder().encode(`# Nota ${i}\n\nTexto **largo** ${"palabra ".repeat(60)}\n\n- uno\n- dos\n`) }));
     const zip = join(dir, "grande.zip");
     writeFileSync(zip, zipOf(many));
@@ -58,7 +60,7 @@ describe("importar en la aplicación real", () => {
     await p.waitFor("document.body.innerText.includes('Importación cancelada')", 60000);
     await sleep(500);
     expect(await treeTitles(p)).not.toContain("Grande");
-    // reabrir la vista de páginas: sigue sin haber nada
-    expect(await p.eval<number>("document.querySelectorAll('[role=treeitem]').length")).toBe(0);
+    // la vista de páginas sigue igual: no quedó nada de la importación cancelada
+    expect(await p.eval<number>("document.querySelectorAll('[role=treeitem]').length")).toBe(before);
   }, 240000);
 });

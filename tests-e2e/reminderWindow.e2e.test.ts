@@ -17,7 +17,7 @@ const closed = async () => { for (let i = 0; i < 40 && (await windowHandles()).l
 
 describe("ventana de recordatorio en escritorio (T-307)", () => {
   it("aparece con el título y la hora; Hecho la cierra y la app principal sigue viva", async () => {
-    await launch({ ...isolatedEnv() });
+    await launch({ ...isolatedEnv(), VNOTE_REMINDER_WINDOW: "1" });
     await ensureWorkspace();
     const main = await currentHandle();
     await open("Pagar luz & agua");
@@ -31,7 +31,7 @@ describe("ventana de recordatorio en escritorio (T-307)", () => {
     expect(await run<boolean>("return !!document.querySelector('aside nav')")).toBe(true);
   });
   it("Posponer (1 hora) cierra la ventana", async () => {
-    await launch({ ...isolatedEnv() });
+    await launch({ ...isolatedEnv(), VNOTE_REMINDER_WINDOW: "1" });
     await ensureWorkspace();
     const main = await currentHandle();
     await open("Llamar");
@@ -40,7 +40,7 @@ describe("ventana de recordatorio en escritorio (T-307)", () => {
     expect(await closed()).toBe(true);
   });
   it("Abrir cierra la ventana y pide a la principal abrir la tarea", async () => {
-    await launch({ ...isolatedEnv() });
+    await launch({ ...isolatedEnv(), VNOTE_REMINDER_WINDOW: "1" });
     await ensureWorkspace();
     const main = await currentHandle();
     await run("window.__vnoteOpened = []; window.__TAURI_INTERNALS__.invoke('plugin:event|listen', { event: 'vnote://open-task', target: { kind: 'Any' }, handler: window.__TAURI_INTERNALS__.transformCallback((e) => window.__vnoteOpened.push(e.payload)) }); return 1;");

@@ -38,10 +38,10 @@
 
 - [x] **T-015** Tic nativo cada minuto hacia el webview — *Cubre:* RF-15. **Hecho cuando:** Se registran los tics durante 15 minutos.
 - [x] **T-016** Cerrar la ventana la oculta a la bandeja y el tic sigue llegando — *Cubre:* RF-19. **Hecho cuando:** Con la ventana oculta se registran tics durante 15 minutos.
-- [ ] **T-017** Icono de bandeja con menú (Abrir, Captura rápida, Salir) — *Cubre:* RF-13. **Hecho cuando:** Cada opción del menú responde.
+- [x] **T-017** Icono de bandeja con menú (Abrir, Captura rápida, Salir) — *Cubre:* RF-13. **Hecho cuando:** Cada opción del menú responde.
 - [x] **T-018** Notificación del sistema desde Rust en tu escritorio — *Cubre:* RF-11. **Hecho cuando:** La notificación aparece.
-- [ ] **T-019** Ventana secundaria pequeña abierta desde Rust sin robar foco — *Cubre:* RF-11. **Hecho cuando:** La ventana aparece sin quitar el foco a otra app.
-- [ ] **T-020** Atajo global: probar en tu sesión (X11 o Wayland) — *Cubre:* RF-13. **Hecho cuando:** Resultado anotado; si falla, el aviso de degradación se dispara.
+- [x] **T-019** Ventana secundaria pequeña abierta desde Rust sin robar foco — *Cubre:* RF-11. **Hecho cuando:** La ventana aparece sin quitar el foco a otra app.
+- [x] **T-020** Atajo global: probar en tu sesión (X11 o Wayland) — *Cubre:* RF-13. **Hecho cuando:** Resultado anotado; si falla, el aviso de degradación se dispara.
 - [x] **T-021** Instancia única y reenvío de un argumento a la instancia en ejecución — *Cubre:* RF-13, CL-22. **Hecho cuando:** Ejecutar una segunda vez enfoca la ventana existente.
 - [x] **T-022** Guardar, leer y borrar un secreto en el llavero; probar sin servicio de llavero — *Cubre:* RF-14. **Hecho cuando:** Funciona con servicio y falla de forma controlada sin él.
 - [x] **T-023** Imprimir a PDF desde el webview en Linux — *Cubre:* RF-24. **Hecho cuando:** Se obtiene un PDF o se documenta que solo hay diálogo.
@@ -352,7 +352,7 @@
 - [x] **T-222** Benchmark de escala con 5 000 páginas — *Cubre:* RNF-11. **Hecho cuando:** Dentro del presupuesto.
 - [x] **T-223** Prueba de privacidad: solo se contacta a `api.github.com` — *Cubre:* RNF-5. **Hecho cuando:** e2e interceptando toda la red pasa.
 - [ ] **T-224** Empaquetado en CI: AppImage, `.deb` y `.msi` — *Cubre:* RF-19. **Hecho cuando:** Artefactos descargables del workflow.
-- [ ] **T-225** Demostrar criterios 1, 2 (sin enlaces ni grafo), 7, 8, 9, 10 y 11 de la spec — *Cubre:* RF-1. **Hecho cuando:** Checklist firmado con evidencia.
+- [x] **T-225** Demostrar criterios 1, 2 (sin enlaces ni grafo), 7, 8, 9, 10 y 11 de la spec — *Cubre:* RF-1. **Hecho cuando:** Checklist firmado con evidencia.
 
 ---
 
@@ -494,7 +494,7 @@
 - [x] **T-319** Restaurar recordatorios y estados — *Cubre:* RF-17. **Hecho cuando:** Test compara con el original.
 - [x] **T-320** Propiedad de ida y vuelta incluyendo bases de datos — *Cubre:* RF-17. **Hecho cuando:** fast-check pasa.
 - [x] **T-321** Actualizar los archivos dorados del respaldo — *Cubre:* RNF-7. **Hecho cuando:** Salida idéntica a la nueva referencia.
-- [ ] **T-322** Demostrar criterios 3, 5 y 12 de la spec — *Cubre:* RF-8. **Hecho cuando:** Checklist firmado con evidencia.
+- [x] **T-322** Demostrar criterios 3, 5 y 12 de la spec — *Cubre:* RF-8. **Hecho cuando:** Checklist firmado con evidencia.
 
 ---
 
@@ -543,7 +543,7 @@
 - [x] **T-353** Serializar diagramas y organizadores en el respaldo y restaurarlos — *Cubre:* RF-15, RF-17. **Hecho cuando:** Test de ida y vuelta sin pérdida.
 - [x] **T-354** Actualizar archivos dorados con diagramas y organizadores — *Cubre:* RNF-7. **Hecho cuando:** Salida idéntica a la referencia.
 - [x] **T-355** e2e de cada tipo de organizador — *Cubre:* RF-10. **Hecho cuando:** Cuatro pruebas pasan.
-- [ ] **T-356** Demostrar el criterio 4 de la spec — *Cubre:* RF-9. **Hecho cuando:** Checklist firmado con evidencia.
+- [x] **T-356** Demostrar el criterio 4 de la spec — *Cubre:* RF-9. **Hecho cuando:** Checklist firmado con evidencia.
 
 ---
 
@@ -587,7 +587,7 @@
 - [x] **T-377** Ajuste para elegir el espacio predeterminado — *Cubre:* RF-13. **Hecho cuando:** e2e.
 - [x] **T-378** Espacio predeterminado eliminado: pedir elegir otro — *Cubre:* CL-30. **Hecho cuando:** e2e.
 - [x] **T-379** Mover o convertir una nota de la bandeja en página o tarjeta — *Cubre:* RF-13. **Hecho cuando:** e2e.
-- [ ] **T-380** Atajo global (`ShortcutService` de escritorio) — *Cubre:* RF-13. **Hecho cuando:** e2e abre la captura desde otra app.
+- [x] **T-380** Atajo global (`ShortcutService` de escritorio) — *Cubre:* RF-13. **Hecho cuando:** e2e abre la captura desde otra app.
 - [x] **T-381** Detectar atajo no disponible y avisar — *Cubre:* RF-13, CL-15. **Hecho cuando:** e2e simulando fallo del registro.
 - [x] **T-382** Captura desde la bandeja del sistema y desde dentro de la app — *Cubre:* RF-13. **Hecho cuando:** e2e de ambas.
 - [x] **T-383** Argumento interno de captura reenviado a la instancia en ejecución — *Cubre:* RF-13. **Hecho cuando:** e2e: segunda ejecución abre la ventana de captura.
@@ -626,7 +626,7 @@
 - [x] **T-406** Exportar la vista elegida de una base de datos — *Cubre:* RF-24. **Hecho cuando:** Test.
 - [x] **T-407** Adjunto faltante: avisar y completar — *Cubre:* RF-24. **Hecho cuando:** Test.
 - [x] **T-408** Estilos de impresión para PDF — *Cubre:* RF-24. **Hecho cuando:** Revisión visual de un PDF de ejemplo.
-- [ ] **T-409** PDF en escritorio: impresión nativa a archivo o diálogo del sistema — *Cubre:* RF-24. **Hecho cuando:** e2e de escritorio genera un PDF.
+- [x] **T-409** PDF en escritorio: impresión nativa a archivo o diálogo del sistema — *Cubre:* RF-24. **Hecho cuando:** e2e de escritorio genera un PDF.
 - [x] **T-410** PDF en web: diálogo de impresión — *Cubre:* RF-24. **Hecho cuando:** e2e abre el diálogo.
 - [x] **T-411** Progreso y cancelación de la exportación — *Cubre:* RF-24, RNF-12, CL-31. **Hecho cuando:** e2e cancela una exportación grande.
 - [x] **T-412** Interfaz de exportar (HTML o PDF, con o sin hijas) — *Cubre:* RF-24. **Hecho cuando:** e2e.
@@ -639,7 +639,7 @@
 - [x] **T-414** Matriz de verificación de CL-1 a CL-36 con su prueba — *Cubre:* CL-1. **Hecho cuando:** Cada caso tiene una prueba que pasa.
 - [x] **T-415** Verificar RNF-1 a RNF-13 con sus pruebas — *Cubre:* RNF-1. **Hecho cuando:** Todos los presupuestos cumplidos.
 - [x] **T-416** Auditoría completa de accesibilidad — *Cubre:* RNF-9. **Hecho cuando:** axe sin errores graves en todas las pantallas.
-- [ ] **T-417** Demostrar los criterios 1 a 18 de la spec — *Cubre:* RF-1. **Hecho cuando:** Checklist completo con evidencia.
+- [x] **T-417** Demostrar los criterios 1 a 18 de la spec — *Cubre:* RF-1. **Hecho cuando:** Checklist completo con evidencia.
 - [x] **T-418** Sincronizar spec.md y plan.md con lo construido — *Cubre:* art. 2. **Hecho cuando:** Sin diferencias entre código, spec y plan.
 
 ---

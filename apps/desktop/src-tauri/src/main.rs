@@ -162,6 +162,32 @@ fn export_save(app: tauri::AppHandle, file_name: String, content: String) -> Res
     vnote_db::fsutil::write_new_unique(&dir, &file_name, &content).map(|p| p.to_string_lossy().to_string())
 }
 
+/// Exportar a PDF (RF-24, T-409): carga el documento exportado en una ventana propia y abre el diálogo de impresión del sistema («Guardar como PDF»).
+#[tauri::command]
+fn print_html(app: tauri::AppHandle, html: String) -> Result<(), String> {
+    use tauri::webview::PageLoadEvent;
+    let path = std::env::temp_dir().join(format!("vnote-print-{}.html", std::process::id()));
+    std::fs::write(&path, html).map_err(|e| e.to_string())?;
+    let url = tauri::Url::from_file_path(&path).map_err(|_| "ruta de impresión no válida".to_string())?;
+    if let Some(old) = app.get_webview_window("print") { let _ = old.close(); }
+    WebviewWindowBuilder::new(&app, "print", WebviewUrl::External(url))
+        .title("Documento exportado")
+        .inner_size(800.0, 600.0)
+        .on_page_load(move |webview, payload| {
+            if !matches!(payload.event(), PageLoadEvent::Finished) { return; }
+            let wv = webview.clone();
+            let file = path.clone();
+            std::thread::spawn(move || {
+                let _ = wv.print();
+                let _ = wv.close();
+                let _ = std::fs::remove_file(file);
+            });
+        })
+        .build()
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
 /// Abre en el navegador la página de descarga de una versión nueva. Solo acepta páginas de GitHub Releases.
 #[tauri::command]
 fn open_release_url(url: String) -> Result<(), String> {
@@ -236,9 +262,23 @@ fn show_capture(app: &tauri::AppHandle) {
     if let Ok(w) = built { let _ = w.set_focus(); }
 }
 
+/// En Wayland nativo el compositor da el foco a toda ventana nueva y la app no puede impedirlo; allí el aviso es solo la notificación del sistema,
+/// que no toma foco. Con X11 (`GDK_BACKEND=x11`) la ventana respeta `focusable(false)`. `VNOTE_REMINDER_WINDOW=1` fuerza la ventana siempre.
+fn reminder_window_allowed() -> bool {
+    let set = |k: &str| std::env::var(k).map_or(false, |v| !v.is_empty());
+    if set("VNOTE_REMINDER_WINDOW") { return true; }
+    #[cfg(target_os = "linux")]
+    {
+        let x11 = std::env::var("GDK_BACKEND").map_or(false, |v| v.starts_with("x11"));
+        if set("WAYLAND_DISPLAY") && !x11 { return false; }
+    }
+    true
+}
+
 /// Ventana pequeña de recordatorio (RF-11): aparece encima de las demás pero SIN robar el foco a la app que se esté usando.
 #[tauri::command]
 fn show_reminder(app: tauri::AppHandle, workspace_id: String, page_id: String, task_id: String, title: String, when: String) -> Result<(), String> {
+    if !reminder_window_allowed() { return Ok(()); }
     if let Some(old) = app.get_webview_window("reminder") { let _ = old.close(); }
     let url = reminder::reminder_url(&workspace_id, &page_id, &task_id, &title, &when);
     WebviewWindowBuilder::new(&app, "reminder", WebviewUrl::App(url.into()))
@@ -246,6 +286,8 @@ fn show_reminder(app: tauri::AppHandle, workspace_id: String, page_id: String, t
         .inner_size(380.0, 150.0)
         .always_on_top(true)
         .focused(false)
+        // GNOME/Wayland ignora `focused(false)` y da el foco a toda ventana nueva; sin foco posible, el recordatorio no se lo quita a la app en uso.
+        .focusable(false)
         .skip_taskbar(true)
         .resizable(false)
         .build()
@@ -362,7 +404,7 @@ fn main() {
             asset_put, asset_get, asset_has, asset_delete, asset_list,
             app_dirs, config_read, config_write, path_exists, reveal_path, open_release_url, export_save, show_reminder, open_task, workspace_remove,
             keychain_set, keychain_get, keychain_delete,
-            tick_count, window_visible, open_capture, capture_shortcut_set, exe_path
+            tick_count, window_visible, open_capture, capture_shortcut_set, exe_path, print_html
         ])
         .run(tauri::generate_context!())
         .expect("error al iniciar la aplicación");

@@ -1,5 +1,4 @@
 import type { ExportRuntime } from "@vnote/ui";
-import { webExportRuntime } from "@vnote/ui";
 
 type Invoke = (cmd: string, args?: Record<string, unknown>) => Promise<unknown>;
 
@@ -10,6 +9,6 @@ type Invoke = (cmd: string, args?: Record<string, unknown>) => Promise<unknown>;
 export function tauriExportRuntime(invoke: Invoke): ExportRuntime {
   return {
     saveHtml: async (fileName, html) => (await invoke("export_save", { fileName, content: html })) as string,
-    printHtml: webExportRuntime.printHtml,
+    printHtml: async (html) => { await invoke("print_html", { html }); },
   };
 }
