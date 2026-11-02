@@ -4,3 +4,4 @@ target/
 *.log
 spikes/**/out/
 spikes/**/src-tauri/target/
+*.tsbuildinfo
