@@ -1,0 +1,126 @@
+import { useEffect, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
+import { PROPERTY_TYPES, VIEW_TYPES, type PropertyType, type ViewType } from "@vnote/core";
+import type { DatabaseController } from "./databaseController";
+import { BoardView } from "./BoardView";
+import { CalendarView } from "./CalendarView";
+import { FilterPanel } from "./FilterPanel";
+import { GalleryView, ListView } from "./ListGalleryViews";
+import { TimelineView } from "./TimelineView";
+import { dateProperty } from "./viewHelpers";
+import { TableView } from "./TableView";
+import { useDatabase } from "./useDatabase";
+import { useFormatValue } from "./cells";
+
+const CREATABLE: PropertyType[] = PROPERTY_TYPES.filter((t) => t !== "relation" && t !== "rollup");
+
+export function DatabaseView({ controller, onOpenRow, showTitle = true, today }: { controller: DatabaseController; onOpenRow?: (pageId: string) => void; showTitle?: boolean; today?: string }) {
+  const { t } = useTranslation();
+  const snap = useDatabase(controller);
+  const [adding, setAdding] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [name, setName] = useState("");
+  const [type, setType] = useState<PropertyType>("text");
+  const [expression, setExpression] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [newViewType, setNewViewType] = useState<ViewType>("list");
+  const format = useFormatValue();
+  const [preview, setPreview] = useState<{ text: string; isError: boolean } | null>(null);
+
+  // Vista previa de la fórmula mientras se escribe; una respuesta lenta no pisa a una más reciente
+  useEffect(() => {
+    if (type !== "formula" || expression.trim() === "") { setPreview(null); return; }
+    let stale = false;
+    void controller.previewFormula(expression).then((r) => {
+      if (stale) return;
+      if (!r.ok) { setPreview({ text: r.error.message, isError: true }); return; }
+      if (!r.value.hasRow) { setPreview({ text: t("databases.previewValid"), isError: false }); return; }
+      const v = r.value.value as never;
+      const isErr = typeof v === "object" && v !== null && "error" in (v as object);
+      setPreview({ text: isErr ? (v as { error: { message: string } }).error.message : format({ type: "formula", config: {} } as never, v) || t("databases.previewEmpty"), isError: isErr });
+    });
+    return () => { stale = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, expression, snap.result]);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    const r = type === "formula" ? await controller.addFormula(name, expression) : await controller.addProperty({ name, type });
+    if (!r.ok) { setError(r.error.message); return; }
+    setError(null); setName(""); setExpression(""); setAdding(false);
+  };
+  const active = snap.views.find((v) => v.id === snap.activeViewId);
+
+  return (
+    <section aria-label={snap.database?.name ?? ""} className="flex flex-col gap-3 p-4">
+      {showTitle && <h1 className="text-xl font-semibold">{snap.database?.name}</h1>}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div role="tablist" aria-label={t("databases.views")} className="flex gap-1">
+          {snap.views.map((v) => (
+            <button key={v.id} type="button" role="tab" aria-selected={v.id === snap.activeViewId} onClick={() => void controller.setActiveView(v.id)} className={`rounded px-2 py-1 ${v.id === snap.activeViewId ? "bg-[var(--selected)] font-semibold" : ""}`}>
+              {v.name || t(`databases.view.${v.type}`)}
+            </button>
+          ))}
+        </div>
+        <select aria-label={t("databases.newViewType")} value={newViewType} onChange={(e) => setNewViewType(e.target.value as ViewType)}>
+          {VIEW_TYPES.map((v) => <option key={v} value={v}>{t(`databases.view.${v}`)}</option>)}
+        </select>
+        <button type="button" onClick={() => void controller.createView(newViewType, t(`databases.view.${newViewType}`)).then(async (r) => { if (r.ok) await controller.setActiveView(r.value.id); })}>{t("databases.newView")}</button>
+        <span className="flex-1" />
+        <button type="button" onClick={() => void controller.addRow("")}>{t("databases.newRow")}</button>
+        <button type="button" aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>{t("databases.filters")}</button>
+        <button type="button" onClick={() => setAdding((a) => !a)}>{t("databases.newProperty")}</button>
+      </div>
+
+      {showFilters && <FilterPanel controller={controller} />}
+
+      {adding && (
+        <form onSubmit={(e) => void submit(e)} className="flex flex-wrap items-end gap-2 rounded border p-2">
+          <label className="flex flex-col gap-1 text-sm">{t("databases.propertyName")}
+            <input aria-label={t("databases.propertyName")} value={name} onChange={(e) => setName(e.target.value)} className="rounded border px-2 py-1" />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">{t("databases.propertyType")}
+            <select aria-label={t("databases.propertyType")} value={type} onChange={(e) => setType(e.target.value as PropertyType)}>
+              {CREATABLE.map((p) => <option key={p} value={p}>{t(`databases.type.${p}`)}</option>)}
+            </select>
+          </label>
+          {type === "formula" && (
+            <label className="flex flex-col gap-1 text-sm">{t("databases.formula")}
+              <input aria-label={t("databases.formula")} value={expression} onChange={(e) => setExpression(e.target.value)} className="min-w-64 rounded border px-2 py-1 font-mono" />
+            </label>
+          )}
+          {type === "formula" && preview && (
+            <p role="status" aria-label={t("databases.previewLabel")} className={`w-full text-sm ${preview.isError ? "text-red-700" : "opacity-80"}`}>
+              {preview.isError ? "⚠ " : `${t("databases.preview")}: `}{preview.text}
+            </p>
+          )}
+          <button type="submit">{t("databases.addProperty")}</button>
+          <button type="button" onClick={() => { setAdding(false); setError(null); }}>{t("databases.cancel")}</button>
+          {error && <p role="alert" className="w-full text-sm text-red-700">{error}</p>}
+        </form>
+      )}
+
+      {active && (active.type === "calendar" || active.type === "timeline") && snap.properties.some((p) => p.type === "date") && (
+        <label className="flex items-center gap-2 text-sm">{t("databases.dateProperty")}
+          <select aria-label={t("databases.dateProperty")} value={dateProperty(snap)?.id ?? ""} onChange={(e) => void controller.updateViewConfig({ dateProperty: e.target.value })}>
+            {snap.properties.filter((p) => p.type === "date").map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </label>
+      )}
+      {active && <ViewBody controller={controller} type={active.type} today={today ?? localToday()} {...(onOpenRow ? { onOpenRow } : {})} />}
+    </section>
+  );
+}
+
+const localToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+
+function ViewBody({ controller, type, today, onOpenRow }: { controller: DatabaseController; type: ViewType; today: string; onOpenRow?: (id: string) => void }) {
+  const open = onOpenRow ? { onOpenRow } : {};
+  if (type === "board") return <BoardView controller={controller} {...open} />;
+  if (type === "list") return <ListView controller={controller} {...open} />;
+  if (type === "gallery") return <GalleryView controller={controller} {...open} />;
+  if (type === "calendar") return <CalendarView controller={controller} today={today} {...open} />;
+  if (type === "timeline") return <TimelineView controller={controller} {...open} />;
+  return <TableView controller={controller} {...open} />;
+}

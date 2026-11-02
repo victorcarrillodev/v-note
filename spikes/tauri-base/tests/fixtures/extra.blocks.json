@@ -1,0 +1,7 @@
+[{"type":"codeBlock","props":{"language":"javascript"},"content":"const a = 1;\nconsole.log(a);"},
+ {"type":"quote","content":"una cita"},
+ {"type":"divider"},
+ {"type":"toggleListItem","content":"desplegable","children":[{"type":"paragraph","content":"dentro"}]},
+ {"type":"table","content":{"type":"tableContent","rows":[{"cells":["a1","b1"]},{"cells":[[{"type":"text","text":"a2","styles":{"bold":true}}],"b2"]}]}},
+ {"type":"image","props":{"url":"https://example.com/x.png","caption":"leyenda","name":"x.png"}},
+ {"type":"file","props":{"url":"https://example.com/f.pdf","name":"f.pdf"}}]

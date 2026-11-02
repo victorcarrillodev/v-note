@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'">
+<title>Notas del proyecto</title>
+<style>:root{color-scheme:light}*{box-sizing:border-box}body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;color:#0f172a;max-width:48rem;margin:0 auto;padding:2rem 1rem}h1,h2,h3{line-height:1.25}.page-title{margin-top:0}img,svg{max-width:100%;height:auto}figure{margin:1rem 0}figcaption{font-size:.875rem;color:#475569;text-align:center}pre{background:#f1f5f9;padding:.75rem;border-radius:.375rem;overflow:auto}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em}blockquote{margin:1rem 0;padding-left:1rem;border-left:4px solid #cbd5e1;color:#334155}table{border-collapse:collapse;margin:1rem 0;width:100%}th,td{border:1px solid #94a3b8;padding:.35rem .6rem;text-align:left;vertical-align:top}th{background:#e2e8f0}caption{caption-side:top;text-align:left;font-weight:600;padding-bottom:.25rem}ul.todo{list-style:none;padding-left:.5rem}.callout{border-radius:.375rem;padding:.75rem 1rem;margin:1rem 0;border:1px solid #93c5fd;background:#eff6ff}.callout-warning{border-color:#fcd34d;background:#fffbeb}.callout-success{border-color:#86efac;background:#f0fdf4}.callout-error{border-color:#fca5a5;background:#fef2f2}.callout-note{border-color:#d1d5db;background:#f9fafb}.link-card{display:block;border:1px solid #cbd5e1;border-radius:.375rem;padding:.6rem .8rem;margin:1rem 0;text-decoration:none}.missing{color:#b91c1c;font-style:italic}.mention{color:#1d4ed8}.when{color:#475569;font-size:.875em}.align-center{text-align:center}.align-right{text-align:right}.align-justify{text-align:justify}.c-gray{color:#6b7280}.c-brown{color:#92400e}.c-red{color:#dc2626}.c-orange{color:#ea580c}.c-yellow{color:#ca8a04}.c-green{color:#16a34a}.c-blue{color:#2563eb}.c-purple{color:#9333ea}.c-pink{color:#db2777}.bg-gray{background:#e5e7eb}.bg-brown{background:#e7d3c4}.bg-red{background:#fecaca}.bg-orange{background:#fed7aa}.bg-yellow{background:#fef08a}.bg-green{background:#bbf7d0}.bg-blue{background:#bfdbfe}.bg-purple{background:#e9d5ff}.bg-pink{background:#fbcfe8}.toc{border:1px solid #cbd5e1;border-radius:.375rem;padding:.75rem 1rem;margin-bottom:2rem}.toc ul{list-style:none;margin:0;padding-left:1rem}.toc>ul{padding-left:0}section.page{margin-top:2rem}@page{margin:18mm}@media print{body{max-width:none;padding:0;color:#000}section.page{page-break-before:always;break-before:page;margin-top:0}section.page:first-of-type{page-break-before:auto;break-before:auto}pre,table,figure,blockquote,.callout{page-break-inside:avoid;break-inside:avoid}h1,h2,h3{page-break-after:avoid;break-after:avoid}a{color:inherit;text-decoration:underline}.toc{border:0;padding:0}details>*{display:block}}</style>
+</head>
+<body>
+<nav class="toc" aria-label="Índice">
+<ul>
+<li style="margin-left:0rem">
+<a href="#page-0">Notas del proyecto</a>
+</li>
+<li style="margin-left:1rem">
+<a href="#page-1">Hija</a>
+</li>
+</ul>
+</nav>
+<section class="page depth-0" id="page-0">
+<h1 class="page-title">Notas del proyecto</h1>
+<h1>Resumen</h1>
+<p>Texto con <strong>negrita</strong>, <em>cursiva</em> y <span class="c-red bg-yellow">color</span>.</p>
+<p>
+<a href="https://example.com/a?x=1&amp;y=2">un enlace</a> y una mención a <a class="mention" href="#page-1">Hija</a>
+</p>
+<ul>
+<li>uno<ul>
+<li>uno punto uno</li>
+</ul>
+</li>
+<li>dos</li>
+</ul>
+<ol>
+<li>primero</li>
+<li>segundo</li>
+</ol>
+<ul class="todo">
+<li>
+<input type="checkbox" disabled checked> hecho</li>
+<li>
+<input type="checkbox" disabled> pendiente</li>
+</ul>
+<details>
+<summary>Más detalles</summary>
+<p>oculto</p>
+</details>
+<blockquote>Una cita</blockquote>
+<hr>
+<pre>
+<code class="language-ts">const a = 1 &lt; 2;</code>
+</pre>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<aside class="callout callout-warning">Atención</aside>
+<p class="task">
+<input type="checkbox" disabled> Pagar <span class="when">(vence 2026-03-10, aviso 2026-03-09T08:00)</span>
+</p>
+<a class="link-card" href="https://example.com/doc">Documento</a>
+<figure>
+<img src="data:image/png;base64,iVBORwECAwQ=" alt="Logo">
+<figcaption>Logo</figcaption>
+</figure>
+<span class="missing">[Adjunto no disponible: perdida.png]</span>
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 172 192" width="172" height="192" role="img">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#475569"/>
+</marker>
+</defs>
+<line x1="70" y1="50" x2="70" y2="100" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="0" y="0" width="140" height="50" rx="25" fill="#dbeafe" stroke="#334155" stroke-width="1.5"/>
+<text x="70" y="25" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Inicio</text>
+<rect x="0" y="100" width="140" height="60" rx="4" fill="#dbeafe" stroke="#334155" stroke-width="1.5"/>
+<text x="70" y="130" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Trabajo</text>
+</svg>
+</figure>
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-316 -36 632 72" width="632" height="72" role="img">
+<line x1="0" y1="0" x2="220" y2="0" stroke="#64748b" stroke-width="1.5"/>
+<line x1="0" y1="0" x2="-220" y2="0" stroke="#64748b" stroke-width="1.5"/>
+<rect x="-80" y="-20" width="160" height="40" rx="6" fill="#bfdbfe" stroke="#334155" stroke-width="1.5"/>
+<text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Proyecto</text>
+<rect x="140" y="-20" width="160" height="40" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+<text x="220" y="0" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Diseño</text>
+<rect x="-300" y="-20" width="160" height="40" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+<text x="-220" y="0" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Código</text>
+</svg>
+</figure>
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-186 -36 372 152" width="372" height="152" role="img">
+<line x1="0" y1="0" x2="-90" y2="80" stroke="#64748b" stroke-width="1.5"/>
+<line x1="0" y1="0" x2="90" y2="80" stroke="#64748b" stroke-width="1.5"/>
+<rect x="-80" y="-20" width="160" height="40" rx="6" fill="#bfdbfe" stroke="#334155" stroke-width="1.5"/>
+<text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Proyecto</text>
+<rect x="-170" y="60" width="160" height="40" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+<text x="-90" y="80" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Diseño</text>
+<rect x="10" y="60" width="160" height="40" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+<text x="90" y="80" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Código</text>
+</svg>
+</figure>
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 442 80" width="442" height="80" role="img">
+<line x1="0" y1="0" x2="410" y2="0" stroke="#334155" stroke-width="2"/>
+<line x1="0" y1="0" x2="0" y2="12" stroke="#94a3b8" stroke-width="1"/>
+<rect x="0" y="12" width="140" height="36" rx="4" fill="#fef9c3" stroke="#334155" stroke-width="1.5"/>
+<text x="70" y="23" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Arranque</text>
+<text x="70" y="38" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#475569">2026-03-01</text>
+<line x1="270" y1="0" x2="270" y2="12" stroke="#94a3b8" stroke-width="1"/>
+<rect x="270" y="12" width="140" height="36" rx="4" fill="#fef9c3" stroke="#334155" stroke-width="1.5"/>
+<text x="340" y="23" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Entrega</text>
+<text x="340" y="38" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#475569">2026-04-15</text>
+</svg>
+</figure>
+<figure class="diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 512 192" width="512" height="192" role="img">
+<rect x="120" y="0" width="180" height="32" fill="#e2e8f0" stroke="#334155"/>
+<text x="210" y="16" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Urgente</text>
+<rect x="300" y="0" width="180" height="32" fill="#e2e8f0" stroke="#334155"/>
+<text x="390" y="16" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">No urgente</text>
+<rect x="0" y="32" width="120" height="64" fill="#e2e8f0" stroke="#334155"/>
+<text x="60" y="64" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Importante</text>
+<rect x="120" y="32" width="180" height="64" fill="#ffffff" stroke="#334155"/>
+<text x="128" y="46" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">Pagar luz</text>
+<rect x="300" y="32" width="180" height="64" fill="#ffffff" stroke="#334155"/>
+<rect x="0" y="96" width="120" height="64" fill="#e2e8f0" stroke="#334155"/>
+<text x="60" y="128" text-anchor="middle" dominant-baseline="central" font-family="system-ui, sans-serif" font-size="13" fill="#0f172a">No importante</text>
+<rect x="120" y="96" width="180" height="64" fill="#ffffff" stroke="#334155"/>
+<rect x="300" y="96" width="180" height="64" fill="#ffffff" stroke="#334155"/>
+</svg>
+</figure>
+</section>
+<section class="page depth-1" id="page-1">
+<h1 class="page-title">Hija</h1>
+<p>Contenido de la hija</p>
+</section>
+</body>
+</html>

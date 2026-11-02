@@ -1,0 +1,32 @@
+{
+  "name": "@vnote/desktop",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-notification": "^2.8.0",
+    "@vnote/adapters-tauri": "workspace:*",
+    "@vnote/core": "workspace:*",
+    "@vnote/ui": "workspace:*",
+    "i18next": "^25",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-i18next": "^16"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "vite": "^7",
+    "tailwindcss": "^4",
+    "@tailwindcss/vite": "^4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19"
+  }
+}

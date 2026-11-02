@@ -1,0 +1,29 @@
+# T-025: compila el spike de Tauri en Linux, Windows y macOS (viabilidad multiplataforma, RNF-8).
+name: spike-build
+on:
+  workflow_dispatch:
+  push:
+    paths: ["spikes/tauri-base/**", ".github/workflows/spike-build.yml"]
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: spikes/tauri-base
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Dependencias de Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libdbus-1-dev libssl-dev
+      - run: bun install
+      - run: bun run tauri build --debug --no-bundle

@@ -1,0 +1,28 @@
+{
+  "name": "@vnote/web",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@vnote/core": "workspace:*",
+    "@vnote/ui": "workspace:*",
+    "@vnote/adapters-web": "workspace:*",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-i18next": "^16",
+    "i18next": "^25"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "vite": "^7",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}

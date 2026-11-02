@@ -1,0 +1,201 @@
+{
+  "update": "AV+quJu3DgAHAQNkb2MDCmJsb2NrR3JvdXAHAKq4m7cOAAMOYmxvY2tDb250YWluZXIHAKq4m7cOAQMJY29kZUJsb2NrBwCquJu3DgIGBACquJu3DgMcY29uc3QgYSA9IDE7CmNvbnNvbGUubG9nKGEpOygAqribtw4CCGxhbmd1YWdlAXcKamF2YXNjcmlwdCgAqribtw4BAmlkAXckMmRlZmY0ZGItMTIyOS00NjM0LWE2YjEtMTdkMDQ2NGM1YmUyh6q4m7cOAQMOYmxvY2tDb250YWluZXIHAKq4m7cOIgMFcXVvdGUHAKq4m7cOIwYEAKq4m7cOJAh1bmEgY2l0YSgAqribtw4jD2JhY2tncm91bmRDb2xvcgF3B2RlZmF1bHQoAKq4m7cOIwl0ZXh0Q29sb3IBdwdkZWZhdWx0KACquJu3DiICaWQBdyRjNWUwZmZjMC1hNGE3LTRhZjMtOTczNC03ZTg1MjRhYzgyODOHqribtw4iAw5ibG9ja0NvbnRhaW5lcgcAqribtw4wAwdkaXZpZGVyKACquJu3DjACaWQBdyQxZGFiZDI1ZC1lZGQxLTQ1MDMtYjI4NC1lYWI1ZTIyNzkwM2SHqribtw4wAw5ibG9ja0NvbnRhaW5lcgcAqribtw4zAw50b2dnbGVMaXN0SXRlbQcAqribtw40BgQAqribtw41C2Rlc3BsZWdhYmxlKACquJu3DjQPYmFja2dyb3VuZENvbG9yAXcHZGVmYXVsdCgAqribtw40CXRleHRDb2xvcgF3B2RlZmF1bHQoAKq4m7cONA10ZXh0QWxpZ25tZW50AXcEbGVmdIequJu3DjQDCmJsb2NrR3JvdXAHAKq4m7cORAMOYmxvY2tDb250YWluZXIHAKq4m7cORQMJcGFyYWdyYXBoBwCquJu3DkYGBACquJu3DkcGZGVudHJvKACquJu3DkYPYmFja2dyb3VuZENvbG9yAXcHZGVmYXVsdCgAqribtw5GCXRleHRDb2xvcgF3B2RlZmF1bHQoAKq4m7cORg10ZXh0QWxpZ25tZW50AXcEbGVmdCgAqribtw5FAmlkAXckZmUzMTI3MGEtOTc0Yy00MThiLTljMDItOWExMjU4MzkwZTA4KACquJu3DjMCaWQBdyRmZmZkZjVjNi00NmU3LTQ1MTItYWU4OS1lNjhiY2ZkM2QzN2GHqribtw4zAw5ibG9ja0NvbnRhaW5lcgcAqribtw5TAwV0YWJsZQcAqribtw5UAwh0YWJsZVJvdwcAqribtw5VAwl0YWJsZUNlbGwHAKq4m7cOVgMOdGFibGVQYXJhZ3JhcGgHAKq4m7cOVwYEAKq4m7cOWAJhMSgAqribtw5WCXRleHRDb2xvcgF3B2RlZmF1bHQoAKq4m7cOVg9iYWNrZ3JvdW5kQ29sb3IBdwdkZWZhdWx0KACquJu3DlYNdGV4dEFsaWdubWVudAF3BGxlZnQoAKq4m7cOVgdjb2xzcGFuAX0BKACquJu3DlYHcm93c3BhbgF9AYequJu3DlYDCXRhYmxlQ2VsbAcAqribtw5gAw50YWJsZVBhcmFncmFwaAcAqribtw5hBgQAqribtw5iAmIxKACquJu3DmAJdGV4dENvbG9yAXcHZGVmYXVsdCgAqribtw5gD2JhY2tncm91bmRDb2xvcgF3B2RlZmF1bHQoAKq4m7cOYA10ZXh0QWxpZ25tZW50AXcEbGVmdCgAqribtw5gB2NvbHNwYW4BfQEoAKq4m7cOYAdyb3dzcGFuAX0Bh6q4m7cOVQMIdGFibGVSb3cHAKq4m7cOagMJdGFibGVDZWxsBwCquJu3DmsDDnRhYmxlUGFyYWdyYXBoBwCquJu3DmwGBgCquJu3Dm0EYm9sZAJ7fYSquJu3Dm4CYTKGqribtw5wBGJvbGQEbnVsbCgAqribtw5rCXRleHRDb2xvcgF3B2RlZmF1bHQoAKq4m7cOaw9iYWNrZ3JvdW5kQ29sb3IBdwdkZWZhdWx0KACquJu3DmsNdGV4dEFsaWdubWVudAF3BGxlZnQoAKq4m7cOawdjb2xzcGFuAX0BKACquJu3DmsHcm93c3BhbgF9AYequJu3DmsDCXRhYmxlQ2VsbAcAqribtw53Aw50YWJsZVBhcmFncmFwaAcAqribtw54BgQAqribtw55AmIyKACquJu3DncJdGV4dENvbG9yAXcHZGVmYXVsdCgAqribtw53D2JhY2tncm91bmRDb2xvcgF3B2RlZmF1bHQoAKq4m7cOdw10ZXh0QWxpZ25tZW50AXcEbGVmdCgAqribtw53B2NvbHNwYW4BfQEoAKq4m7cOdwdyb3dzcGFuAX0BKACquJu3DlQJdGV4dENvbG9yAXcHZGVmYXVsdCgAqribtw5TAmlkAXckNDkwZmJlYTQtNWNkMy00YzY2LTgyZDUtYWVlM2JiOWE0NDk2h6q4m7cOUwMOYmxvY2tDb250YWluZXIHAKq4m7cOgwEDBWltYWdlKACquJu3DoQBDXRleHRBbGlnbm1lbnQBdwRsZWZ0KACquJu3DoQBD2JhY2tncm91bmRDb2xvcgF3B2RlZmF1bHQoAKq4m7cOhAEEbmFtZQF3BXgucG5nKACquJu3DoQBA3VybAF3GWh0dHBzOi8vZXhhbXBsZS5jb20veC5wbmcoAKq4m7cOhAEHY2FwdGlvbgF3B2xleWVuZGEoAKq4m7cOhAELc2hvd1ByZXZpZXcBeCgAqribtw6EAQxwcmV2aWV3V2lkdGgBfygAqribtw6DAQJpZAF3JGQzOGZkMTQwLTExMTktNDI4OC04MzlkLTRiYWJjMmMwZDdlMIequJu3DoMBAw5ibG9ja0NvbnRhaW5lcgcAqribtw6NAQMEZmlsZSgAqribtw6OAQ9iYWNrZ3JvdW5kQ29sb3IBdwdkZWZhdWx0KACquJu3Do4BBG5hbWUBdwVmLnBkZigAqribtw6OAQN1cmwBdxlodHRwczovL2V4YW1wbGUuY29tL2YucGRmKACquJu3Do4BB2NhcHRpb24BdwAoAKq4m7cOjQECaWQBdyQ5YjA3OGI0YS0xNmQ4LTQ3NzgtYjcwYS01ZmMxNGNlMThiYTEA",
+  "doc": [
+    {
+      "children": [],
+      "type": "codeBlock",
+      "props": {
+        "language": "javascript"
+      },
+      "id": "2deff4db-1229-4634-a6b1-17d0464c5be2",
+      "content": [
+        {
+          "styles": {},
+          "type": "text",
+          "text": "const a = 1;\nconsole.log(a);"
+        }
+      ]
+    },
+    {
+      "children": [],
+      "type": "quote",
+      "props": {
+        "textColor": "default",
+        "backgroundColor": "default"
+      },
+      "id": "c5e0ffc0-a4a7-4af3-9734-7e8524ac8283",
+      "content": [
+        {
+          "styles": {},
+          "type": "text",
+          "text": "una cita"
+        }
+      ]
+    },
+    {
+      "children": [],
+      "type": "divider",
+      "props": {},
+      "id": "1dabd25d-edd1-4503-b284-eab5e227903d",
+      "content": null
+    },
+    {
+      "children": [
+        {
+          "children": [],
+          "type": "paragraph",
+          "props": {
+            "textColor": "default",
+            "textAlignment": "left",
+            "backgroundColor": "default"
+          },
+          "id": "fe31270a-974c-418b-9c02-9a1258390e08",
+          "content": [
+            {
+              "styles": {},
+              "type": "text",
+              "text": "dentro"
+            }
+          ]
+        }
+      ],
+      "type": "toggleListItem",
+      "props": {
+        "textColor": "default",
+        "textAlignment": "left",
+        "backgroundColor": "default"
+      },
+      "id": "fffdf5c6-46e7-4512-ae89-e68bcfd3d37a",
+      "content": [
+        {
+          "styles": {},
+          "type": "text",
+          "text": "desplegable"
+        }
+      ]
+    },
+    {
+      "children": [],
+      "type": "table",
+      "props": {
+        "textColor": "default"
+      },
+      "id": "490fbea4-5cd3-4c66-82d5-aee3bb9a4496",
+      "content": {
+        "columnWidths": [
+          null,
+          null
+        ],
+        "headerCols": null,
+        "type": "tableContent",
+        "rows": [
+          {
+            "cells": [
+              {
+                "type": "tableCell",
+                "props": {
+                  "backgroundColor": "default",
+                  "rowspan": 1,
+                  "textColor": "default",
+                  "textAlignment": "left",
+                  "colspan": 1
+                },
+                "content": [
+                  {
+                    "styles": {},
+                    "type": "text",
+                    "text": "a1"
+                  }
+                ]
+              },
+              {
+                "type": "tableCell",
+                "props": {
+                  "backgroundColor": "default",
+                  "rowspan": 1,
+                  "textColor": "default",
+                  "textAlignment": "left",
+                  "colspan": 1
+                },
+                "content": [
+                  {
+                    "styles": {},
+                    "type": "text",
+                    "text": "b1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "cells": [
+              {
+                "type": "tableCell",
+                "props": {
+                  "backgroundColor": "default",
+                  "rowspan": 1,
+                  "textColor": "default",
+                  "textAlignment": "left",
+                  "colspan": 1
+                },
+                "content": [
+                  {
+                    "styles": {
+                      "bold": true
+                    },
+                    "type": "text",
+                    "text": "a2"
+                  }
+                ]
+              },
+              {
+                "type": "tableCell",
+                "props": {
+                  "backgroundColor": "default",
+                  "rowspan": 1,
+                  "textColor": "default",
+                  "textAlignment": "left",
+                  "colspan": 1
+                },
+                "content": [
+                  {
+                    "styles": {},
+                    "type": "text",
+                    "text": "b2"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "headerRows": null
+      }
+    },
+    {
+      "children": [],
+      "type": "image",
+      "props": {
+        "caption": "leyenda",
+        "url": "https://example.com/x.png",
+        "name": "x.png",
+        "textAlignment": "left",
+        "showPreview": true,
+        "backgroundColor": "default"
+      },
+      "id": "d38fd140-1119-4288-839d-4babc2c0d7e0",
+      "content": null
+    },
+    {
+      "children": [],
+      "type": "file",
+      "props": {
+        "name": "f.pdf",
+        "caption": "",
+        "url": "https://example.com/f.pdf",
+        "backgroundColor": "default"
+      },
+      "id": "9b078b4a-16d8-4778-b70a-5fc14ce18ba1",
+      "content": null
+    }
+  ]
+}

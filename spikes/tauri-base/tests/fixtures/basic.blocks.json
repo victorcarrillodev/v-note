@@ -1,0 +1,10 @@
+[{"type":"heading","props":{"level":1},"content":"Titulo uno"},
+ {"type":"paragraph","content":[{"type":"text","text":"Hola ","styles":{}},{"type":"text","text":"negrita","styles":{"bold":true}},{"type":"text","text":" y ","styles":{}},{"type":"text","text":"cursiva subrayada","styles":{"italic":true,"underline":true}},{"type":"text","text":" ok","styles":{"strike":true}},{"type":"text","text":"codigo","styles":{"code":true}}]},
+ {"type":"heading","props":{"level":2},"content":"Dos"},
+ {"type":"heading","props":{"level":3},"content":"Tres"},
+ {"type":"bulletListItem","content":"uno","children":[{"type":"bulletListItem","content":"hijo"}]},
+ {"type":"numberedListItem","content":"primero"},
+ {"type":"checkListItem","props":{"checked":true},"content":"hecho"},
+ {"type":"checkListItem","content":"pendiente"},
+ {"type":"paragraph","props":{"textColor":"red","backgroundColor":"yellow"},"content":[{"type":"text","text":"coloreado","styles":{"textColor":"blue","backgroundColor":"green"}}]},
+ {"type":"paragraph","content":[{"type":"link","href":"https://example.com","content":"enlace"}]}]

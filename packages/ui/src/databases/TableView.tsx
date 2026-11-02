@@ -1,0 +1,101 @@
+import { useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useTranslation } from "react-i18next";
+import type { Property } from "@vnote/core";
+import { CellEditor } from "./cells";
+import type { DatabaseController } from "./databaseController";
+import { useDatabase } from "./useDatabase";
+
+const ROW_H = 40;
+
+/** Tabla virtualizada: solo se pintan las filas visibles (RNF-11). */
+export function TableView({ controller, height = 480, onOpenRow }: { controller: DatabaseController; height?: number; onOpenRow?: (pageId: string) => void }) {
+  const { t } = useTranslation();
+  const snap = useDatabase(controller);
+  const ref = useRef<HTMLDivElement>(null);
+  const result = snap.result;
+  const rows = result?.rows ?? [];
+  const props = (result?.visibleProperties ?? snap.properties.map((p) => p.id)).map((id) => snap.properties.find((p) => p.id === id)).filter((p): p is Property => !!p);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => ref.current,
+    estimateSize: () => ROW_H,
+    overscan: 6,
+    initialRect: { width: 800, height },
+    observeElementRect: (instance, cb) => {
+      const el = instance.scrollElement;
+      const measure = () => cb({ width: el?.clientWidth || 800, height: el?.clientHeight || height });
+      measure();
+      if (typeof ResizeObserver === "undefined" || !el) return () => {};
+      const ro = new ResizeObserver(measure);
+      ro.observe(el);
+      return () => ro.disconnect();
+    },
+  });
+  const template = `260px ${props.map(() => "200px").join(" ")}`;
+  const width = 260 + props.length * 200;
+
+  return (
+    <div role="table" aria-label={t("databases.table", { name: snap.database?.name ?? "" })} aria-rowcount={rows.length + 1} className="text-sm">
+      <div ref={ref} style={{ height, overflow: "auto", position: "relative" }}>
+        <div style={{ width, minWidth: "100%" }}>
+          <div role="row" className="sticky top-0 z-10 grid border-b bg-[var(--bg)] font-semibold" style={{ gridTemplateColumns: template }}>
+            <div role="columnheader" className="px-2 py-2">{t("databases.name")}</div>
+            {props.map((p) => (
+              <div key={p.id} role="columnheader" className="relative flex items-center gap-1 px-2 py-2">
+                <span className="truncate">{p.name}</span>
+                <button type="button" aria-label={t("databases.propertyOptions", { name: p.name })} onClick={() => { setMenuFor(menuFor === p.id ? null : p.id); setNewName(p.name); }} className="ml-auto opacity-60">⋯</button>
+                {menuFor === p.id && (
+                  <div className="absolute right-0 top-full z-20 flex w-56 flex-col gap-2 rounded border bg-[var(--bg)] p-2 shadow">
+                    <label className="flex flex-col gap-1 text-xs">{t("databases.newPropertyName")}
+                      <input aria-label={t("databases.newPropertyName")} value={newName} onChange={(e) => setNewName(e.target.value)} className="rounded border px-1 py-0.5 text-sm font-normal" />
+                    </label>
+                    {p.type === "date" && (
+                      <label className="flex items-center gap-1 text-xs font-normal">
+                        <input type="checkbox" checked={p.config.asTask === true} onChange={(e) => void controller.updatePropertyConfig(p.id, { asTask: e.target.checked })} />
+                        {t("databases.useAsTask")}
+                      </label>
+                    )}
+                    <button type="button" onClick={() => void controller.renameProperty(p.id, newName).then(() => setMenuFor(null))}>{t("databases.rename")}</button>
+                    <button type="button" onClick={() => void controller.deleteProperty(p.id).then(() => setMenuFor(null))}>{t("databases.deleteProperty")}</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {rows.length === 0 && <p className="p-3 opacity-70">{t("databases.empty")}</p>}
+          <div role="rowgroup" style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+            {virtualizer.getVirtualItems().map((v) => {
+              const r = rows[v.index]!;
+              const title = r.title.trim() === "" ? t("databases.untitled") : r.title;
+              return (
+                <div key={r.pageId} role="row" aria-label={title} aria-rowindex={v.index + 2} className="grid items-center border-b hover:bg-[var(--hover)]" style={{ position: "absolute", top: v.start, left: 0, width: "100%", height: ROW_H, gridTemplateColumns: template }}>
+                  <div role="cell" data-col="title" className="flex items-center gap-1 px-2">
+                    <input
+                      aria-label={t("databases.rowTitle", { title: r.title })}
+                      defaultValue={r.title}
+                      key={`${r.pageId}:${r.title}`}
+                      placeholder={t("databases.untitled")}
+                      onBlur={(e) => { if (e.target.value !== r.title) void controller.setTitle(r.pageId, e.target.value); }}
+                      onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                      className="min-w-0 flex-1 bg-transparent"
+                    />
+                    {onOpenRow && <button type="button" aria-label={t("databases.openRow", { title })} onClick={() => onOpenRow(r.pageId)} className="opacity-60">↗</button>}
+                  </div>
+                  {props.map((p) => (
+                    <div key={p.id} role="cell" data-col={p.id} className="px-2">
+                      <CellEditor prop={p} value={r.values[p.id]} onCommit={(raw) => controller.setCell(r.pageId, p.id, raw)} />
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
