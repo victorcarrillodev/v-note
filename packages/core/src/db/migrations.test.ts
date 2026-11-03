@@ -7,7 +7,7 @@ import { migrations } from "./migrations";
 describe("migración 001", () => {
   it("crea las tablas meta y pages con las columnas del plan", async () => {
     const db = await createNodeSqliteStore(":memory:");
-    expect((await migrate(db, migrations)).ok).toBe(true);
+    expect((await migrate(db, migrations.slice(0, 1))).ok).toBe(true); // solo la migración 001 (las posteriores tienen sus propias pruebas)
     const cols = async (t: string) => (await db.query<{ name: string }>(`PRAGMA table_info(${t})`)).map((c) => c.name);
     expect(await cols("meta")).toEqual(["key", "value"]);
     expect(await cols("pages")).toEqual([

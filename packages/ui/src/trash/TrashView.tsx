@@ -1,40 +1,30 @@
-import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import { useState } from "react";
+import { EmptyState } from "../empty/EmptyState";
 import { useTranslation } from "react-i18next";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import type { WorkspaceController } from "../workspace/controller";
 import { useWorkspace } from "../workspace/useController";
 
-function Confirm({ trigger, onConfirm }: { trigger: React.ReactNode; onConfirm: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger asChild>{trigger}</AlertDialog.Trigger>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 bg-black/40" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 w-96 -translate-x-1/2 -translate-y-1/2 rounded bg-[var(--bg)] p-4 shadow">
-          <AlertDialog.Title className="font-semibold">{t("trash.confirmTitle")}</AlertDialog.Title>
-          <AlertDialog.Description className="my-2 text-sm">{t("trash.confirmBody")}</AlertDialog.Description>
-          <div className="flex justify-end gap-2">
-            <AlertDialog.Cancel asChild><button type="button">{t("trash.cancel")}</button></AlertDialog.Cancel>
-            <AlertDialog.Action asChild><button type="button" onClick={onConfirm}>{t("trash.confirm")}</button></AlertDialog.Action>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
-  );
-}
+type Pending = { kind: "one"; id: string; title: string } | { kind: "all" };
 
 export function TrashView({ controller }: { controller: WorkspaceController }) {
   const { t } = useTranslation();
   const snap = useWorkspace(controller);
+  const [pending, setPending] = useState<Pending | null>(null);
   const label = (title: string) => (title.trim() === "" ? t("app.untitled") : title);
+  const confirm = () => {
+    if (!pending) return;
+    if (pending.kind === "all") void controller.emptyTrash(true);
+    else void controller.deleteForever(pending.id, true);
+  };
   return (
     <section aria-label={t("trash.title")} className="p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t("trash.title")}</h1>
-        {snap.trash.length > 0 && <Confirm trigger={<button type="button">{t("trash.emptyTrash")}</button>} onConfirm={() => void controller.emptyTrash(true)} />}
+        {snap.trash.length > 0 && <button type="button" onClick={() => setPending({ kind: "all" })}>{t("trash.emptyTrash")}</button>}
       </div>
       {snap.trash.length === 0 ? (
-        <p className="mt-4 opacity-70">{t("trash.empty")}</p>
+        <EmptyState illustration="trash" title={t("trash.empty")} />
       ) : (
         <ul className="mt-4 flex flex-col gap-1">
           {snap.trash.map((e) => (
@@ -42,14 +32,20 @@ export function TrashView({ controller }: { controller: WorkspaceController }) {
               <span className="flex-1 truncate">{label(e.page.title)}</span>
               <span className="text-sm opacity-70">{t("trash.daysLeft", { count: e.daysLeft })}</span>
               <button type="button" aria-label={t("trash.restoreItem", { title: label(e.page.title) })} onClick={() => void controller.restore(e.page.id)}>{t("trash.restore")}</button>
-              <Confirm
-                trigger={<button type="button" aria-label={t("trash.deleteForeverItem", { title: label(e.page.title) })}>{t("trash.deleteForever")}</button>}
-                onConfirm={() => void controller.deleteForever(e.page.id, true)}
-              />
+              <button type="button" aria-label={t("trash.deleteForeverItem", { title: label(e.page.title) })} onClick={() => setPending({ kind: "one", id: e.page.id, title: label(e.page.title) })}>{t("trash.deleteForever")}</button>
             </li>
           ))}
         </ul>
       )}
+      <ConfirmDialog
+        open={pending !== null}
+        onOpenChange={(o) => { if (!o) setPending(null); }}
+        title={t("trash.confirmTitle")}
+        description={pending?.kind === "one" ? t("trash.confirmBodyOne", { title: pending.title }) : t("trash.confirmBodyAll", { count: snap.trash.length })}
+        confirmLabel={t("trash.confirm")}
+        cancelLabel={t("trash.cancel")}
+        onConfirm={confirm}
+      />
     </section>
   );
 }

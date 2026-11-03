@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { InlineAlert } from "../components/InlineAlert";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
 import type { BackupService, BackupSettings, BackupStatus } from "@vnote/core";
@@ -44,7 +45,7 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
     <section aria-label={t("backup.title")} className="flex flex-col gap-4 p-4">
       <h1 className="text-xl font-semibold">{t("backup.title")}</h1>
       {platform === "web" && (
-        <div role="note" className="rounded border border-amber-500 bg-amber-50 p-2 text-sm text-amber-900">
+        <div role="note" className="rounded border border-[var(--c-warning)] bg-[var(--chip-warning-bg)] p-2 text-sm text-[var(--chip-warning-fg)]">
           <p>{t("backup.webNotice")}</p>
           <p>{t("backup.independentNotice")}</p>
         </div>
@@ -61,7 +62,7 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
           <label className="flex flex-col gap-1">{t("backup.repo")}
             <input value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} className="rounded border px-2 py-1" />
           </label>
-          {connectError && <p role="alert" className="rounded border border-red-500 bg-red-50 p-2 text-sm text-red-900">{connectError}</p>}
+          {connectError && <InlineAlert tone="error">{connectError}</InlineAlert>}
           <button type="submit" disabled={busy} className="self-start rounded border px-3 py-1">{t("backup.connect")}</button>
         </form>
       ) : (
@@ -70,7 +71,7 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
             <p className="font-medium">{settings.owner}/{settings.repo}</p>
             <button type="button" onClick={() => void service.disconnect()}>{t("backup.disconnect")}</button>
           </div>
-          {tokenNotSaved && <p role="note" className="text-sm text-amber-800">{t("backup.tokenNotSaved")}</p>}
+          {tokenNotSaved && <p role="note" className="text-sm text-[var(--chip-warning-fg)]">{t("backup.tokenNotSaved")}</p>}
 
           <label className="flex items-center gap-2">{t("backup.frequency")}
             <select value={String(settings.frequencyDays)} onChange={(e) => void service.setFrequency(Number(e.target.value))} className="rounded border px-2 py-1">
@@ -85,18 +86,16 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
           </div>
 
           {status.alert?.type === "failed" && (
-            <div role="alert" className="rounded border border-red-500 bg-red-50 p-3 text-sm text-red-900">
-              <p>{errorText(String(status.alert.kind))}</p>
+            <InlineAlert tone="error" title={errorText(String(status.alert.kind))} action={{ label: t("backup.retry"), onClick: () => void run() }}>
               {status.alert.suggestions && (
                 <>
                   <p className="mt-2 font-medium">{t("backup.suggestionsTitle")}</p>
                   <ul className="list-disc pl-5">{status.alert.suggestions.map((s) => <li key={s}>{t(`backup.suggestion.${s}`)}</li>)}</ul>
                 </>
               )}
-              <button type="button" onClick={() => void run()} className="mt-2 rounded border px-2 py-1">{t("backup.retry")}</button>
-            </div>
+            </InlineAlert>
           )}
-          {status.paused && status.alert === null && <p role="status" className="text-sm text-amber-800">{t("backup.paused")}</p>}
+          {status.paused && status.alert === null && <InlineAlert tone="warning">{t("backup.paused")}</InlineAlert>}
 
           <div className="text-sm">
             <p>{t("backup.lastSuccess", { when: when(status.lastSuccessAt) })}</p>

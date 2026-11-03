@@ -2,6 +2,8 @@ import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs } from "@
 import { createReactBlockSpec, createReactInlineContentSpec } from "@blocknote/react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { Icon } from "../design/Icon";
+import type { IconName } from "../design/iconMap";
 import { TaskBlockView, type TaskProps } from "./TaskBlock";
 import { DatabasePicker, EmbeddedDatabaseView } from "../databases/EmbeddedDatabase";
 import { DiagramEditor } from "../diagram/DiagramEditor";
@@ -10,16 +12,29 @@ import { MatrixEditor, TimelineEditor, TreeEditor } from "../diagram/Organizers"
 
 export const CALLOUT_VARIANTS = ["info", "success", "warning", "danger"] as const;
 type Variant = (typeof CALLOUT_VARIANTS)[number];
-const ICON: Record<string, string> = { info: "ℹ️", success: "✅", warning: "⚠️", danger: "⛔" };
+const ICON: Record<Variant, IconName> = { info: "info", success: "success", warning: "warning", danger: "error" };
+const TONE: Record<Variant, string> = {
+  info: "border-[var(--c-accent)] bg-[var(--chip-info-bg)] text-[var(--chip-info-fg)]",
+  success: "border-[var(--c-success)] bg-[var(--chip-success-bg)] text-[var(--chip-success-fg)]",
+  warning: "border-[var(--c-warning)] bg-[var(--chip-warning-bg)] text-[var(--chip-warning-fg)]",
+  danger: "border-[var(--c-danger)] bg-[var(--chip-error-bg)] text-[var(--chip-error-fg)]",
+};
 
-function CalloutView({ variant, onVariant, content }: { variant: string; onVariant: (v: Variant) => void; content: ReactNode }) {
+export function CalloutView({ variant, onVariant, content }: { variant: string; onVariant: (v: Variant) => void; content: ReactNode }) {
   const { t } = useTranslation();
+  const v = (CALLOUT_VARIANTS as readonly string[]).includes(variant) ? (variant as Variant) : "info";
   return (
-    <div data-callout-variant={variant} className="flex w-full items-start gap-2 rounded border-l-4 p-2" style={{ background: "var(--callout-bg, rgba(127,127,127,.12))" }}>
-      <select aria-label={t("editor.calloutType")} contentEditable={false} value={variant} onChange={(e) => onVariant(e.target.value as Variant)}>
-        {CALLOUT_VARIANTS.map((v) => <option key={v} value={v}>{ICON[v]} {v}</option>)}
-      </select>
-      <div className="min-w-0 flex-1">{content}</div>
+    <div data-callout-variant={v} className={`flex w-full items-start gap-2 rounded-md border-l-4 p-3 ${TONE[v]}`}>
+      <span className="mt-0.5 shrink-0" contentEditable={false}><Icon name={ICON[v]} size={20} /></span>
+      <div className="min-w-0 flex-1">
+        <div contentEditable={false} className="mb-1 flex items-center gap-2 text-[length:var(--text-ui-small-size)] font-semibold">
+          <span data-callout-label>{t(`editor.calloutVariant.${v}`)}</span>
+          <select aria-label={t("editor.calloutType")} value={v} onChange={(e) => onVariant(e.target.value as Variant)} className="rounded border border-[var(--c-border)] bg-[var(--c-card)] px-1 font-normal text-[var(--c-text)]">
+            {CALLOUT_VARIANTS.map((o) => <option key={o} value={o}>{t(`editor.calloutVariant.${o}`)}</option>)}
+          </select>
+        </div>
+        {content}
+      </div>
     </div>
   );
 }
@@ -80,7 +95,7 @@ const localNow = () => { const d = new Date(); const p = (n: number) => String(n
 
 /** Tarea: casilla con fecha límite, recordatorio y repetición (RF-11). */
 export const taskBlock = createReactBlockSpec(
-  { type: "task", propSchema: { checked: { default: false }, due: { default: "" }, remindAt: { default: "" }, recurrence: { default: "" } }, content: "inline" },
+  { type: "task", propSchema: { checked: { default: false }, due: { default: "" }, remindAt: { default: "" }, recurrence: { default: "" }, durationMin: { default: "" } }, content: "inline" },
   {
     render: ({ block, editor, contentRef }) => (
       <TaskBlockView

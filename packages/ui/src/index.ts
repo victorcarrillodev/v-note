@@ -23,3 +23,4 @@ export * from "./page/webExportRuntime";
 export * from "./page/ExportDialog";
 export * from "./reminders/ReminderPopup";
 export { ReminderCenter } from "./reminders/reminderCenter";
+export { SyncedAppearance } from "./design/SyncedAppearance";

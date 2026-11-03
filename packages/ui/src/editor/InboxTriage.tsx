@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
 import type { WorkspaceController } from "../workspace/controller";
 
@@ -30,14 +31,14 @@ export function InboxTriage({ controller, pageId }: { controller: WorkspaceContr
     return () => { cancelled = true; };
   }, [controller, isNote, query, pageId]);
 
-  if (!isNote) return message ? <p role="status" className="mb-2 rounded border border-green-600 bg-green-50 p-2 text-sm text-green-900">{message}</p> : null;
+  if (!isNote) return message ? <InlineAlert tone="success">{message}</InlineAlert> : null;
   const done = () => { setIsNote(false); setMessage(t("capture.moved")); };
   const move = async (parent: string | null) => { const r = await controller.moveInboxNote(pageId, parent); if (r.ok) done(); else setError(r.error.message); };
   const toCard = async () => { const r = await controller.inboxToCard(pageId, board); if (r.ok) done(); else setError(r.error.message); };
   return (
     <div role="region" aria-label={t("capture.triage")} className="mb-3 flex flex-col gap-2 rounded border p-2 text-sm">
       <strong>{t("capture.triage")}</strong>
-      {error && <p role="alert" className="text-red-700">{error}</p>}
+      {error && <InlineAlert tone="error">{error}</InlineAlert>}
       <div className="flex flex-wrap items-center gap-2">
         <label>{t("capture.moveTo")}{" "}<input aria-label={t("capture.moveSearch")} value={query} onChange={(e) => setQuery(e.target.value)} className="rounded border px-1" /></label>
         <button type="button" onClick={() => void move(null)}>{t("capture.moveRoot")}</button>

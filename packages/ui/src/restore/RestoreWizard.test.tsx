@@ -99,6 +99,13 @@ describe("restaurar como espacio nuevo (T-218, T-220)", () => {
     const all = await mgr.list();
     expect(all.ok && all.value).toEqual([]);
   });
+  it("el error es un aviso persistente con ícono de gravedad (U-135, RF-11.2, RF-14.9)", async () => {
+    const { user, gh } = await setup();
+    await connect(user, gh, "ghp_malo");
+    const alert = await screen.findByRole("alert");
+    expect(alert.querySelector("svg")).not.toBeNull();
+    expect(alert).toHaveTextContent(/credenciales|token/i);
+  });
   it("cancelar en cualquier momento avisa a quien lo usa", async () => {
     const { user, cancelled } = await setup();
     await user.click(await screen.findByRole("button", { name: "Cancelar" }));
@@ -138,6 +145,9 @@ describe("reemplazar un espacio (T-219)", () => {
     await screen.findByText(/se sustituirán/i);
     await user.type(screen.getByLabelText(/escribe «Casa» para confirmar/i), "Casa");
     await user.click(screen.getByRole("button", { name: "Reemplazar" }));
+    const dlg = await screen.findByRole("alertdialog"); // U-147: confirmación estándar antes de sustituir
+    expect(dlg).toHaveTextContent("Casa");
+    await user.click(within(dlg).getByRole("button", { name: "Reemplazar" }));
     await waitFor(() => expect(done).toHaveLength(1));
     const all = await mgr.list();
     expect(all.ok && all.value.map((w) => w.name)).toEqual(["Casa"]);
@@ -145,5 +155,15 @@ describe("reemplazar un espacio (T-219)", () => {
     const opened = await mgr.open(done[0]!.id);
     if (!opened.ok) throw new Error("x");
     expect((await new PagesRepo(opened.value.store, new FakeClock(1)).tree()).map((n) => n.page.title).sort()).toEqual(["Ideas", "Proyectos", "extra0"]);
+  });
+  it("cancelar el diálogo final de reemplazo deja todo intacto (U-147)", async () => {
+    const { user, mgr, srcWs, done } = await toReplace();
+    await screen.findByText(/se sustituirán/i);
+    await user.type(screen.getByLabelText(/escribe «Casa» para confirmar/i), "Casa");
+    await user.click(screen.getByRole("button", { name: "Reemplazar" }));
+    await user.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Cancelar" }));
+    expect(done).toHaveLength(0);
+    const all = await mgr.list();
+    expect(all.ok && all.value.map((w) => w.id)).toEqual([srcWs.id]);
   });
 });

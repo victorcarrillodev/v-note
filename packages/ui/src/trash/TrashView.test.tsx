@@ -39,6 +39,7 @@ describe("TrashView", () => {
     await user.click(screen.getByRole("button", { name: "Eliminar definitivamente Uno" }));
     const dialog = await screen.findByRole("alertdialog");
     expect(within(dialog).getByText("¿Eliminar definitivamente?")).toBeInTheDocument();
+    expect(dialog).toHaveTextContent("Uno"); // U-144: el diálogo nombra lo que se eliminará
     await user.click(within(dialog).getByRole("button", { name: "Cancelar" }));
     expect(controller.getSnapshot().trash).toHaveLength(1);
   });
@@ -52,8 +53,12 @@ describe("TrashView", () => {
     const { controller, user } = await setup();
     await user.click(screen.getByRole("button", { name: "Vaciar papelera" }));
     const dialog = await screen.findByRole("alertdialog");
+    expect(dialog).toHaveTextContent("2"); // U-145: indica cuántos elementos se eliminarán
     expect(controller.getSnapshot().trash).toHaveLength(2);
-    await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
+    await user.click(within(dialog).getByRole("button", { name: "Cancelar" }));
+    expect(controller.getSnapshot().trash).toHaveLength(2);
+    await user.click(screen.getByRole("button", { name: "Vaciar papelera" }));
+    await user.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Eliminar" }));
     expect(controller.getSnapshot().trash).toEqual([]);
   });
 });

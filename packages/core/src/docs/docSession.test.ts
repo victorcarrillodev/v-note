@@ -143,3 +143,47 @@ describe("DocSession", () => {
     await s.dispose();
   });
 });
+
+describe("estado de guardado observable (spec 002, RF-3.4)", () => {
+  it("avisa «edit» al cambiar el documento y «saved» cuando se guardó todo", async () => {
+    const events: string[] = [];
+    const s = await DocSession.open(svc, docs, pageId, { debounceMs: 100, onStatus: (e) => events.push(e.type) });
+    s.doc.getText("t").insert(0, "hola");
+    expect(events).toEqual(["edit"]);
+    await vi.advanceTimersByTimeAsync(150);
+    await s.flush();
+    expect(events).toEqual(["edit", "saved"]);
+    await s.dispose();
+  });
+  it("varias ediciones seguidas avisan «saved» una sola vez, al terminar", async () => {
+    const events: string[] = [];
+    const s = await DocSession.open(svc, docs, pageId, { debounceMs: 100, onStatus: (e) => events.push(e.type) });
+    s.doc.getText("t").insert(0, "a"); s.doc.getText("t").insert(1, "b");
+    await s.flush();
+    expect(events.filter((e) => e === "saved")).toHaveLength(1);
+    expect(events.at(-1)).toBe("saved");
+    await s.dispose();
+  });
+  it("un fallo avisa «failed» con el mensaje y, al reintentar con éxito, «saved»", async () => {
+    const events: { type: string; message?: string }[] = [];
+    const s = await DocSession.open(svc, docs, pageId, { debounceMs: 50, retryMs: 100, onStatus: (e) => events.push(e) });
+    const real = svc.saveUpdate.bind(svc);
+    let fail = true;
+    svc.saveUpdate = (async (...a: Parameters<typeof real>) => (fail ? ({ ok: false, error: { code: "STORAGE", message: "disco lleno" } } as never) : real(...a))) as typeof svc.saveUpdate;
+    s.doc.getText("t").insert(0, "x");
+    await vi.advanceTimersByTimeAsync(80);
+    expect(events.some((e) => e.type === "failed" && e.message === "disco lleno")).toBe(true);
+    fail = false;
+    await vi.advanceTimersByTimeAsync(150);
+    expect(events.at(-1)?.type).toBe("saved");
+    svc.saveUpdate = real;
+    await s.dispose();
+  });
+  it("sin cambios no emite nada", async () => {
+    const events: string[] = [];
+    const s = await DocSession.open(svc, docs, pageId, { onStatus: (e) => events.push(e.type) });
+    await s.flush();
+    expect(events).toEqual([]);
+    await s.dispose();
+  });
+});

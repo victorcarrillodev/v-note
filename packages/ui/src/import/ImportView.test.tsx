@@ -51,6 +51,15 @@ describe("importar (T-398)", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("dañado");
     expect(await repo.children(null)).toEqual([]);
   });
+  it("el error es un aviso persistente con ícono de gravedad (U-136, RF-11.2, RF-14.9)", async () => {
+    const { user } = await setup();
+    await user.selectOptions(screen.getByLabelText("Origen"), "notion");
+    fireEvent.change(screen.getByLabelText("Archivo ZIP"), { target: { files: [file(new Uint8Array([1, 2, 3]), "malo.zip")] } });
+    await user.click(screen.getByRole("button", { name: "Importar" }));
+    const alert = await screen.findByRole("alert");
+    expect(alert.querySelector("svg")).not.toBeNull();
+    expect(alert).toHaveTextContent("dañado");
+  });
   it("sin elegir archivos el botón Importar está desactivado", async () => {
     await setup();
     expect(screen.getByRole("button", { name: "Importar" })).toBeDisabled();

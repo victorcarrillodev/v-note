@@ -15,7 +15,7 @@ beforeEach(async () => {
 
 describe("migración de tareas y recordatorios (T-289)", () => {
   it("crea las tablas con las columnas del plan", async () => {
-    expect(await cols("tasks")).toEqual(["id", "source", "page_id", "block_id", "database_id", "title", "due", "remind_at", "recurrence", "done", "updated_at"]);
+    expect(await cols("tasks")).toEqual(["id", "source", "page_id", "block_id", "database_id", "title", "due", "remind_at", "recurrence", "done", "updated_at", "start_time", "duration_min"]);
     expect(await cols("reminder_state")).toEqual(["task_id", "occurrence", "state", "snoozed_until", "updated_at"]);
   });
   it("la fuente solo puede ser casilla, tarjeta o fila, y la tarea necesita una página existente", async () => {

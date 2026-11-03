@@ -1,3 +1,5 @@
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { InlineAlert } from "../components/InlineAlert";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -32,6 +34,7 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
   const [targetId, setTargetId] = useState<string>("");
   const [info, setInfo] = useState<ReplacementInfo | null>(null);
   const [typed, setTyped] = useState("");
+  const [confirmingReplace, setConfirmingReplace] = useState(false);
   const [restored, setRestored] = useState<Workspace | null>(null);
 
   useEffect(() => { void workspaces.list().then((r) => { if (r.ok) { setExisting(r.value); if (r.value[0]) setTargetId(r.value[0].id); } }); }, [workspaces]);
@@ -96,7 +99,7 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
   return (
     <section aria-label={t("restore.title")} className="flex max-w-xl flex-col gap-3 p-4">
       <h1 className="text-xl font-semibold">{t("restore.title")}</h1>
-      {error && <p role="alert" className="rounded border border-red-500 bg-red-50 p-2 text-sm text-red-900">{error.message}</p>}
+      {error && <InlineAlert tone="error">{error.message}</InlineAlert>}
 
       {step === "connect" && (
         <form onSubmit={(e: FormEvent) => { e.preventDefault(); void connect(); }} className="flex flex-col gap-2">
@@ -109,12 +112,7 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
           <label className="flex flex-col gap-1">{t("backup.repo")}
             <input value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} className="rounded border px-2 py-1" />
           </label>
-          {askPublic && (
-            <div role="note" className="rounded border border-amber-500 bg-amber-50 p-2 text-sm">
-              <p>{t("backup.publicRepo.body")}</p>
-              <button type="button" onClick={() => void connect(true)}>{t("backup.publicRepo.confirm")}</button>
-            </div>
-          )}
+          {askPublic && <InlineAlert tone="warning" action={{ label: t("backup.publicRepo.confirm"), onClick: () => void connect(true) }}>{t("backup.publicRepo.body")}</InlineAlert>}
           <div className="flex gap-2">
             <button type="submit" disabled={busy}>{t("backup.connect")}</button>
             <button type="button" onClick={onCancel}>{t("restore.cancel")}</button>
@@ -168,7 +166,7 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
                   {info && (
                     <>
                       <p>{t("restore.willReplace", { current: info.currentPages, name: info.workspaceName, backup: info.backupPages })}</p>
-                      {info.hasNoBackup && <p role="status" className="font-semibold text-red-700">{t("workspace.noBackup")}</p>}
+                      {info.hasNoBackup && <p role="status" className="font-semibold text-[var(--c-danger)]">{t("workspace.noBackup")}</p>}
                     </>
                   )}
                   <label className="flex flex-col gap-1">{t("restore.typeName", { name: target?.name ?? "" })}
@@ -182,7 +180,7 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
             {mode === "new" ? (
               <button type="button" disabled={busy || newName.trim() === ""} onClick={() => void restore()}>{busy ? t("restore.restoring") : t("restore.restore")}</button>
             ) : (
-              <button type="button" disabled={busy || typed !== target?.name} onClick={() => void restore()}>{busy ? t("restore.restoring") : t("restore.replace")}</button>
+              <button type="button" disabled={busy || typed !== target?.name} onClick={() => setConfirmingReplace(true)}>{busy ? t("restore.restoring") : t("restore.replace")}</button>
             )}
             <button type="button" onClick={onCancel}>{t("restore.cancel")}</button>
           </div>
@@ -190,6 +188,15 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
       )}
 
       {step === "done" && restored && <p role="status">{t("restore.done", { name: restored.name })}</p>}
+      <ConfirmDialog
+        open={confirmingReplace}
+        onOpenChange={setConfirmingReplace}
+        title={t("restore.replaceConfirmTitle")}
+        description={t("restore.replaceConfirmBody", { name: target?.name ?? "" })}
+        confirmLabel={t("restore.replace")}
+        cancelLabel={t("restore.cancel")}
+        onConfirm={() => void restore()}
+      />
     </section>
   );
 }

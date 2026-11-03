@@ -2,6 +2,7 @@ import type { SqlStore } from "../ports/sqlStore";
 import type { AssetStore } from "../assets/assetStore";
 import { DocStore } from "../docs/docStore";
 import { systemClock } from "../clock";
+import { serializeTags } from "./tags";
 import { fromYjs } from "../blocks/fromYjs";
 import { stableJson } from "./stableJson";
 import { buildPagePaths } from "./paths";
@@ -21,7 +22,7 @@ export type SerializeResult = {
 
 type Row = {
   id: string; parent_id: string | null; position: string; title: string; icon: string | null; cover: string | null; kind: string;
-  favorite: number; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
+  favorite: number; full_width?: number; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
 };
 
 const enc = new TextEncoder();
@@ -50,6 +51,8 @@ export async function serializeWorkspace(
     put(`data/${r.id}.json`, stableJson({
       id: r.id, parentId: r.parent_id, position: r.position, title: r.title, icon: r.icon, cover: r.cover, kind: r.kind,
       favorite: r.favorite === 1, createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id,
+      // Solo cuando es verdadero: así las páginas en ancho normal dan exactamente los mismos bytes que antes de existir el campo (RNF-7, RNF-11).
+      ...(r.full_width === 1 ? { fullWidth: true } : {}),
       blocks,
     }));
     if (r.deleted_at === null) put(mdPaths.get(r.id)!, blocksToMarkdown(blocks));
@@ -58,6 +61,8 @@ export async function serializeWorkspace(
   for (const [path, bytes] of await serializeDatabases(store)) put(path, bytes);
   const reminders = await serializeReminders(store);
   if (reminders) put("reminders.json", reminders);
+  const tags = await serializeTags(store);
+  if (tags) put("tags.json", tags);
 
   put("trash.json", stableJson(rows.filter((r) => r.deleted_at !== null).map((r) => ({ id: r.id, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id }))));
   put("workspace.json", stableJson({ formatVersion: FORMAT_VERSION, id: workspace.id, name: workspace.name, pageCount: rows.length }));

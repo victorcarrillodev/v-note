@@ -23,7 +23,7 @@ export function ReminderPopup({ title, when, onOpen, onDone, onSnooze, onClose }
         <h1 id="rp-title" className="font-semibold">{title || "·"}</h1>
         <p id="rp-when" className="text-sm opacity-80">{when}</p>
       </div>
-      {failed && <p role="alert" className="text-sm text-red-700">{t("reminders.popupFailed")}</p>}
+      {failed && <p role="alert" className="text-sm text-[var(--c-danger)]">{t("reminders.popupFailed")}</p>}
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => void act(onOpen)}>{t("reminders.openShort")}</button>
         <button type="button" onClick={() => void act(onDone)}>{t("reminders.done")}</button>

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
 import { readZip, type AssetStore, type Clock, type ImportKind, type ImportReport, type ReportItem, type SourceFile, type SqlStore } from "@vnote/core";
 import { runImport, type ImportProgress } from "./runImport";
@@ -90,7 +91,7 @@ export function ImportView({ store, assets, clock, onOpen, parentId }: { store: 
         </div>
       )}
       {state.phase === "cancelled" && <p role="status">{t("import.cancelled")}</p>}
-      {state.phase === "error" && <p role="alert" className="rounded border border-red-500 bg-red-50 p-2 text-red-900">{state.message}</p>}
+      {state.phase === "error" && <InlineAlert tone="error">{state.message}</InlineAlert>}
       {state.phase === "done" && <Report report={state.report} onOpen={() => onOpen(state.containerId)} />}
     </section>
   );

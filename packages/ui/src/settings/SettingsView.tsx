@@ -4,6 +4,7 @@ import { ACTIONS, comboFromEvent, defaultBindings, setBinding, type Bindings } f
 import { useTheme, type PreferenceStore, type ThemeMode } from "../theme/theme";
 import { displayCombo, loadBindings, saveBindings } from "./bindingsStore";
 import { useGlobalShortcutState } from "../capture/globalShortcut";
+import { AppearancePanel } from "./AppearancePanel";
 
 type Pending = { actionId: string; combo: string; others: string[] };
 
@@ -57,6 +58,8 @@ export function SettingsView({ preferences }: { preferences: PreferenceStore }) 
         </select>
       </label>
 
+      <AppearancePanel preferences={preferences} />
+
       {globalShortcut && (
         <section role="region" aria-label={t("capture.globalTitle")} className="rounded border p-2 text-sm">
           <h2 className="text-lg font-semibold">{t("capture.globalTitle")}</h2>
@@ -75,7 +78,7 @@ export function SettingsView({ preferences }: { preferences: PreferenceStore }) 
 
       <h2 className="text-lg font-semibold">{t("shortcuts.title")}</h2>
       {pending && (
-        <div role="alert" className="rounded border border-amber-500 bg-amber-50 p-2 text-sm text-amber-900">
+        <div role="alert" className="rounded border border-[var(--c-warning)] bg-[var(--chip-warning-bg)] p-2 text-sm text-[var(--chip-warning-fg)]">
           <p>{t("shortcuts.conflict", { combo: displayCombo(pending.combo, ""), other: pending.others.map(labelOf).join(", ") })}</p>
           <div className="mt-2 flex gap-2">
             <button type="button" onClick={() => {

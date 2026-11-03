@@ -1,7 +1,6 @@
 import {
   BoardService, DatabaseService, collectExportPages, databaseViewProvider, exportHtml, GraphService, LinkService, QuickCapture, ViewService, DocSession, DocStore, PagesRepo, PageService, SearchIndex, appError, err, ok,
-  type AssetStore, type Backlink, type Clock, type ExportOutcome, type GraphData, type GraphOptions, type LinkTarget, type Page, type PageKind, type RecentPage, type SearchHit, type PageNode, type Result, type SqlStore, type TrashEntry,
-} from "@vnote/core";
+  type AssetStore, type Backlink, type DocSessionOptions, type Clock, type ExportOutcome, type GraphData, type GraphOptions, type LinkTarget, type Page, type PageKind, type RecentPage, type SearchHit, type PageNode, type Result, type SqlStore, type TrashEntry, trashWithUndo, TagService, duplicateWithUndo, moveWithUndo } from "@vnote/core";
 
 import { DatabaseController } from "../databases/databaseController";
 
@@ -24,6 +23,8 @@ export class WorkspaceController {
   private searchIndex: SearchIndex;
   private links: LinkService;
   private graph: GraphService;
+  /** Etiquetas del espacio (RF-5.9). */
+  readonly tags: TagService;
   private listeners = new Set<() => void>();
   private snapshot: WorkspaceSnapshot = { tree: [], favorites: [], trash: [], expanded: new Set(), selectedId: null, breadcrumbs: [], notice: null };
 
@@ -34,6 +35,7 @@ export class WorkspaceController {
     this.searchIndex = new SearchIndex(store, clock);
     this.links = new LinkService(store);
     this.graph = new GraphService(store);
+    this.tags = new TagService(store, clock);
   }
 
   subscribe = (fn: () => void): (() => void) => {
@@ -88,8 +90,8 @@ export class WorkspaceController {
   }
 
   /** Abre una sesión de edición del documento de una página; guarda automáticamente y avisa si algo falla (RF-4). */
-  openDocument(pageId: string, onError?: (message: string) => void): Promise<DocSession> {
-    return DocSession.open(this.svc, this.docs, pageId, onError ? { onError } : {});
+  openDocument(pageId: string, onError?: (message: string) => void, onStatus?: DocSessionOptions["onStatus"]): Promise<DocSession> {
+    return DocSession.open(this.svc, this.docs, pageId, { ...(onError ? { onError } : {}), ...(onStatus ? { onStatus } : {}) });
   }
 
   /** Exporta la página (y, si se pide, sus hijas) a un documento HTML autocontenido (RF-24). Se puede cancelar y informa el avance. */
@@ -104,6 +106,11 @@ export class WorkspaceController {
     const dbs = new DatabaseService(this.store, this.clock);
     const d = await dbs.findByPage(pageId);
     return d ? (await new ViewService(this.store).list(d.id)).map((v) => ({ id: v.id, name: v.name })) : [];
+  }
+
+  /** Ruta de ancestros de una página (de la raíz al padre), para mostrarla junto a un resultado de búsqueda. */
+  async ancestorsOf(pageId: string): Promise<Page[]> {
+    return this.pages.ancestors(pageId);
   }
 
   dismissNotice = (): void => this.set({ notice: null });
@@ -174,6 +181,8 @@ export class WorkspaceController {
   async setIcon(id: string, icon: string | null) { const r = await this.pages.setIcon(id, icon); await this.refresh(); return r; }
   async setCover(id: string, cover: string | null) { const r = await this.pages.setCover(id, cover); await this.refresh(); return r; }
 
+  async setFullWidth(id: string, value: boolean) { const r = await this.pages.setFullWidth(id, value); await this.refresh(); return r; }
+
   async toggleFavorite(id: string): Promise<Result<Page>> {
     const cur = await this.pages.get(id);
     if (!cur.ok) return cur;
@@ -186,6 +195,25 @@ export class WorkspaceController {
     const r = await this.pages.duplicate(id, opts);
     await this.refresh();
     return r;
+  }
+
+  /** Variantes con operación inversa para ofrecer «Deshacer» en la interfaz (RF-11.1). */
+  async trashPageUndoable(id: string): Promise<Result<{ undo: () => Promise<void> }>> {
+    const r = await trashWithUndo(this.pages, id);
+    await this.refresh();
+    return r.ok ? ok({ undo: async () => { await r.value.undo(); await this.refresh(); } }) : r;
+  }
+  async duplicateUndoable(id: string, opts: { withChildren: boolean }): Promise<Result<{ undo: () => Promise<void> }>> {
+    const r = await duplicateWithUndo(this.pages, id, opts);
+    await this.refresh();
+    return r.ok ? ok({ undo: async () => { await r.value.undo(); await this.refresh(); } }) : r;
+  }
+  async movePageUndoable(id: string, newParentId: string | null, opts: { afterId?: string | null } = {}): Promise<Result<{ undo: () => Promise<void> }>> {
+    const r = await moveWithUndo(this.pages, id, newParentId, opts);
+    if (r.ok) { this.expand(newParentId); this.set({ notice: null }); }
+    else if (r.error.code === "CYCLE") this.set({ notice: "MOVE_TO_DESCENDANT" });
+    await this.refresh();
+    return r.ok ? ok({ undo: async () => { await r.value.undo(); await this.refresh(); } }) : r;
   }
 
   async trashPage(id: string): Promise<Result<void>> {

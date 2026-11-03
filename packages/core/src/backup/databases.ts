@@ -13,7 +13,7 @@ export type DbFile = {
   links: { propertyId: string; from: string; to: string }[];
 };
 export type RemindersFile = {
-  tasks: { id: string; source: string; pageId: string; blockId: string | null; databaseId: string | null; title: string; due: string | null; remindAt: string | null; recurrence: unknown; done: boolean }[];
+  tasks: { id: string; source: string; pageId: string; blockId: string | null; databaseId: string | null; title: string; due: string | null; remindAt: string | null; recurrence: unknown; done: boolean; startTime?: string; durationMin?: number }[];
   states: { taskId: string; occurrence: string; state: string; snoozedUntil: string | null }[];
 };
 const enc = new TextEncoder();
@@ -45,11 +45,11 @@ export async function serializeDatabases(store: SqlStore): Promise<Map<string, U
 }
 
 export async function serializeReminders(store: SqlStore): Promise<Uint8Array | null> {
-  const tasks = await store.query<{ id: string; source: string; page_id: string; block_id: string | null; database_id: string | null; title: string; due: string | null; remind_at: string | null; recurrence: string | null; done: number }>("SELECT * FROM tasks ORDER BY id");
+  const tasks = await store.query<{ id: string; source: string; page_id: string; block_id: string | null; database_id: string | null; title: string; due: string | null; remind_at: string | null; recurrence: string | null; done: number; start_time: string | null; duration_min: number | null }>("SELECT * FROM tasks ORDER BY id");
   const states = await store.query<{ task_id: string; occurrence: string; state: string; snoozed_until: string | null }>("SELECT * FROM reminder_state ORDER BY task_id");
   if (tasks.length === 0 && states.length === 0) return null;
   const file: RemindersFile = {
-    tasks: tasks.map((t) => ({ id: t.id, source: t.source, pageId: t.page_id, blockId: t.block_id, databaseId: t.database_id, title: t.title, due: t.due, remindAt: t.remind_at, recurrence: t.recurrence ? JSON.parse(t.recurrence) : null, done: t.done === 1 })),
+    tasks: tasks.map((t) => ({ id: t.id, source: t.source, pageId: t.page_id, blockId: t.block_id, databaseId: t.database_id, title: t.title, due: t.due, remindAt: t.remind_at, recurrence: t.recurrence ? JSON.parse(t.recurrence) : null, done: t.done === 1, ...(t.start_time ? { startTime: t.start_time } : {}), ...(t.duration_min ? { durationMin: t.duration_min } : {}) })),
     states: states.map((s) => ({ taskId: s.task_id, occurrence: s.occurrence, state: s.state, snoozedUntil: s.snoozed_until })),
   };
   return enc.encode(stableJson(file));
@@ -98,6 +98,7 @@ export function validateDatabases(parsed: { path: string; data: unknown }[], rem
     if (!isObj(r) || !Array.isArray(r.tasks) || !Array.isArray(r.states)) return invalid("reminders.json está incompleto");
     for (const t of r.tasks) {
       if (!isObj(t) || typeof t.id !== "string" || !["checkbox", "card", "row"].includes(t.source) || typeof t.pageId !== "string" || !pageIds.has(t.pageId) || typeof t.title !== "string") return invalid("reminders.json tiene una tarea inválida");
+      if ((t.startTime !== undefined && typeof t.startTime !== "string") || (t.durationMin !== undefined && (!Number.isInteger(t.durationMin) || t.durationMin <= 0))) return invalid("reminders.json tiene una hora o duración de tarea inválida");
       if (t.databaseId != null && !dbIds.has(t.databaseId)) return invalid("reminders.json tiene una tarea de una base que no existe");
     }
     for (const s of r.states) if (!isObj(s) || typeof s.taskId !== "string" || typeof s.occurrence !== "string" || !["fired", "snoozed", "dismissed"].includes(s.state)) return invalid("reminders.json tiene un estado de aviso inválido");
@@ -119,8 +120,8 @@ export async function insertDatabases(tx: SqlExecutor, databases: DbFile[], remi
   for (const d of databases) for (const l of d.links) await tx.exec("INSERT INTO relation_links(property_id, from_page_id, to_page_id) VALUES (?, ?, ?)", [l.propertyId, l.from, l.to]);
   if (reminders) {
     for (const t of reminders.tasks) {
-      await tx.exec("INSERT INTO tasks(id, source, page_id, block_id, database_id, title, due, remind_at, recurrence, done, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)",
-        [t.id, t.source, t.pageId, t.blockId ?? null, t.databaseId ?? null, t.title, t.due ?? null, t.remindAt ?? null, t.recurrence ? JSON.stringify(t.recurrence) : null, t.done ? 1 : 0]);
+      await tx.exec("INSERT INTO tasks(id, source, page_id, block_id, database_id, title, due, remind_at, recurrence, done, updated_at, start_time, duration_min) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)",
+        [t.id, t.source, t.pageId, t.blockId ?? null, t.databaseId ?? null, t.title, t.due ?? null, t.remindAt ?? null, t.recurrence ? JSON.stringify(t.recurrence) : null, t.done ? 1 : 0, t.startTime ?? null, t.durationMin ?? null]);
     }
     for (const s of reminders.states) await tx.exec("INSERT INTO reminder_state(task_id, occurrence, state, snoozed_until, updated_at) VALUES (?, ?, ?, ?, 0)", [s.taskId, s.occurrence, s.state, s.snoozedUntil ?? null]);
   }

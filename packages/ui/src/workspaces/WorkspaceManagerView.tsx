@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import { InlineAlert } from "../components/InlineAlert";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { useTranslation } from "react-i18next";
 import type { Workspace, WorkspaceManager } from "@vnote/core";
 
@@ -42,7 +43,7 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onR
   return (
     <section aria-label={t("workspace.title")} className="flex flex-col gap-3 p-4">
       <h1 className="text-xl font-semibold">{t("workspace.title")}</h1>
-      {error && <p role="alert" className="rounded border border-red-500 bg-red-50 p-2 text-sm text-red-900">{error}</p>}
+      {error && <InlineAlert tone="error">{error}</InlineAlert>}
       <ul className="flex flex-col gap-1">
         {items.map((w) => (
           <li key={w.id} className="flex items-center gap-2">
@@ -83,31 +84,21 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onR
         <button type="button" onClick={() => void create()}>{t("workspace.create")}</button>
       </div>
 
-      <AlertDialog.Root open={deleting !== null} onOpenChange={(o) => !o && setDeleting(null)}>
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 bg-black/40" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded bg-[var(--bg)] p-4 shadow">
-            <AlertDialog.Title className="font-semibold">{t("workspace.delete")}</AlertDialog.Title>
-            <AlertDialog.Description asChild>
-              <div className="my-2 flex flex-col gap-2 text-sm">
-                {info && (info.hasNoBackup ? (
-                  <p role="status" className="font-semibold text-red-700">{t("workspace.noBackup")}</p>
-                ) : (
-                  <p>{t("workspace.lastBackup", { date: new Date(info.lastBackupAt!).toLocaleString(i18n.language) })}</p>
-                ))}
-                <label className="flex flex-col gap-1">
-                  <span>{t("workspace.typeNameToDelete", { name: deleting?.name ?? "" })}</span>
-                  <input value={typed} onChange={(e) => setTyped(e.target.value)} className="rounded border px-2 py-1" />
-                </label>
-              </div>
-            </AlertDialog.Description>
-            <div className="flex justify-end gap-2">
-              <AlertDialog.Cancel asChild><button type="button">{t("workspace.cancel")}</button></AlertDialog.Cancel>
-              <button type="button" disabled={typed !== deleting?.name} onClick={() => void confirmDelete()}>{t("workspace.confirmDelete")}</button>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
+      <ConfirmDialog
+        open={deleting !== null}
+        onOpenChange={(o) => { if (!o) setDeleting(null); }}
+        title={t("workspace.delete")}
+        description={info ? (info.hasNoBackup ? t("workspace.noBackup") : t("workspace.lastBackup", { date: new Date(info.lastBackupAt!).toLocaleString(i18n.language) })) : ""}
+        confirmLabel={t("workspace.confirmDelete")}
+        cancelLabel={t("workspace.cancel")}
+        confirmDisabled={typed !== deleting?.name}
+        onConfirm={() => void confirmDelete()}
+      >
+        <label className="flex flex-col gap-1">
+          <span>{t("workspace.typeNameToDelete", { name: deleting?.name ?? "" })}</span>
+          <input value={typed} onChange={(e) => setTyped(e.target.value)} className="rounded border border-[var(--c-border)] px-2 py-1" />
+        </label>
+      </ConfirmDialog>
     </section>
   );
 }

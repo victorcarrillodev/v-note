@@ -5,12 +5,21 @@ import type { DatabaseService } from "../databases/databaseService";
 import type { DateValue } from "../databases/values";
 import type { SqlStore } from "../ports/sqlStore";
 import { advanceSchedule, isValidLocal, nextAfter, type Recurrence } from "./recurrence";
-import { indexPageTasksIn, removeMissingTasks, upsertTask } from "./taskIndex";
+import { indexPageTasksIn, removeMissingTasks, timeOf, upsertTask } from "./taskIndex";
+import { toMinutes } from "../planning/schedule";
+
+/** Duración de una fila con hora de inicio y fin posterior; nula si no hay hora o el rango no es válido. */
+function durationFromRange(start: string, end: string | undefined): number | null {
+  if (!end || !start.includes("T") || !end.includes("T")) return null;
+  const d = toMinutes(end) - toMinutes(start);
+  return Number.isInteger(d) && d > 0 ? d : null;
+}
 
 export type TaskSource = "checkbox" | "card" | "row";
 export type Task = {
   id: string; source: TaskSource; pageId: string; blockId: string | null; databaseId: string | null;
   title: string; due: string | null; remindAt: string | null; recurrence: Recurrence | null; done: boolean;
+  startTime: string | null; durationMin: number | null;
 };
 export type SnoozeOption = "10m" | "1h" | "tomorrow";
 export type DueReminder = { task: Task; occurrence: string; missed: number };
@@ -39,10 +48,10 @@ const addMinutesLocal = (local: string, minutes: number): string => {
 const MORNING = "09:00";
 const GROUP_THRESHOLD = 3;
 
-type Row = { id: string; source: TaskSource; page_id: string; block_id: string | null; database_id: string | null; title: string; due: string | null; remind_at: string | null; recurrence: string | null; done: number };
+type Row = { id: string; source: TaskSource; page_id: string; block_id: string | null; database_id: string | null; title: string; due: string | null; remind_at: string | null; recurrence: string | null; done: number; start_time: string | null; duration_min: number | null };
 const toTask = (r: Row): Task => ({
   id: r.id, source: r.source, pageId: r.page_id, blockId: r.block_id, databaseId: r.database_id, title: r.title,
-  due: r.due, remindAt: r.remind_at, recurrence: r.recurrence ? (JSON.parse(r.recurrence) as Recurrence) : null, done: r.done === 1,
+  due: r.due, remindAt: r.remind_at, recurrence: r.recurrence ? (JSON.parse(r.recurrence) as Recurrence) : null, done: r.done === 1, startTime: r.start_time, durationMin: r.duration_min,
 });
 /** Tareas derivadas (casillas, tarjetas, filas con fecha) y sus recordatorios. */
 export class TaskService {
@@ -70,6 +79,7 @@ export class TaskService {
         found.push({
           id: `row:${dbId}:${r.pageId}`, source: isBoard ? "card" : "row", pageId: r.pageId, blockId: null, databaseId: dbId, title: r.title,
           due: v.start, remindAt: v.remind ?? null, recurrence: v.repeat ?? null, done: status === "done",
+          startTime: timeOf(v.start), durationMin: durationFromRange(v.start, v.end),
         });
       }
     }
@@ -192,6 +202,29 @@ export class TaskService {
       await this.writer.setDone(t, true);
     }
     return ok((await this.get(taskId))!);
+  }
+
+  // ---- Deshacer (spec 002, RF-11.1) ----
+
+  /** Estado completo de una tarea (fechas, repetición, hecha y estado del recordatorio) para poder devolverla a ese punto. */
+  async snapshot(taskId: string): Promise<{ task: Task; state: ReminderState | null } | null> {
+    const task = await this.get(taskId);
+    return task ? { task, state: await this.getState(taskId) } : null;
+  }
+
+  /** Devuelve la tarea al estado de una instantánea, también en su origen (documento o propiedad). */
+  async restoreSnapshot(snap: { task: Task; state: ReminderState | null }): Promise<Result<Task>> {
+    const cur = await this.get(snap.task.id);
+    if (!cur) return err(appError("NOT_FOUND", "La tarea no existe", { id: snap.task.id }));
+    const t = snap.task;
+    await this.db.transaction(async (tx) => {
+      await tx.exec("UPDATE tasks SET due = ?, remind_at = ?, recurrence = ?, done = ?, updated_at = ? WHERE id = ?", [t.due, t.remindAt, t.recurrence ? JSON.stringify(t.recurrence) : null, t.done ? 1 : 0, this.clock.now(), t.id]);
+      await tx.exec("DELETE FROM reminder_state WHERE task_id = ?", [t.id]);
+      if (snap.state) await tx.exec("INSERT INTO reminder_state(task_id, occurrence, state, snoozed_until, updated_at) VALUES (?, ?, ?, ?, ?)", [t.id, snap.state.occurrence, snap.state.state, snap.state.snoozedUntil, this.clock.now()]);
+    });
+    await this.writer.setSchedule(cur, { due: t.due, remindAt: t.remindAt, recurrence: t.recurrence });
+    await this.writer.setDone(cur, t.done);
+    return ok((await this.get(t.id))!);
   }
 
   // ---- Permiso de notificaciones ----

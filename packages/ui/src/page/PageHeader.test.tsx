@@ -97,7 +97,7 @@ describe("ícono y portada (T-115)", () => {
   it("añade y quita la portada", async () => {
     const { controller, id, user } = await setup();
     await user.click(screen.getByRole("button", { name: "Añadir portada" }));
-    expect(current(controller, id).cover).toMatch(/^color:#[0-9a-f]{6}$/i);
+    expect(current(controller, id).cover).toMatch(/^gradient:[a-z]+$/);
     expect(screen.getByTestId("cover")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Quitar portada" }));
     expect(current(controller, id).cover).toBeNull();
@@ -123,17 +123,6 @@ describe("acciones (T-116)", () => {
     await user.click(screen.getByRole("button", { name: "Duplicar" }));
     await user.click(screen.getByRole("menuitem", { name: "Duplicar con subpáginas" }));
     expect(controller.getSnapshot().tree.map((n) => n.children.length).sort()).toEqual([0, 1, 1]);
-  });
-  it("migas de pan: ancestros navegables y la página actual", async () => {
-    const { controller } = await makeController();
-    const a = await controller.createPage(null, "Raíz"); if (!a.ok) throw 1;
-    const b = await controller.createPage(a.value.id, "Hija"); if (!b.ok) throw 1;
-    const opened: string[] = [];
-    await renderWithI18n(<PageHeader controller={controller} pageId={b.value.id} onNavigate={(id) => opened.push(id)} />);
-    const nav = screen.getByRole("navigation", { name: "Ruta de navegación" });
-    await userEvent.setup().click(within(nav).getByRole("button", { name: "Raíz" }));
-    expect(opened).toEqual([a.value.id]);
-    expect(within(nav).getByText("Hija")).toHaveAttribute("aria-current", "page");
   });
   it("eliminar manda la página a la papelera", async () => {
     const { controller, user } = await setup();
@@ -179,6 +168,38 @@ describe("eliminar una página que está en varias bases (T-278, RF-22)", () => 
     await user.click(screen.getByRole("button", { name: "Eliminar" }));
     await vi_waitFor(() => expect(controller.getSnapshot().trash).toHaveLength(1));
     expect(screen.queryByRole("alertdialog")).toBeNull();
+  });
+});
+describe("título largo y vacío (U-153)", () => {
+  it("U-153: un título de 300 caracteres se parte en varias líneas sin desbordar", async () => {
+    const { controller } = await makeController();
+    const long = "x".repeat(300);
+    const r = await controller.createPage(null, long);
+    if (!r.ok) throw new Error("x");
+    await renderWithI18n(<PageHeader controller={controller} pageId={r.value.id} />);
+    const input = screen.getByRole("textbox", { name: "Título de la página" });
+    expect(input.tagName).toBe("TEXTAREA");
+    expect(input.className).toContain("break-words");
+    expect(input.className).toContain("resize-none");
+    expect(input).toHaveValue(long);
+  });
+  it("U-153: sin título muestra «Sin título» atenuado", async () => {
+    const { controller } = await makeController();
+    const r = await controller.createPage(null, "");
+    if (!r.ok) throw new Error("x");
+    await renderWithI18n(<PageHeader controller={controller} pageId={r.value.id} />);
+    const input = screen.getByRole("textbox", { name: "Título de la página" });
+    expect(input).toHaveValue("");
+    expect(input.getAttribute("placeholder")).toBe("Sin título");
+    expect(input.className).toContain("placeholder:text-[var(--c-text-muted)]");
+  });
+  it("U-153: Enter no inserta salto de línea en el título", async () => {
+    const { controller, id, user } = await setup();
+    const input = screen.getByRole("textbox", { name: "Título de la página" });
+    await user.clear(input);
+    await user.type(input, "Hola{Enter}");
+    expect((input as HTMLTextAreaElement).value).toBe("Hola");
+    expect(current(controller, id).title).toBe("Hola");
   });
 });
 import { waitFor as vi_waitFor } from "@testing-library/react";

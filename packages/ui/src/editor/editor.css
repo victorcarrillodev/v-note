@@ -1,0 +1,77 @@
+/* Tema del editor (U-151): BlockNote toma sus colores, radios y sombras de los tokens de la aplicación. */
+.bn-container.bn-mantine[data-color-scheme] {
+  --bn-font-family: var(--font-sans);
+  --bn-colors-editor-text: var(--c-text);
+  --bn-colors-editor-background: transparent;
+  --bn-colors-menu-text: var(--c-text);
+  --bn-colors-menu-background: var(--c-card);
+  --bn-colors-tooltip-text: var(--c-text);
+  --bn-colors-tooltip-background: var(--c-card);
+  --bn-colors-hovered-text: var(--c-text);
+  --bn-colors-hovered-background: var(--c-raised);
+  --bn-colors-selected-text: var(--c-text);
+  --bn-colors-selected-background: var(--c-raised);
+  --bn-colors-disabled-text: var(--c-text-disabled);
+  --bn-colors-disabled-background: var(--c-raised);
+  --bn-colors-border: var(--c-border);
+  --bn-colors-side-menu: var(--c-text-muted);
+  --bn-shadow-medium: var(--elevation-3);
+  --bn-shadow-light: var(--elevation-2);
+  --bn-border-radius: var(--radius-md);
+  --bn-colors-highlights-gray-text: var(--block-gray-text);
+  --bn-colors-highlights-gray-background: var(--block-gray-bg);
+  --bn-colors-highlights-brown-text: var(--block-brown-text);
+  --bn-colors-highlights-brown-background: var(--block-brown-bg);
+  --bn-colors-highlights-red-text: var(--block-red-text);
+  --bn-colors-highlights-red-background: var(--block-red-bg);
+  --bn-colors-highlights-orange-text: var(--block-orange-text);
+  --bn-colors-highlights-orange-background: var(--block-orange-bg);
+  --bn-colors-highlights-yellow-text: var(--block-yellow-text);
+  --bn-colors-highlights-yellow-background: var(--block-yellow-bg);
+  --bn-colors-highlights-green-text: var(--block-green-text);
+  --bn-colors-highlights-green-background: var(--block-green-bg);
+  --bn-colors-highlights-blue-text: var(--block-blue-text);
+  --bn-colors-highlights-blue-background: var(--block-blue-bg);
+  --bn-colors-highlights-purple-text: var(--block-purple-text);
+  --bn-colors-highlights-purple-background: var(--block-purple-bg);
+  --bn-colors-highlights-pink-text: var(--block-pink-text);
+  --bn-colors-highlights-pink-background: var(--block-pink-bg);
+}
+
+/* Tablas (U-164) */
+.bn-container .bn-block-content[data-content-type="table"] td,
+.bn-container .bn-block-content[data-content-type="table"] th {
+  border: 1px solid var(--c-border);
+  padding: var(--space-2) var(--space-3);
+}
+.bn-container .bn-block-content[data-content-type="table"] th {
+  background: var(--c-raised);
+  font-weight: 600;
+}
+
+/* Imagen (U-165): ajustada al ancho, con marco y fondo neutros y pie atenuado. */
+.bn-container .bn-visual-media {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  background: var(--c-card);
+}
+.bn-container .bn-file-caption {
+  color: var(--c-text-muted);
+  font-size: var(--text-note-size);
+}
+
+/* Lista de verificación (U-162): lo marcado se atenúa sin tachar el contraste por debajo de AA. */
+.bn-container [data-content-type="checkListItem"][data-checked="true"] .bn-inline-content {
+  color: var(--c-text-muted);
+  text-decoration: line-through;
+}
+
+/* Código (U-163) */
+.bn-container .bn-block-content[data-content-type="codeBlock"] {
+  font-family: var(--font-mono);
+  background: var(--c-raised);
+  color: var(--c-text);
+  border-radius: var(--radius-md);
+}

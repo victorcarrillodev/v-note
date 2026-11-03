@@ -1,4 +1,4 @@
-import { TaskService, type Clock, type DueReminder, type SnoozeOption, type Task, type Workspace, type WorkspaceManager } from "@vnote/core";
+import { TaskService, completeTaskWithUndo, type Clock, type DueReminder, type SnoozeOption, type Task, type Workspace, type WorkspaceManager } from "@vnote/core";
 import type { Notifier } from "./notifier";
 import { createTaskWriter } from "./taskWriter";
 
@@ -82,6 +82,13 @@ export class ReminderCenter {
   async agenda(workspaceId: string): Promise<Task[]> { return (await this.one(workspaceId, (t) => t.list())) ?? []; }
 
   async complete(workspaceId: string, taskId: string) { await this.one(workspaceId, (t) => t.complete(taskId)); this.emit(); }
+  /** Marcar hecha con operación inversa para «Deshacer» (RF-11.1). */
+  async completeUndoable(workspaceId: string, taskId: string): Promise<(() => Promise<void>) | null> {
+    const r = await this.one(workspaceId, (t) => completeTaskWithUndo(t, taskId));
+    this.emit();
+    if (!r || !r.ok) return null;
+    return async () => { await r.value.undo(); this.emit(); };
+  }
   async snooze(workspaceId: string, taskId: string, option: SnoozeOption) { await this.one(workspaceId, (t) => t.snooze(taskId, option)); this.emit(); }
   async dismiss(workspaceId: string, taskId: string) { await this.one(workspaceId, (t) => t.dismiss(taskId)); this.emit(); }
 }

@@ -1,3 +1,5 @@
+import { brandPlugin } from "../../packages/ui/src/identity/brandPlugin";
+import { themeBootPlugin } from "../../packages/ui/src/theme/bootPlugin";
 import { readFileSync } from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
@@ -19,7 +21,7 @@ const noDomEntities = (): Plugin => ({
 });
 
 export default defineConfig({
-  plugins: [
+  plugins: [themeBootPlugin(), brandPlugin(), 
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",

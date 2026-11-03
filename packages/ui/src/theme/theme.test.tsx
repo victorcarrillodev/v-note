@@ -96,3 +96,19 @@ describe("tema", () => {
     expect(media.listenerCount()).toBe(0);
   });
 });
+
+describe("cambio del tema del sistema mientras se trabaja (U-036, RF-2.3, CL-4)", () => {
+  it("cambia al instante sin recargar y sin quitar el foco de lo que se está escribiendo", async () => {
+    const mm = mockMatchMedia(false);
+    render(<ThemeProvider preferences={new MemoryPreferences()}><Panel /><input aria-label="nota" /></ThemeProvider>);
+    const input = screen.getByLabelText("nota") as HTMLInputElement;
+    input.focus();
+    await userEvent.type(input, "hola");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    act(() => mm.setDark(true));
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe("hola");
+  });
+});
+

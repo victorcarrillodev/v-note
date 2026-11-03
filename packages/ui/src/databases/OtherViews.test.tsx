@@ -118,3 +118,30 @@ describe("línea de tiempo (T-275, T-276)", () => {
     await waitFor(() => expect(c.getSnapshot().result!.rows[0]!.values[fecha]).toEqual({ start: "2026-03-08", end: "2026-03-14" }));
   });
 });
+
+describe("cronograma con el estándar (U-215, U-216)", () => {
+  const seed = async (dbs: DatabaseService, id: string, f: string) => { must(await dbs.addRow(id, { title: "Fase", values: { [f]: { start: "2026-03-10", end: "2026-03-20" } } })); };
+  it("dibuja la línea de «hoy» dentro del rango y las barras usan tokens (sin colores sueltos)", async () => {
+    await setup("timeline", seed);
+    expect(document.querySelector("[data-today-line]")).toBeTruthy();
+    const bar = screen.getByRole("button", { name: /Fase:/ });
+    expect(bar.className).toContain("var(--c-accent)");
+    expect(bar.className).not.toMatch(/#[0-9a-f]{3,6}|text-white/i);
+  });
+  it("hacer clic en una barra abre un panel lateral con el detalle", async () => {
+    const { user } = await setup("timeline", seed);
+    await user.click(screen.getByRole("button", { name: /Fase:/ }));
+    const panel = await screen.findByRole("complementary", { name: "Fase" });
+    expect(panel).toHaveTextContent("2026-03-10");
+    expect(panel).toHaveTextContent("2026-03-20");
+  });
+  it("Escape cierra el panel y devuelve el foco a la barra", async () => {
+    const { user } = await setup("timeline", seed);
+    const bar = screen.getByRole("button", { name: /Fase:/ });
+    await user.click(bar);
+    await screen.findByRole("complementary", { name: "Fase" });
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("complementary")).toBeNull());
+    expect(bar).toHaveFocus();
+  });
+});

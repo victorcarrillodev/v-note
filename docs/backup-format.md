@@ -32,9 +32,21 @@ Un archivo por base de datos (en línea o de página completa).
 - La configuración de una fórmula es `{ expression }`; la de un rollup, `{ relationPropertyId, targetPropertyId?, fn }`; la de una relación, `{ targetDatabaseId, pairedPropertyId }`.
 - Las filas son páginas: su contenido está en `data/<pageId>.json`.
 
-## `reminders.json`
+## `tags.json`
+
+Spec 002 (RF-5.9). Opcional: solo existe si el espacio tiene etiquetas; un respaldo anterior sin él se restaura sin etiquetas y no hace falta subir `formatVersion`.
+
 ```
-{ tasks:  [{ id, source, pageId, blockId, databaseId, title, due, remindAt, recurrence, done }],
+{ tags: [{ id, name, color, createdAt }], assignments: [{ pageId, tagId }] }
+```
+
+`color` es uno de los nueve nombres de la paleta (`gray`, `brown`, `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`); el tema decide el valor. Las etiquetas van ordenadas por nombre y las asignaciones por página y etiqueta, para que la salida sea determinista. Al restaurar se valida antes de escribir: nombres no vacíos ni repetidos, colores de la paleta y asignaciones a páginas existentes.
+
+## `reminders.json`
+
+`startTime` («HH:mm», la hora de `due`) y `durationMin` (entero positivo) son opcionales (spec 002, RF-7.2): solo se escriben cuando la tarea los tiene; un respaldo anterior sin ellos se restaura igual que siempre.
+```
+{ tasks:  [{ id, source, pageId, blockId, databaseId, title, due, remindAt, recurrence, done, startTime?, durationMin? }],
   states: [{ taskId, occurrence, state, snoozedUntil }] }   // state: fired | snoozed | dismissed
 ```
 Las fechas son **horas locales flotantes** (`AAAA-MM-DD` o `AAAA-MM-DDTHH:mm`), sin zona horaria: la persona las ve igual en cualquier zona (CL-13).
@@ -45,8 +57,11 @@ Al restaurar se valida todo antes de escribir: tipos de propiedad y de vista con
 ```
 { id, parentId, position, title, icon, cover, kind, favorite,
   createdAt, updatedAt, deletedAt, deletedRootId,
+  fullWidth?,                      // solo cuando es true (ver abajo)
   blocks: [ { id, type, props, content, children } ] }
 ```
+**`fullWidth` (spec 002, RF-10.3):** la página ocupa todo el ancho. Se escribe **solo cuando es `true`**; ausente significa ancho normal. Así las páginas en ancho normal producen exactamente los mismos bytes que antes de existir el campo (no aparecen commits nuevos por este motivo) y un respaldo anterior a esta spec se restaura con las páginas en ancho normal. El lector de la versión 1 **ignora campos que no conoce** (comprobado en `formatTolerance.test.ts`), por lo que añadirlo es compatible hacia atrás y `formatVersion` sigue en 1. Los ajustes de apariencia del dispositivo (tema, tipografía, densidad) **no** forman parte del respaldo.
+
 `blocks` es el **modelo canónico** de bloques (texto con estilos, enlaces, tablas, anidados). No incluye el historial de deshacer.
 
 Las **menciones** de otras páginas son contenido en línea `{ "type": "mention", "pageId": "…", "title": "…" }` (el título es el último conocido; el destino es el id). En el Markdown de lectura se escriben `[Título](page:ID)`. La tabla `links` de la base es un índice derivado: al restaurar se reconstruye desde las menciones. Añadir este tipo de contenido es compatible hacia atrás, por lo que `formatVersion` sigue en 1.

@@ -43,6 +43,14 @@ describe("claves de traducción (T-108)", () => {
     const b = { x: "1", y: { z: "2" }, extra: "4" };
     expect(findMissingKeys(a, b)).toEqual({ missingInB: ["y.w"], missingInA: ["extra"] });
   });
+  it("ningún mensaje visible contiene códigos técnicos ni restos de valor sin definir (U-142, RF-11.7)", () => {
+    const flat = (o: Record<string, unknown>, p = ""): [string, string][] =>
+      Object.entries(o).flatMap(([k, v]) => (typeof v === "string" ? [[p + k, v] as [string, string]] : flat(v as Record<string, unknown>, p + k + ".")));
+    const codigo = /\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\b/;
+    const bad = [...flat(resources["es-MX"].translation), ...flat(resources.en.translation)]
+      .filter(([, v]) => codigo.test(v) || /\bundefined\b|\bnull\b/.test(v));
+    expect(bad).toEqual([]);
+  });
   it("ningún valor está vacío", () => {
     const empties = (o: Record<string, unknown>, p = ""): string[] =>
       Object.entries(o).flatMap(([k, v]) => (typeof v === "string" ? (v.trim() === "" ? [p + k] : []) : empties(v as Record<string, unknown>, p + k + ".")));

@@ -9,6 +9,7 @@ import { renderWithI18n } from "../../tests/renderWithI18n";
 import { MemoryNotifier } from "./notifier";
 import { ReminderCenter } from "./reminderCenter";
 import { RemindersView } from "./RemindersView";
+import { ToastProvider } from "../feedback/ToastContext";
 
 const task = (id: string, title: string, props: Record<string, unknown>): Block => ({ id, type: "task", props: { checked: false, due: "", remindAt: "", recurrence: "", ...props }, content: [{ type: "text", text: title, styles: {} }], children: [] });
 const upd = (blocks: Block[]) => { const d = new Y.Doc(); toYjs(blocks, d.getXmlFragment("doc")); return Y.encodeStateAsUpdate(d); };
@@ -28,7 +29,7 @@ async function setup(spec: Record<string, Block[]>, active?: string) {
   let now = "2026-03-05T10:00";
   const center = new ReminderCenter({ workspaces, clock, notifier: new MemoryNotifier("granted"), nowLocal: () => now });
   const onOpen = vi.fn();
-  await renderWithI18n(<RemindersView center={center} activeWorkspaceId={ids[active ?? Object.keys(spec)[0]!]!} onOpen={onOpen} />);
+  await renderWithI18n(<ToastProvider><RemindersView center={center} activeWorkspaceId={ids[active ?? Object.keys(spec)[0]!]!} onOpen={onOpen} /></ToastProvider>);
   return { center, onOpen, ids, user: userEvent.setup(), setNow: (v: string) => { now = v; } };
 }
 
@@ -64,6 +65,13 @@ describe("acciones sobre un vencido (T-307, T-313)", () => {
     await user.click(within(await screen.findByRole("list", { name: "Vencidos" })).getByRole("button", { name: "Marcar como hecho Pagar luz" }));
     await waitFor(() => expect(screen.queryByRole("list", { name: "Vencidos" })).toBeNull());
   });
+  it("«Hecho» ofrece «Deshacer» (U-150, RF-11.1) y la tarea vuelve a la lista", async () => {
+    const { user } = await setup({ Personal: [task("a", "Pagar luz", { remindAt: "2026-03-04T09:00" })] });
+    await user.click(within(await screen.findByRole("list", { name: "Vencidos" })).getByRole("button", { name: "Marcar como hecho Pagar luz" }));
+    await waitFor(() => expect(screen.queryByRole("list", { name: "Vencidos" })).toBeNull());
+    await user.click(await screen.findByRole("button", { name: "Deshacer" }));
+    expect(await screen.findByRole("list", { name: "Vencidos" })).toBeInTheDocument();
+  });
   it("«Posponer» ofrece 10 minutos, 1 hora o mañana, y lo oculta", async () => {
     const { user } = await setup({ Personal: [task("a", "Pagar luz", { remindAt: "2026-03-04T09:00" })] });
     const sel = await screen.findByLabelText("Posponer Pagar luz");
@@ -81,6 +89,30 @@ describe("acciones sobre un vencido (T-307, T-313)", () => {
     const list = await screen.findByRole("list", { name: "Vencidos" });
     expect(within(list).getAllByRole("listitem")).toHaveLength(1);
     expect(list).toHaveTextContent(/4 repeticiones/);
+  });
+});
+
+describe("aviso de permiso (U-140, RF-11.2, RF-14.9)", () => {
+  it("el aviso de notificaciones bloqueadas es persistente, con ícono, y se cierra con su acción", async () => {
+    async function setupDenied() {
+      const clock = new FakeClock(Date.UTC(2026, 2, 5, 10, 0));
+      const workspaces = new WorkspaceManager(new MemoryConfigStore(), new MemoryWorkspaceStorage(), clock);
+      const w = await workspaces.create({ name: "Personal" }); if (!w.ok) throw new Error("x");
+      const o = await workspaces.open(w.value.id); if (!o.ok) throw new Error("x");
+      const pages = new PageService(o.value.store, clock);
+      const p = await pages.create({ title: "Nota" }); if (!p.ok) throw new Error("x");
+      await pages.saveUpdate(p.value.id, upd([task("a", "Vencida", { remindAt: "2026-03-04T09:00" })]));
+      const center = new ReminderCenter({ workspaces, clock, notifier: new MemoryNotifier("denied"), nowLocal: () => "2026-03-05T10:00" });
+      await renderWithI18n(<ToastProvider><RemindersView center={center} activeWorkspaceId={w.value.id} onOpen={() => {}} /></ToastProvider>);
+      return { center, user: userEvent.setup() };
+    }
+    const { center, user } = await setupDenied();
+    await center.tick();
+    const alert = await screen.findByRole("alert");
+    expect(alert.querySelector("svg")).not.toBeNull();
+    expect(alert).toHaveTextContent(/notificaciones del sistema están bloqueadas/i);
+    await user.click(within(alert).getByRole("button", { name: "Entendido" }));
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
 

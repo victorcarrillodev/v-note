@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { ProgressIndicator } from "../components/ProgressIndicator";
+import { InlineAlert } from "../components/InlineAlert";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
 import type { AssetStore } from "@vnote/core";
@@ -31,6 +33,7 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
   const [progress, setProgress] = useState({ done: 0, total: 1 });
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const ac = useRef<AbortController | null>(null);
 
   useEffect(() => { void controller.exportViews(pageId).then((v) => { setViews(v); setViewId(v[0]?.id ?? ""); }); }, [controller, pageId]);
@@ -42,7 +45,7 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
   })();
 
   const run = async () => {
-    setError(null); setNotice(null); setPhase("running"); setProgress({ done: 0, total: 1 });
+    setError(null); setNotice(null); setWarning(null); setPhase("running"); setProgress({ done: 0, total: 1 });
     const controllerAbort = new AbortController();
     ac.current = controllerAbort;
     try {
@@ -52,7 +55,8 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
       const { html, report } = r.value;
       const savedTo = format === "html" ? await runtime.saveHtml(exportFileName(title, "html"), html) : await runtime.printHtml(html);
       if (!savedTo && report.missing.length === 0 && report.warnings.length === 0) { onClose(); return; }
-      setNotice([...(savedTo ? [t("export.savedTo", { path: savedTo })] : []), ...(report.missing.length ? [t("export.missing", { names: report.missing.map((m) => m.name || m.url).join(", ") })] : []), ...report.warnings].join(" "));
+      setNotice([...(savedTo ? [t("export.savedTo", { path: savedTo })] : [])].join(" "));
+      setWarning([...(report.missing.length ? [t("export.missing", { names: report.missing.map((m) => m.name || m.url).join(", ") })] : []), ...report.warnings].join(" "));
       setPhase("done");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -92,13 +96,12 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
 
           {running && (
             <div className="mb-2">
-              <div role="progressbar" aria-label={t("export.progress")} aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done} className="h-2 w-full rounded bg-black/10">
-                <div className="h-2 rounded bg-sky-600" style={{ width: `${Math.round((progress.done / Math.max(1, progress.total)) * 100)}%` }} />
-              </div>
+              <ProgressIndicator label={t("export.progress")} done={progress.done} total={progress.total} cancelLabel={t("export.cancel")} />
             </div>
           )}
           {notice && <p role="status" className="mb-2 text-sm">{notice}</p>}
-          {error && <p role="alert" className="mb-2 text-sm text-red-700">{t("export.failed", { message: error })}</p>}
+          {warning && <div className="mb-2"><InlineAlert tone="warning">{warning}</InlineAlert></div>}
+          {error && <InlineAlert tone="error">{t("export.failed", { message: error })}</InlineAlert>}
 
           <div className="flex justify-end gap-2">
             {running ? (

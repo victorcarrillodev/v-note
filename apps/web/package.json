@@ -9,13 +9,13 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@vnote/adapters-web": "workspace:*",
     "@vnote/core": "workspace:*",
     "@vnote/ui": "workspace:*",
-    "@vnote/adapters-web": "workspace:*",
+    "i18next": "^25",
     "react": "^19",
     "react-dom": "^19",
-    "react-i18next": "^16",
-    "i18next": "^25"
+    "react-i18next": "^16"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4",

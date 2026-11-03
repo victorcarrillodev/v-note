@@ -9,7 +9,7 @@ import { BackupService, BackupWorkerClient, GitHubTokenStore, checkForUpdate, Re
 import { TauriNotifier } from "./tauriNotifier";
 import { tauriExportRuntime } from "./tauriExportRuntime";
 import { TauriAppConfigStore, TauriAssetStore, TauriKeychain, TauriWorkspaceStorage } from "@vnote/adapters-tauri";
-import { App, LocalStoragePreferences, PageEditor, QuickCaptureView, ReminderCenter, ReminderPopup, createI18n } from "@vnote/ui";
+import { App, LocalStoragePreferences, PageEditor, QuickCaptureView, ReminderCenter, ReminderPopup, SyncedAppearance, createI18n } from "@vnote/ui";
 import "./styles.css";
 
 const fetchLike: FetchLike = (url, init) => fetch(url, init as RequestInit);
@@ -43,6 +43,8 @@ async function start() {
     onTick,
   };
   const preferences = new LocalStoragePreferences();
+  // Título de la ventana nativa: el nombre del producto (configuración de marca).
+  void getCurrentWindow().setTitle(brand.name).catch(() => {});
   const i18n = await createI18n(preferences.get("language") === "en" ? "en" : undefined);
 
   // Ventana mínima de captura rápida (RF-13): la abre el atajo global, la bandeja o `--capture`.
@@ -51,7 +53,7 @@ async function start() {
     const close = () => void getCurrentWindow().close().catch(() => {});
     createRoot(document.getElementById("root")!).render(
       <I18nextProvider i18n={i18n}>
-        <QuickCaptureView manager={workspaces} clock={systemClock} onClose={close} onSaved={(id) => { void emit("vnote://captured", id).finally(close); }} />
+        <SyncedAppearance preferences={preferences}><QuickCaptureView manager={workspaces} clock={systemClock} onClose={close} onSaved={(id) => { void emit("vnote://captured", id).finally(close); }} /></SyncedAppearance>
       </I18nextProvider>,
     );
     return;
@@ -66,10 +68,10 @@ async function start() {
     const close = () => void getCurrentWindow().close().catch(() => {});
     createRoot(document.getElementById("root")!).render(
       <I18nextProvider i18n={i18n}>
-        <ReminderPopup title={query.get("title") ?? ""} when={query.get("when") ?? ""} onClose={close}
+        <SyncedAppearance preferences={preferences}><ReminderPopup title={query.get("title") ?? ""} when={query.get("when") ?? ""} onClose={close}
           onOpen={() => invoke("open_task", { workspaceId: ws, pageId: page })}
           onDone={() => center.complete(ws, task)}
-          onSnooze={(o) => center.snooze(ws, task, o)} />
+          onSnooze={(o) => center.snooze(ws, task, o)} /></SyncedAppearance>
       </I18nextProvider>,
     );
     return;

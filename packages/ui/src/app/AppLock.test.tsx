@@ -41,6 +41,7 @@ describe("un solo editor por espacio (T-151, CL-22)", () => {
     await mount(new FakeLock(), true);
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/otra ventana/i);
+    expect(alert.querySelector("svg")).not.toBeNull(); // U-139: aviso unificado con ícono de gravedad
     expect(screen.queryByRole("button", { name: "Nueva página" })).toBeNull();
   });
   it("«Reintentar» abre el espacio cuando la otra ventana lo libera", async () => {

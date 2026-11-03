@@ -206,4 +206,41 @@ export const migrations: Migration[] = [
       await tx.exec("CREATE UNIQUE INDEX import_reports_container ON import_reports(container_page_id)");
     },
   },
+  {
+    version: 11,
+    name: "ancho completo de página",
+    up: async (tx) => {
+      // Spec 002 (RF-10.3): la página puede ocupar todo el ancho. Por defecto falso; las páginas existentes quedan en ancho normal.
+      await tx.exec("ALTER TABLE pages ADD COLUMN full_width INTEGER NOT NULL DEFAULT 0");
+    },
+  },
+  {
+    version: 12,
+    name: "hora de inicio y duración de tareas",
+    up: async (tx) => {
+      // Spec 002 (RF-7.2, RF-8.1): columnas opcionales del índice DERIVADO de tareas. Nulas = tarea de «todo el día», como hasta ahora.
+      await tx.exec("ALTER TABLE tasks ADD COLUMN start_time TEXT");
+      await tx.exec("ALTER TABLE tasks ADD COLUMN duration_min INTEGER");
+    },
+  },
+  {
+    version: 13,
+    name: "etiquetas de página",
+    up: async (tx) => {
+      // Spec 002 (RF-5.9): catálogo de etiquetas del espacio (nombre y color de la paleta) y su asignación a páginas.
+      await tx.exec(`CREATE TABLE tags(
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        color TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )`);
+      await tx.exec("CREATE UNIQUE INDEX tags_name ON tags(lower(name))");
+      await tx.exec(`CREATE TABLE page_tags(
+        page_id TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+        tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+        PRIMARY KEY (page_id, tag_id)
+      )`);
+      await tx.exec("CREATE INDEX page_tags_tag ON page_tags(tag_id)");
+    },
+  },
 ];

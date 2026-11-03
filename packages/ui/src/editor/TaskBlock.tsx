@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { advanceSchedule, validateRecurrence, type Frequency, type Recurrence } from "@vnote/core";
 
-export type TaskProps = { checked: boolean; due: string; remindAt: string; recurrence: string };
+export type TaskProps = { checked: boolean; due: string; remindAt: string; recurrence: string; durationMin?: string };
 
 function parseRecurrence(raw: string): Recurrence | null {
   if (!raw) return null;
@@ -47,7 +47,7 @@ export function TaskBlockView({ props, onChange, now, content }: { props: TaskPr
           </select>
         </label>
       </div>
-      {pastReminder && <p role="note" className="ml-6 text-xs text-amber-800">{t("task.pastReminder")}</p>}
+      {pastReminder && <p role="note" className="ml-6 text-xs text-[var(--chip-warning-fg)]">{t("task.pastReminder")}</p>}
     </div>
   );
 }

@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { TableOfContents, type JumpBehavior } from "../page/TableOfContents";
+import { extractHeadings, activeHeading, type Heading } from "../page/toc";
+import { buildSlashItems } from "./slashItems";
+import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
-import { SuggestionMenuController, getDefaultReactSlashMenuItems, useCreateBlockNote } from "@blocknote/react";
-import { filterSuggestionItems, insertOrUpdateBlockForSlashMenu } from "@blocknote/core";
+import { SuggestionMenuController, useCreateBlockNote } from "@blocknote/react";
 import { schema } from "./schema";
 import { DatabaseEmbedProvider } from "../databases/EmbeddedDatabase";
 import { BlockNoteView } from "@blocknote/mantine";
 import { withCollaboration } from "@blocknote/core/yjs";
 import { en as bnEn, es as bnEs } from "@blocknote/core/locales";
 import { Awareness } from "y-protocols/awareness";
-import { countBlocks, serializeMatrix, template2x2, type DocSession } from "@vnote/core";
+import { countBlocks, fromYjs, type DocSession } from "@vnote/core";
 import { LargePageNotice } from "./LargePageNotice";
 import { LinkProvider, type LinkApi } from "./LinkContext";
 import { Backlinks } from "./Backlinks";
@@ -17,9 +20,11 @@ import type { AssetStore } from "@vnote/core";
 import { createFileHandlers } from "./fileHandlers";
 import type { WorkspaceController } from "../workspace/controller";
 import { useTheme } from "../theme/theme";
+import { saveStatusStore } from "../layout/saveStatusStore";
 import { handlePaste } from "./pasteHandler";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
+import "./editor.css";
 
 /** Editor de bloques de una página. El documento vive en Yjs y se guarda solo (DocSession). */
 export function PageEditor({ controller, pageId, assets }: { controller: WorkspaceController; pageId: string; assets?: AssetStore }) {
@@ -27,7 +32,18 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
   const [session, setSession] = useState<DocSession | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [blocks, setBlocks] = useState(0);
+  const [headings, setHeadings] = useState<Heading[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [notes, setNotes] = useState<string[]>([]);
+  useEffect(() => {
+    if (headings.length === 0) return;
+    const tops = () => Object.fromEntries(headings.map((h) => [h.id, document.querySelector(`[data-id="${h.id}"]`)?.getBoundingClientRect().top ?? Infinity]));
+    const onScroll = () => setActiveId(activeHeading(headings, tops(), 96));
+    onScroll();
+    window.addEventListener("scroll", onScroll, true);
+    return () => window.removeEventListener("scroll", onScroll, true);
+  }, [headings]);
+  const jumpTo = (id: string, behavior: JumpBehavior) => document.querySelector(`[data-id="${id}"]`)?.scrollIntoView?.({ behavior, block: "start" });
   const handlers = useMemo(
     () => (assets ? createFileHandlers(assets, {
       onWarning: (name) => setNotes((n) => [...n, t("editor.notBackedUp", { name })]),
@@ -49,15 +65,19 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
     setSession(null);
     setSaveError(null);
     void controller
-      .openDocument(pageId, (m) => setSaveError(m))
+      .openDocument(pageId, (m) => setSaveError(m), (ev) => saveStatusStore.dispatch(ev))
       .then((s) => {
         if (cancelled) { void s.dispose(); return; }
         opened = s;
+        saveStatusStore.reset();
+        saveStatusStore.setRetry(() => void s.flush());
         const frag = s.doc.getXmlFragment("doc");
         setBlocks(countBlocks(frag));
+        const refreshHeadings = () => setHeadings(extractHeadings(fromYjs(frag)));
+        refreshHeadings();
         // Se recuenta con retardo para no frenar la escritura en páginas enormes.
         let timer: ReturnType<typeof setTimeout> | undefined;
-        const onUpdate = () => { clearTimeout(timer); timer = setTimeout(() => setBlocks(countBlocks(frag)), 800); };
+        const onUpdate = () => { clearTimeout(timer); timer = setTimeout(() => { setBlocks(countBlocks(frag)); refreshHeadings(); }, 800); };
         s.doc.on("update", onUpdate);
         stopCounting = () => { clearTimeout(timer); s.doc.off("update", onUpdate); };
         setSession(s);
@@ -76,16 +96,17 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
   }, [controller, pageId]);
 
   return (
-    <div className="mt-4">
+    <div className="relative mt-4">
+      <TableOfContents headings={headings} activeId={activeId} onJump={jumpTo} />
       {saveError && (
-        <p role="alert" className="mb-2 rounded border border-red-500 bg-red-50 p-2 text-sm text-red-900">
+        <InlineAlert tone="error">
           {t("editor.saveFailed", { message: saveError })}
-        </p>
+        </InlineAlert>
       )}
       <InboxTriage controller={controller} pageId={pageId} />
       <LargePageNotice blocks={blocks} />
       {notes.map((n, i) => (
-        <p key={i} role="status" className="mb-2 rounded border border-amber-500 bg-amber-50 p-2 text-sm text-amber-900">
+        <p key={i} role="status" className="mb-2 rounded border border-[var(--c-warning)] bg-[var(--chip-warning-bg)] p-2 text-sm text-[var(--chip-warning-fg)]">
           {n} <button type="button" onClick={() => setNotes((all) => all.filter((_, j) => j !== i))}>{t("editor.dismiss")}</button>
         </p>
       ))}
@@ -99,7 +120,7 @@ function Editor({ session, handlers, findPages }: { session: DocSession; handler
   const { i18n, t } = useTranslation();
   const { resolved } = useTheme();
   const collaboration = useMemo(
-    () => ({ fragment: session.doc.getXmlFragment("doc"), provider: { awareness: new Awareness(session.doc) }, user: { name: "yo", color: "#3366cc" } }),
+    () => ({ fragment: session.doc.getXmlFragment("doc"), provider: { awareness: new Awareness(session.doc) }, user: { name: "yo", color: "var(--c-accent)" } }),
     [session],
   );
   const editor = useCreateBlockNote(
@@ -115,31 +136,7 @@ function Editor({ session, handlers, findPages }: { session: DocSession; handler
       onItemClick: () => editor.insertInlineContent([{ type: "mention", props: { pageId: p.id, title: p.title } }, " "]),
     }));
   };
-  const items = async (query: string) =>
-    filterSuggestionItems(
-      [
-        ...getDefaultReactSlashMenuItems(editor),
-        { title: t("editor.callout"), subtext: t("editor.calloutHint"), aliases: ["aviso", "callout", "nota"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "callout" }) },
-        { title: t("task.slash"), subtext: t("task.slashHint"), aliases: ["tarea", "task", "pendiente", "recordatorio", "todo"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "task" }) },
-        { title: t("embed.slash"), subtext: t("embed.slashHint"), aliases: ["base", "database", "tabla", "vista", "tablero"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "databaseView" }) },
-        { title: t("diagram.slash"), subtext: t("diagram.slashHint"), aliases: ["diagrama", "flujo", "flowchart", "diagram"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "diagram" }) },
-        { title: t("organizer.mindmap.slash"), subtext: t("organizer.mindmap.hint"), aliases: ["mapa", "mental", "mindmap", "ideas"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "mindmap" }) },
-        { title: t("organizer.orgchart.slash"), subtext: t("organizer.orgchart.hint"), aliases: ["organigrama", "orgchart", "jerarquia"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "orgchart" }) },
-        { title: t("organizer.timeline.slash"), subtext: t("organizer.timeline.hint"), aliases: ["linea", "tiempo", "timeline", "cronologia"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "timeline" }) },
-        { title: t("organizer.matrix.slash"), subtext: t("organizer.matrix.hint"), aliases: ["matriz", "matrix", "2x2", "cuadrante"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "matrix", props: { data: serializeMatrix(template2x2()) } }) },
-        { title: t("editor.linkCard"), subtext: t("editor.linkCardHint"), aliases: ["enlace", "link", "url", "tarjeta"], group: t("editor.customGroup"),
-          onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "linkCard" }) },
-      ],
-      query,
-    );
+  const items = async (query: string) => buildSlashItems(editor, t, query);
   return (
     <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false}>
       <SuggestionMenuController triggerCharacter="/" getItems={items} />

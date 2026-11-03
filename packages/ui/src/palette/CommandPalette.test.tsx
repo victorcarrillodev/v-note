@@ -1,5 +1,6 @@
 // T-135…T-140 (prueba primero): paleta de comandos con recientes, búsqueda en vivo, filtros y acciones (RF-5).
 import { describe, it, expect, vi } from "vitest";
+import { useState } from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../tests/renderWithI18n";
@@ -88,7 +89,7 @@ describe("filtros (T-139)", () => {
     });
     await user.type(input(), "nota");
     await waitFor(() => expect(options()).toHaveLength(2));
-    await user.selectOptions(screen.getByLabelText("Tipo"), "board");
+    await user.click(screen.getByRole("button", { name: "Tablero" }));
     await waitFor(() => expect(options()).toHaveLength(1));
     expect(options()[0]).toHaveTextContent("Nota tablero");
   });
@@ -101,7 +102,7 @@ describe("filtros (T-139)", () => {
     await renderWithI18n(<CommandPalette controller={controller} open onClose={() => {}} onOpenPage={() => {}} actions={[]} />);
     await user.type(input(), "nota");
     await waitFor(() => expect(options()).toHaveLength(2));
-    await user.selectOptions(screen.getByLabelText("Modificada"), "month");
+    await user.click(screen.getByRole("button", { name: "Últimos 30 días" }));
     await waitFor(() => expect(options()).toHaveLength(1));
     expect(options()[0]).toHaveTextContent("Nota nueva");
   });
@@ -111,7 +112,7 @@ describe("filtros (T-139)", () => {
     });
     await user.type(input(), "nota");
     await waitFor(() => expect(options()).toHaveLength(1));
-    await user.click(screen.getByLabelText("Incluir papelera"));
+    await user.click(screen.getByRole("button", { name: "Incluir papelera" }));
     await waitFor(() => expect(options()).toHaveLength(2));
     expect(screen.getByRole("option", { name: /Nota borrada/ })).toHaveTextContent("En la papelera");
   });
@@ -149,5 +150,110 @@ describe("highlightWords", () => {
   it("sin palabras o sin coincidencias devuelve el texto intacto", () => {
     expect(highlightWords("Hola", "")).toEqual([{ text: "Hola", match: false }]);
     expect(highlightWords("Hola", "xyz")).toEqual([{ text: "Hola", match: false }]);
+  });
+});
+
+
+// ---- Spec 002 (U-091 a U-097): paleta con el estándar ----
+describe("marco de la paleta (RF-9.1)", () => {
+  it("640 px, 12 % desde arriba, con velo y foco en el campo", async () => {
+    await setup();
+    const dlg = screen.getByRole("dialog");
+    expect(dlg.className).toContain("w-[var(--size-palette-width)]");
+    expect(dlg.className).toContain("top-[12%]");
+    expect(dlg.className).toContain("rounded-lg");
+    expect(document.querySelector("[cmdk-overlay]")).not.toBeNull();
+    expect(input()).toHaveFocus();
+  });
+});
+
+describe("sin texto: recientes y acciones con atajos (RF-9.1, RF-9.3)", () => {
+  it("cada acción con atajo lo muestra a la derecha", async () => {
+    await setup({ actions: [{ id: "a", label: "Crear página", run: () => {}, shortcut: "Ctrl+Alt+N" }, { id: "b", label: "Ir a ajustes", run: () => {} }] });
+    const item = screen.getByRole("option", { name: /Crear página/ });
+    expect(item).toHaveTextContent("Ctrl+Alt+N");
+    expect(item.querySelector("kbd")).not.toBeNull();
+    expect(screen.getByRole("option", { name: /Ir a ajustes/ }).querySelector("kbd")).toBeNull();
+  });
+  it("muestra los grupos «Recientes» y «Acciones»", async () => {
+    await setup({ seed: async (c) => { const p = await mk(c, "Visitada"); await c.select(p.id); }, actions: [{ id: "a", label: "Crear página", run: () => {} }] });
+    expect(await screen.findByText("Recientes")).toBeInTheDocument();
+    expect(screen.getByText("Acciones")).toBeInTheDocument();
+  });
+});
+
+describe("resultados (RF-9.2)", () => {
+  it("cada resultado muestra el ícono de tipo, el título resaltado, la ruta y el fragmento", async () => {
+    const { user } = await setup({
+      seed: async (c) => { const a = await c.createPage(null, "Proyectos"); if (!a.ok) throw 1; const b = await c.createPage(a.value.id, "Plan semanal"); if (!b.ok) throw 1; },
+    });
+    await user.type(input(), "plan");
+    const opt = await screen.findByRole("option", { name: /Plan semanal/ });
+    expect(opt.querySelector("svg")).not.toBeNull();
+    expect(opt.querySelector("mark")).toHaveTextContent("Plan");
+    await waitFor(() => expect(opt).toHaveTextContent("Proyectos"));
+    expect(opt.querySelector("[data-result-path]")).toHaveTextContent("Proyectos");
+  });
+  it("la fila activa tiene fondo y barra de acento (no solo color)", async () => {
+    const { user } = await setup({ seed: async (c) => { await mk(c, "Nota uno"); } });
+    await user.type(input(), "nota");
+    const opt = await screen.findByRole("option", { name: /Nota uno/ });
+    expect(opt.className).toContain("data-[selected=true]:bg-[var(--c-raised)]");
+    expect(opt.className).toContain("data-[selected=true]:border-[var(--c-accent)]");
+    expect(opt.className).toContain("border-l-2");
+  });
+});
+
+describe("filtros como chips (RF-9.1)", () => {
+  it("tipo, fecha y papelera son chips con estado pulsado (aria-pressed)", async () => {
+    const { user } = await setup();
+    const board = screen.getByRole("button", { name: "Tablero" });
+    expect(board).toHaveAttribute("aria-pressed", "false");
+    await user.click(board);
+    expect(screen.getByRole("button", { name: "Tablero" })).toHaveAttribute("aria-pressed", "true");
+    await user.click(screen.getByRole("button", { name: "Tablero" }));
+    expect(screen.getByRole("button", { name: "Tablero" })).toHaveAttribute("aria-pressed", "false");
+  });
+  it("el chip activo se distingue con marca (ícono), no solo con color", async () => {
+    const { user } = await setup();
+    await user.click(screen.getByRole("button", { name: "Hoy" }));
+    expect(screen.getByRole("button", { name: "Hoy" }).querySelector("svg")).not.toBeNull();
+  });
+});
+
+describe("sin resultados (RF-9.4)", () => {
+  it("ofrece «Crear una página con este título» y la crea al elegirla", async () => {
+    const onCreatePage = vi.fn();
+    const { controller } = await makeController();
+    const user = userEvent.setup();
+    await renderWithI18n(<CommandPalette controller={controller} open onClose={() => {}} onOpenPage={() => {}} actions={[]} onCreatePage={onCreatePage} />);
+    await user.type(input(), "zzzqq");
+    const opt = await screen.findByRole("option", { name: /Crear una página/ });
+    expect(opt).toHaveTextContent("zzzqq");
+    await user.click(opt);
+    expect(onCreatePage).toHaveBeenCalledWith("zzzqq");
+  });
+  it("el mensaje «Sin coincidencias» se mantiene", async () => {
+    const { user } = await setup();
+    await user.type(input(), "qwertyuiop");
+    expect(await screen.findByText("Sin coincidencias")).toBeInTheDocument();
+  });
+});
+
+describe("devolución del foco (RF-9.5)", () => {
+  it("al cerrar con Escape el foco vuelve al elemento que lo tenía", async () => {
+    const { controller } = await makeController();
+    function Host() {
+      const [open, setOpen] = useState(false);
+      return <><button onClick={() => setOpen(true)}>Abrir paleta</button><CommandPalette controller={controller} open={open} onClose={() => setOpen(false)} onOpenPage={() => {}} actions={[]} /></>;
+    }
+    await renderWithI18n(<Host />);
+    const opener = screen.getByRole("button", { name: "Abrir paleta" });
+    opener.focus();
+    await userEvent.click(opener);
+    await screen.findByRole("dialog");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(opener).toHaveFocus());
   });
 });

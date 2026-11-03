@@ -105,3 +105,63 @@ describe("PageTree", () => {
     expect(onSelect).toHaveBeenLastCalledWith("a");
   });
 });
+
+// ---- Spec 002 (U-079 a U-082): filas del árbol con el estándar ----
+describe("filas del estándar (RF-4.2, RF-4.3, CL-1, CL-7)", () => {
+  const deep = (n: number): PageNode => { let cur = node(`n${n}`, `Nivel ${n}`); for (let i = n - 1; i >= 0; i--) cur = node(`n${i}`, `Nivel ${i}`, [cur]); return cur; };
+  const open = (ids: string[]) => new Set(ids);
+
+  it("la fila mide 32 px por defecto y 28 px en densidad compacta", async () => {
+    await renderWithI18n(<PageTree nodes={[node("a", "A")]} expanded={new Set()} selectedId={null} onSelect={() => {}} onToggle={() => {}} />);
+    expect(screen.getByRole("treeitem", { name: "A" })).toHaveStyle({ height: "32px" });
+    await renderWithI18n(<PageTree nodes={[node("c", "C")]} expanded={new Set()} selectedId={null} onSelect={() => {}} onToggle={() => {}} rowHeight={28} />);
+    expect(screen.getByRole("treeitem", { name: "C" })).toHaveStyle({ height: "28px" });
+  });
+  it("la página activa lleva barra de acento y fondo (no depende solo del color)", async () => {
+    await renderWithI18n(<PageTree nodes={[node("a", "A"), node("b", "B")]} expanded={new Set()} selectedId="b" onSelect={() => {}} onToggle={() => {}} />);
+    const sel = screen.getByRole("treeitem", { name: "B" });
+    expect(sel.className).toContain("border-[var(--c-accent)]");
+    expect(sel.className).toContain("bg-[var(--c-raised)]");
+    expect(screen.getByRole("treeitem", { name: "A" }).className).not.toContain("border-[var(--c-accent)]");
+  });
+  it("muestra un ícono de tipo (nota, base de datos, tablero) y respeta el emoji de la página", async () => {
+    const db = { ...node("d", "Base"), page: { ...page("d", "Base"), kind: "database" as const } };
+    const withIcon = { ...node("e", "Con ícono"), page: { ...page("e", "Con ícono"), icon: "📁" } };
+    await renderWithI18n(<PageTree nodes={[node("a", "Nota"), db, withIcon]} expanded={new Set()} selectedId={null} onSelect={() => {}} onToggle={() => {}} />);
+    expect(screen.getByRole("treeitem", { name: "Nota" }).querySelector("svg")).not.toBeNull();
+    expect(screen.getByRole("treeitem", { name: "Base" }).querySelector("svg")).not.toBeNull();
+    expect(screen.getByRole("treeitem", { name: "Con ícono" })).toHaveTextContent("📁");
+  });
+  it("sangría de 16 px por nivel con tope a 6 niveles (10 niveles sangran como 6)", async () => {
+    await renderWithI18n(<PageTree nodes={[deep(10)]} expanded={open(Array.from({ length: 11 }, (_, i) => `n${i}`))} selectedId={null} onSelect={() => {}} onToggle={() => {}} height={900} />);
+    const pad = (name: string) => (screen.getByRole("treeitem", { name }) as HTMLElement).style.paddingLeft;
+    expect(pad("Nivel 1")).toBe("22px"); // 6 px base + 2 px de borde = 8 px, más 16 px por nivel
+    expect(pad("Nivel 10")).toBe(pad("Nivel 6"));
+    expect(pad("Nivel 8")).toBe(pad("Nivel 6"));
+  });
+  it("el título completo está disponible como tooltip del nombre truncado", async () => {
+    const long = "T".repeat(150);
+    await renderWithI18n(<PageTree nodes={[node("a", long)]} expanded={new Set()} selectedId={null} onSelect={() => {}} onToggle={() => {}} />);
+    const row = screen.getByRole("treeitem");
+    expect(row.querySelector("[data-row-title]")).toHaveAttribute("title", long);
+    expect(row.querySelector("[data-row-title]")!.className).toContain("truncate");
+  });
+  it("las acciones de la fila aparecen al pasar el cursor o con foco, sin desplazar el texto (posición absoluta)", async () => {
+    const onCreateChild = vi.fn();
+    await renderWithI18n(<PageTree nodes={[node("a", "A")]} expanded={new Set()} selectedId={null} onSelect={() => {}} onToggle={() => {}} onCreateChild={onCreateChild} />);
+    const btn = screen.getByRole("button", { name: "Nueva subpágina en A" });
+    const wrap = btn.parentElement!;
+    expect(wrap.className).toContain("absolute");
+    expect(wrap.className).toContain("opacity-0");
+    expect(wrap.className).toContain("group-hover:opacity-100");
+    expect(wrap.className).toContain("focus-within:opacity-100");
+    await userEvent.click(btn);
+    expect(onCreateChild).toHaveBeenCalledWith("a");
+  });
+  it("hacer clic en la acción no selecciona la fila", async () => {
+    const onSelect = vi.fn();
+    await renderWithI18n(<PageTree nodes={[node("a", "A")]} expanded={new Set()} selectedId={null} onSelect={onSelect} onToggle={() => {}} onCreateChild={() => {}} />);
+    await userEvent.click(screen.getByRole("button", { name: "Nueva subpágina en A" }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});

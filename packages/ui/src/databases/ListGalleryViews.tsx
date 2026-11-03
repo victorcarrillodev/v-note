@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { EmptyState } from "../empty/EmptyState";
 import type { DatabaseController } from "./databaseController";
 import { useFormatValue } from "./cells";
 import { titleOf } from "./viewHelpers";
@@ -17,7 +18,7 @@ export function ListView({ controller, onOpenRow }: Props) {
   const { t } = useTranslation();
   const format = useFormatValue();
   const { rows, props } = useRows(controller);
-  if (rows.length === 0) return <p className="opacity-70">{t("databases.empty")}</p>;
+  if (rows.length === 0) return <EmptyState illustration="table" title={t("databases.empty")} />;
   return (
     <ul className="flex flex-col divide-y">
       {rows.map((r) => (
@@ -36,7 +37,7 @@ export function GalleryView({ controller, onOpenRow }: Props) {
   const { t } = useTranslation();
   const format = useFormatValue();
   const { rows, props } = useRows(controller);
-  if (rows.length === 0) return <p className="opacity-70">{t("databases.empty")}</p>;
+  if (rows.length === 0) return <EmptyState illustration="table" title={t("databases.empty")} />;
   return (
     <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(14rem, 1fr))" }}>
       {rows.map((r) => {

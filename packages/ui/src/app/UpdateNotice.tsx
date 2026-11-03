@@ -13,7 +13,7 @@ export function UpdateNotice({ check, onDownload }: { check: () => Promise<Updat
   }, [check]);
   if (!info || !info.available) return null;
   return (
-    <div role="status" className="m-2 flex items-center gap-2 rounded border border-sky-500 bg-sky-50 p-2 text-sm text-sky-900">
+    <div role="status" className="m-2 flex items-center gap-2 rounded border border-[var(--c-accent)] bg-[var(--chip-info-bg)] p-2 text-sm text-[var(--chip-info-fg)]">
       <span className="flex-1">{t("update.available", { version: info.version })}</span>
       <button type="button" onClick={() => onDownload(info.url)}>{t("update.download")}</button>
       <button type="button" aria-label={t("update.dismiss")} onClick={() => setInfo(null)}>×</button>

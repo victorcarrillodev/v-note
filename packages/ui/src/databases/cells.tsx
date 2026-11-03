@@ -29,7 +29,7 @@ export function useFormatValue() {
 }
 
 function ErrorNote({ message }: { message: string | null }) {
-  return message ? <span role="alert" className="block text-xs text-red-700">{message}</span> : null;
+  return message ? <span role="alert" className="block text-xs text-[var(--c-danger)]">{message}</span> : null;
 }
 
 /** Editor de una celda según el tipo de la propiedad (RF-22). Las propiedades calculadas son de solo lectura. */
@@ -49,7 +49,7 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
   };
 
   if (COMPUTED_TYPES.has(prop.type)) {
-    return <span className={isError(value) ? "text-red-700" : ""} title={isError(value) ? value.error.message : undefined}>{format(prop, value)}</span>;
+    return <span className={isError(value) ? "text-[var(--c-danger)]" : ""} title={isError(value) ? value.error.message : undefined}>{format(prop, value)}</span>;
   }
 
   switch (prop.type) {

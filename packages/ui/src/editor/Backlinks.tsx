@@ -17,7 +17,7 @@ export function Backlinks({ controller, pageId }: { controller: WorkspaceControl
   return (
     <section aria-label={t("links.backlinks")} className="mt-6 border-t pt-3">
       <h2 className="text-sm font-semibold">{t("links.backlinks")}</h2>
-      {items.length === 0 ? <p className="text-sm opacity-70">{t("links.noBacklinks")}</p> : (
+      {items.length === 0 ? <p className="text-sm text-[var(--c-text-muted)]">{t("links.noBacklinks")}</p> : (
         <ul className="text-sm">
           {items.map((p) => (
             <li key={p.id}><button type="button" className="underline" onClick={() => void controller.select(p.id)}>{p.title.trim() || t("app.untitled")}</button></li>

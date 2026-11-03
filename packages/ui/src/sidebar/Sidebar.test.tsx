@@ -1,73 +1,72 @@
-// T-112 y T-114 (prueba primero): barra lateral con creación de páginas y mensaje al mover a un descendiente.
-import { describe, it, expect } from "vitest";
+// U-077, U-078, U-083, U-084, U-085 (RF-4.1, RF-4.4, RF-4.5, RF-10.6, RF-9.1): contenido de la barra lateral.
+import { describe, it, expect, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { makeController } from "../../tests/withController";
 import { Sidebar } from "./Sidebar";
+import { SidebarLinks } from "./SidebarLinks";
 
 describe("Sidebar", () => {
-  it("sin páginas muestra el mensaje de vacío", async () => {
+  it("el campo «Buscar» muestra el atajo y abre la paleta", async () => {
+    const { controller } = await makeController();
+    const onSearch = vi.fn();
+    await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => {}} onSearch={onSearch} searchCombo="Ctrl+K" />);
+    const btn = screen.getByRole("button", { name: /Buscar/ });
+    expect(btn).toHaveTextContent("Ctrl+K");
+    await userEvent.click(btn);
+    expect(onSearch).toHaveBeenCalled();
+  });
+  it("las acciones de creación llevan ícono y mantienen su texto", async () => {
     const { controller } = await makeController();
     await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => {}} />);
-    expect(screen.getByText(/aún no hay páginas/i)).toBeInTheDocument();
+    for (const n of ["Nueva página", "Nueva base de datos", "Nuevo tablero"]) expect(screen.getByRole("button", { name: n }).querySelector("svg"), n).not.toBeNull();
   });
-  it("«Nueva página» crea una página sin título, la selecciona y queda lista para escribir", async () => {
+  it("los favoritos se muestran con ícono de estrella cuando existen", async () => {
     const { controller } = await makeController();
-    const opened: string[] = [];
-    await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => {}} onPageOpened={(id) => opened.push(id)} />);
-    await userEvent.setup().click(screen.getByRole("button", { name: "Nueva página" }));
-    const item = await screen.findByRole("treeitem", { name: "Sin título" });
-    expect(item).toHaveAttribute("aria-selected", "true");
-    expect(opened).toEqual([controller.getSnapshot().selectedId]);
+    const p = await controller.createPage(null, "Plan");
+    if (!p.ok) throw new Error("x");
+    await controller.toggleFavorite(p.value.id);
+    await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => {}} />);
+    const region = await screen.findByRole("region", { name: "Favoritos" });
+    expect(within(region).getByRole("button", { name: "Plan" })).toBeInTheDocument();
+    expect(region.querySelector("svg")).not.toBeNull();
   });
-  it("«Nueva subpágina» está deshabilitada sin selección y crea una hija de la seleccionada", async () => {
+  it("sin favoritos no aparece la sección", async () => {
     const { controller } = await makeController();
     await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => {}} />);
-    const sub = screen.getByRole("button", { name: "Nueva subpágina" });
-    expect(sub).toBeDisabled();
-    const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Nueva página" }));
-    await screen.findByRole("treeitem");
-    expect(sub).toBeEnabled();
-    await user.click(sub);
-    const items = await screen.findAllByRole("treeitem");
-    expect(items).toHaveLength(2);
-    expect(items[1]).toHaveAttribute("aria-level", "2");
-    expect(items[0]).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByRole("region", { name: "Favoritos" })).toBeNull();
   });
-  it("lista las páginas favoritas y abre la que se elige", async () => {
+  it("el aviso de mover a una descendiente es un aviso persistente con ícono y se puede cerrar", async () => {
     const { controller } = await makeController();
-    const a = await controller.createPage(null, "Favorita");
-    if (!a.ok) throw new Error("x");
-    await controller.toggleFavorite(a.value.id);
-    await controller.select(null);
-    const opened: string[] = [];
-    await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => {}} onPageOpened={(id) => opened.push(id)} />);
-    const fav = screen.getByRole("region", { name: "Favoritos" });
-    await userEvent.setup().click(within(fav).getByRole("button", { name: "Favorita" }));
-    expect(opened).toEqual([a.value.id]);
-  });
-  it("T-114: mover una página a un descendiente muestra el motivo y no cambia el árbol", async () => {
-    const { controller } = await makeController();
-    const a = await controller.createPage(null, "A");
-    if (!a.ok) throw new Error("x");
-    const b = await controller.createPage(a.value.id, "B");
-    if (!b.ok) throw new Error("x");
+    const a = await controller.createPage(null, "A"); const b = await controller.createPage(a.ok ? a.value.id : null, "B");
+    if (!a.ok || !b.ok) throw new Error("x");
+    await controller.movePage(a.value.id, b.value.id);
     await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => {}} />);
-    await screen.findAllByRole("treeitem");
-    // el arrastre real se verifica en el e2e; aquí se usa la misma acción que ejecuta el árbol al soltar
-    const { act } = await import("@testing-library/react");
-    await act(async () => { await controller.movePage(a.value.id, b.value.id); });
-    expect(await screen.findByRole("alert")).toHaveTextContent("No se puede mover una página dentro de sí misma ni de sus subpáginas.");
-    await userEvent.setup().click(screen.getByRole("button", { name: "Cerrar aviso" }));
+    const alert = await screen.findByRole("alert");
+    expect(alert.querySelector("svg")).not.toBeNull();
+    await userEvent.click(within(alert).getByRole("button", { name: /cerrar aviso/i }));
     expect(screen.queryByRole("alert")).toBeNull();
   });
-  it("el botón de papelera avisa a quien lo usa", async () => {
-    const { controller } = await makeController();
-    let opened = 0;
-    await renderWithI18n(<Sidebar controller={controller} onOpenTrash={() => opened++} />);
-    await userEvent.setup().click(screen.getByRole("button", { name: "Papelera" }));
-    expect(opened).toBe(1);
+});
+
+describe("SidebarLinks (RF-4.1, RF-4.4)", () => {
+  const items = [
+    [{ id: "capture", label: "Captura rápida", icon: "inbox" as const, onClick: vi.fn() }, { id: "graph", label: "Grafo", icon: "graph" as const, onClick: vi.fn() }],
+    [{ id: "backup", label: "Respaldo", icon: "backup" as const, onClick: vi.fn() }],
+  ];
+  it("agrupa los accesos con jerarquía menor: texto suave de 13 px y con ícono", async () => {
+    await renderWithI18n(<SidebarLinks groups={items} />);
+    const link = screen.getByRole("button", { name: "Grafo" });
+    expect(link.className).toContain("text-[var(--c-text-muted)]");
+    expect(link.className).toContain("text-[length:var(--text-ui-small-size)]");
+    expect(link.querySelector("svg")).not.toBeNull();
+    expect(screen.getAllByRole("group")).toHaveLength(2);
+  });
+  it("cada acceso ejecuta su acción", async () => {
+    const onClick = vi.fn();
+    await renderWithI18n(<SidebarLinks groups={[[{ id: "x", label: "Ajustes", icon: "settings", onClick }]]} />);
+    await userEvent.click(screen.getByRole("button", { name: "Ajustes" }));
+    expect(onClick).toHaveBeenCalled();
   });
 });

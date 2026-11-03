@@ -1,24 +1,25 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type ThemeMode = "light" | "dark" | "system";
-export type ResolvedTheme = "light" | "dark";
+import { resolveTheme, type ThemeMode, type ResolvedTheme } from "./resolveTheme";
+export type { ThemeMode, ResolvedTheme };
 
 /** Preferencias de la persona usuaria (solo de interfaz: tema, idioma...). En web usa localStorage; en pruebas, memoria. */
 export interface PreferenceStore {
   get(key: string): string | null;
-  set(key: string, value: string): void;
+  /** Devuelve `false` si no se pudo conservar (por ejemplo, almacenamiento bloqueado); `void`/`true` si se guardó. */
+  set(key: string, value: string): boolean | void;
 }
 
 export class MemoryPreferences implements PreferenceStore {
   private data = new Map<string, string>();
   get(key: string) { return this.data.get(key) ?? null; }
-  set(key: string, value: string) { this.data.set(key, value); }
+  set(key: string, value: string) { this.data.set(key, value); return true; }
 }
 
 /** localStorage puede faltar o lanzar (modo privado): en ese caso las preferencias no persisten, pero la app funciona. */
 export class LocalStoragePreferences implements PreferenceStore {
   get(key: string) { try { return localStorage.getItem(`vnote:${key}`); } catch { return null; } }
-  set(key: string, value: string) { try { localStorage.setItem(`vnote:${key}`, value); } catch { /* sin persistencia */ } }
+  set(key: string, value: string) { try { localStorage.setItem(`vnote:${key}`, value); return true; } catch { return false; /* sin persistencia */ } }
 }
 
 const isMode = (v: string | null): v is ThemeMode => v === "light" || v === "dark" || v === "system";
@@ -43,7 +44,7 @@ export function ThemeProvider({ preferences, children }: { preferences: Preferen
     return () => mql.removeEventListener("change", onChange);
   }, [mode]);
 
-  const resolved: ResolvedTheme = mode === "system" ? (systemDark ? "dark" : "light") : mode;
+  const resolved: ResolvedTheme = resolveTheme(mode, systemDark);
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", resolved);
   }, [resolved]);

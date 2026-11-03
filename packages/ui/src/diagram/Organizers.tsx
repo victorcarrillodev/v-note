@@ -1,3 +1,4 @@
+import { SvgLayer } from "../design/SvgLayer";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -34,8 +35,8 @@ function startDrag(e: ReactPointerEvent, onDrop: (dx: number, dy: number, under:
   window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
 }
 
-const box: CSSProperties = { border: "1px solid #94a3b8", borderRadius: 6, background: "#fff", overflow: "auto", position: "relative" };
-const panelStyle: CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", padding: 8, borderTop: "1px solid #cbd5e1" };
+const box: CSSProperties = { border: "1px solid var(--c-border-control)", borderRadius: 6, background: "var(--c-card)", overflow: "auto", position: "relative" };
+const panelStyle: CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", padding: 8, borderTop: "1px solid var(--c-border)" };
 
 type Props = { value: string; onChange: (data: string) => void };
 
@@ -77,19 +78,19 @@ export function TreeEditor({ kind, value, onChange }: Props & { kind: "mindmap" 
 
   const nodeStyle = (id: string, active: boolean): CSSProperties => ({
     position: "absolute", ...pos(id), width: NODE_W, height: NODE_H, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-    border: `2px solid ${active ? "#2563eb" : "#334155"}`, borderRadius: kind === "mindmap" ? 999 : 4, background: id === "root" ? "#dbeafe" : "#f8fafc", cursor: id === "root" ? "pointer" : "grab", font: "inherit", touchAction: "none",
+    border: `2px solid ${active ? "var(--c-accent)" : "var(--c-text)"}`, borderRadius: kind === "mindmap" ? 999 : 4, background: id === "root" ? "var(--chip-info-bg)" : "var(--c-raised)", cursor: id === "root" ? "pointer" : "grab", font: "inherit", touchAction: "none",
   });
 
   return (
     <div data-testid={kind} aria-label={t(`organizer.${kind}.canvas`)} role="group" style={{ margin: "8px 0" }}>
       <div style={{ ...box, maxHeight: 420 }}>
         <div style={{ position: "relative", width, height }}>
-          <svg width={width} height={height} style={{ position: "absolute", inset: 0 }} aria-hidden="true">
+          <SvgLayer width={width} height={height}>
             {parents.map(([a, b]) => {
               const pa = layout.get(a)!, pb = layout.get(b)!;
-              return <line key={`${a}-${b}`} data-edge={`${a}>${b}`} x1={pa.x - minX} y1={pa.y - minY} x2={pb.x - minX} y2={pb.y - minY} stroke="#64748b" strokeWidth={2} />;
+              return <line key={`${a}-${b}`} data-edge={`${a}>${b}`} x1={pa.x - minX} y1={pa.y - minY} x2={pb.x - minX} y2={pb.y - minY} stroke="var(--c-text-muted)" strokeWidth={2} />;
             })}
-          </svg>
+          </SvgLayer>
           {visible.map((n) => (
             <button key={n.id} type="button" data-node-id={n.id} data-depth={n.depth} aria-label={label(n.id, n.text)} aria-pressed={n.id === current.id}
               aria-expanded={n.hasChildren ? !n.collapsed : undefined} style={nodeStyle(n.id, n.id === current.id)}
@@ -150,7 +151,7 @@ export function TimelineEditor({ value, onChange }: Props) {
             return (
               <li key={ev.id} style={{ position: "absolute", left: p.x + 10, top: p.y + 10, width: EVENT_W, height: EVENT_H }}>
                 <button type="button" data-event-id={ev.id} data-date={ev.date} data-lane={p.lane} aria-pressed={ev.id === selected}
-                  style={{ width: "100%", height: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", border: `2px solid ${ev.id === selected ? "#2563eb" : "#334155"}`, borderRadius: 4, background: "#fef9c3", cursor: "grab", font: "inherit", touchAction: "none" }}
+                  style={{ width: "100%", height: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", border: `2px solid ${ev.id === selected ? "var(--c-accent)" : "var(--c-text)"}`, borderRadius: 4, background: "var(--chip-warning-bg)", cursor: "grab", font: "inherit", touchAction: "none" }}
                   onClick={() => setSelected(ev.id)}
                   onPointerDown={(e) => startDrag(e, (dx) => { const days = Math.round(dx / DAY_W); if (days !== 0) { setSelected(ev.id); setDateOf(ev.id, addDays(ev.date, days)); } })}>
                   {ev.title} · {ev.date}
@@ -196,7 +197,7 @@ export function MatrixEditor({ value, onChange }: Props) {
     if (r.ok) commit(r.value);
   };
 
-  const cellStyle: CSSProperties = { border: "1px solid #94a3b8", padding: 6, verticalAlign: "top", minWidth: 150, background: "#fff" };
+  const cellStyle: CSSProperties = { border: "1px solid var(--c-border-control)", padding: 6, verticalAlign: "top", minWidth: 150, background: "var(--c-card)" };
   return (
     <div data-testid="matrix" role="group" aria-label={t("organizer.matrix.canvas")} style={{ margin: "8px 0" }}>
       <div style={{ ...box, maxHeight: 420 }}>

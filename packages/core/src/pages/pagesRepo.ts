@@ -15,6 +15,8 @@ export type Page = {
   cover: string | null;
   kind: PageKind;
   favorite: boolean;
+  /** Ancho completo de la página (RF-10.3, spec 002). Ausente = ancho normal. */
+  fullWidth?: boolean;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;
@@ -25,11 +27,11 @@ export type PageNode = { page: Page; children: PageNode[] };
 
 type Row = {
   id: string; parent_id: string | null; position: string; title: string; icon: string | null; cover: string | null;
-  kind: PageKind; favorite: number; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
+  kind: PageKind; favorite: number; full_width?: number; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
 };
 const toPage = (r: Row): Page => ({
   id: r.id, parentId: r.parent_id, position: r.position, title: r.title, icon: r.icon, cover: r.cover, kind: r.kind,
-  favorite: r.favorite === 1, createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id,
+  favorite: r.favorite === 1, fullWidth: r.full_width === 1, createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id,
 });
 
 /** CL-2: un título vacío o de solo espacios se muestra como "Sin título" (el texto lo pone la interfaz con i18n). */
@@ -161,13 +163,17 @@ export class PagesRepo {
   async setFavorite(id: string, favorite: boolean): Promise<Result<Page>> {
     return this.setField(id, "favorite", favorite ? 1 : 0);
   }
+  /** Ancho completo de la página: se guarda con ella, atómicamente, y viaja en su respaldo. */
+  async setFullWidth(id: string, value: boolean): Promise<Result<Page>> {
+    return this.setField(id, "full_width", value ? 1 : 0);
+  }
   async setIcon(id: string, icon: string | null): Promise<Result<Page>> {
     return this.setField(id, "icon", icon);
   }
   async setCover(id: string, cover: string | null): Promise<Result<Page>> {
     return this.setField(id, "cover", cover);
   }
-  private async setField(id: string, column: "favorite" | "icon" | "cover", value: string | number | null): Promise<Result<Page>> {
+  private async setField(id: string, column: "favorite" | "icon" | "cover" | "full_width", value: string | number | null): Promise<Result<Page>> {
     const found = await this.get(id);
     if (!found.ok) return found;
     await this.db.exec(`UPDATE pages SET ${column} = ?, updated_at = ? WHERE id = ?`, [value, this.clock.now(), id]);
@@ -194,8 +200,8 @@ export class PagesRepo {
       const position = positionBetween(siblings[i]?.position ?? null, siblings[i + 1]?.position ?? null);
       const copy = async (from: Page, parentId: string | null, pos: string, copyId: string) => {
         await tx.exec(
-          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)",
-          [copyId, parentId, pos, from.title, from.icon, from.cover, from.kind, now, now],
+          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, full_width, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)",
+          [copyId, parentId, pos, from.title, from.icon, from.cover, from.kind, from.fullWidth ? 1 : 0, now, now],
         );
         if (!opts.withChildren) return;
         const kids = await tx.query<Row>("SELECT * FROM pages WHERE parent_id = ? AND deleted_at IS NULL ORDER BY position", [from.id]);

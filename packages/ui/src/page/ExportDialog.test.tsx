@@ -113,7 +113,9 @@ describe("adjuntos faltantes y errores (T-407)", () => {
     await renderWithI18n(<ExportDialog controller={controller} pageId={p.value.id} assets={new MemoryAssetStore()} runtime={runtime} onClose={() => {}} />);
     await userEvent.click(screen.getByRole("button", { name: "Exportar" }));
     await waitFor(() => expect(runtime.saveHtml).toHaveBeenCalled());
-    expect(await screen.findByRole("status")).toHaveTextContent(/perdida\.png/);
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/perdida\.png/);
+    expect(alert.querySelector("svg")).not.toBeNull(); // aviso unificado: ícono de gravedad, no solo color (U-137, RF-11.2)
   });
   it("si guardar falla muestra el error y deja reintentar", async () => {
     const { controller } = await makeController();

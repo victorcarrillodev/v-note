@@ -10,6 +10,7 @@ import { SearchIndex } from "../search/searchIndex";
 import { indexPageLinksIn } from "../links/linkIndex";
 import { systemClock } from "../clock";
 import { FORMAT_VERSION } from "./serialize";
+import { insertTags, validateTags, type TagsFile } from "./tags";
 import { insertDatabases, validateDatabases, type DbFile, type RemindersFile } from "./databases";
 import type { BackupError, CommitSummary, GitHubClient } from "./githubClient";
 
@@ -46,7 +47,7 @@ export async function readBackup(client: GitHubClient, commitSha: string): Promi
 
 type PageData = {
   id: string; parentId: string | null; position: string; title: string; icon: string | null; cover: string | null; kind: string;
-  favorite: boolean; createdAt: number; updatedAt: number; deletedAt: number | null; deletedRootId: string | null; blocks: Block[];
+  favorite: boolean; fullWidth: boolean; createdAt: number; updatedAt: number; deletedAt: number | null; deletedRootId: string | null; blocks: Block[];
 };
 
 function parseJson(bytes: Uint8Array | undefined, what: string): Result<Record<string, any>> { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -60,7 +61,7 @@ function parseJson(bytes: Uint8Array | undefined, what: string): Result<Record<s
 }
 
 /** Valida TODO el respaldo antes de escribir nada. */
-export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null }>> {
+export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null; tags: TagsFile | null }>> {
   const ws = parseJson(files.get("workspace.json"), "workspace.json");
   if (!ws.ok) return ws;
   if (typeof ws.value.formatVersion !== "number") return invalid("workspace.json no indica la versión del formato");
@@ -80,7 +81,7 @@ export async function validateBackup(files: Map<string, Uint8Array>): Promise<Re
     if (typeof p.createdAt !== "number" || typeof p.updatedAt !== "number") return invalid(`La página ${p.id} no tiene fechas válidas`);
     pages.push({
       id: p.id, parentId: p.parentId ?? null, position: p.position, title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, kind: p.kind,
-      favorite: p.favorite === true, createdAt: p.createdAt, updatedAt: p.updatedAt, deletedAt: p.deletedAt ?? null, deletedRootId: p.deletedRootId ?? null, blocks: p.blocks,
+      favorite: p.favorite === true, fullWidth: p.fullWidth === true, createdAt: p.createdAt, updatedAt: p.updatedAt, deletedAt: p.deletedAt ?? null, deletedRootId: p.deletedRootId ?? null, blocks: p.blocks,
     });
   }
   const byId = new Map(pages.map((p) => [p.id, p]));
@@ -113,7 +114,15 @@ export async function validateBackup(files: Map<string, Uint8Array>): Promise<Re
   }
   const dbs = validateDatabases(parsed, remindersRaw, new Set(pages.map((p) => p.id)));
   if (!dbs.ok) return dbs;
-  return ok({ pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders });
+  let tagsRaw: unknown;
+  if (files.has("tags.json")) {
+    const r = parseJson(files.get("tags.json"), "tags.json");
+    if (!r.ok) return r;
+    tagsRaw = r.value;
+  }
+  const tags = validateTags(tagsRaw, new Set(pages.map((p) => p.id)));
+  if (!tags.ok) return tags;
+  return ok({ pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders, tags: tags.value });
 }
 
 /**
@@ -134,8 +143,8 @@ export async function restoreFromFiles(files: Map<string, Uint8Array>, target: {
       await tx.exec("PRAGMA defer_foreign_keys = ON");
       for (const p of v.value.pages) {
         await tx.exec(
-          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, created_at, updated_at, deleted_at, deleted_root_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          [p.id, p.parentId, p.position, p.title, p.icon, p.cover, p.kind, p.favorite ? 1 : 0, p.createdAt, p.updatedAt, p.deletedAt, p.deletedRootId],
+          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, full_width, created_at, updated_at, deleted_at, deleted_root_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [p.id, p.parentId, p.position, p.title, p.icon, p.cover, p.kind, p.favorite ? 1 : 0, p.fullWidth ? 1 : 0, p.createdAt, p.updatedAt, p.deletedAt, p.deletedRootId],
         );
         if (p.blocks.length) {
           const doc = new Y.Doc();
@@ -146,6 +155,7 @@ export async function restoreFromFiles(files: Map<string, Uint8Array>, target: {
         await indexPageLinksIn(tx, p.id, p.blocks); // las menciones vuelven a ser enlaces
       }
       await insertDatabases(tx, v.value.databases, v.value.reminders);
+      await insertTags(tx, v.value.tags);
     });
     return ok({ pages: v.value.pages.length, assets: v.value.assets.length });
   } catch (e) {

@@ -1,4 +1,5 @@
 import { UpdateNotice } from "./UpdateNotice";
+import { InlineAlert } from "../components/InlineAlert";
 import { ImportView } from "../import/ImportView";
 import { GlobalShortcutProvider, useGlobalShortcut } from "../capture/globalShortcut";
 import { QuickCaptureView } from "../capture/QuickCaptureView";
@@ -8,7 +9,18 @@ import { useTranslation } from "react-i18next";
 import type { PageNode } from "@vnote/core";
 import type { BackupService, InstanceLockHandle, RestoreSource, Workspace } from "@vnote/core";
 import { AppServicesProvider, useServices, type AppServices } from "./services";
+import { PageBody } from "../page/PageBody";
+import { AppErrorBoundary } from "../feedback/ErrorScreen";
+import { ToastProvider } from "../feedback/ToastContext";
 import { AppShell } from "../layout/AppShell";
+import { AppHeader } from "../layout/AppHeader";
+import { loadAppearance, applyAppearance, useStorageSync } from "../design/appearance";
+import { WelcomeScreen } from "../identity/WelcomeScreen";
+import { WorkspaceSwitcher } from "../sidebar/WorkspaceSwitcher";
+import { SidebarLinks } from "../sidebar/SidebarLinks";
+import { useDensity, rowHeightFor } from "../design/useDensity";
+import { detectPlatform } from "../design/platform";
+import { formatCombo, toAriaShortcut } from "../layout/formatCombo";
 import { ThemeProvider, useTheme, type PreferenceStore } from "../theme/theme";
 import { CommandPalette, type PaletteAction } from "../palette/CommandPalette";
 import { DatabasePage } from "../databases/DatabasePage";
@@ -41,7 +53,7 @@ export function App({ services, preferences, renderPageBody }: AppProps) {
   return (
     <ThemeProvider preferences={preferences}>
       <AppServicesProvider services={services}>
-        <Main renderPageBody={renderPageBody} preferences={preferences} />
+        <ToastProvider><AppErrorBoundary><Main renderPageBody={renderPageBody} preferences={preferences} /></AppErrorBoundary></ToastProvider>
       </AppServicesProvider>
     </ThemeProvider>
   );
@@ -129,12 +141,15 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
     return () => window.removeEventListener("keydown", onKey);
   }, [preferences]);
 
+  const bindings = loadBindings(preferences);
+  const shortcutOf = (id: string) => formatCombo(bindings[id] ?? null, detectPlatform());
+  const ariaOf = (id: string) => toAriaShortcut(bindings[id] ?? null, detectPlatform());
   const paletteActions: PaletteAction[] = [
-    { id: "page.new", label: t("shortcuts.pageNew"), run: () => actions.current["page.new"]?.() },
-    { id: "theme.toggle", label: t("shortcuts.themeToggle"), run: () => actions.current["theme.toggle"]?.() },
-    { id: "capture.open", label: t("shortcuts.captureOpen"), run: () => setCaptureOpen(true) },
+    { id: "page.new", label: t("shortcuts.pageNew"), run: () => actions.current["page.new"]?.(), shortcut: shortcutOf("page.new"), ariaShortcut: ariaOf("page.new") },
+    { id: "theme.toggle", label: t("shortcuts.themeToggle"), run: () => actions.current["theme.toggle"]?.(), shortcut: shortcutOf("theme.toggle"), ariaShortcut: ariaOf("theme.toggle") },
+    { id: "capture.open", label: t("shortcuts.captureOpen"), run: () => setCaptureOpen(true), shortcut: shortcutOf("capture.open"), ariaShortcut: ariaOf("capture.open") },
     { id: "settings.open", label: t("settings.title"), run: () => setView("settings") },
-  ];
+  ].map((a) => (a.shortcut ? a : { id: a.id, label: a.label, run: a.run }));
 
   // `t` cambia al cambiar de idioma; si openWorkspace dependiera de él, el arranque se repetiría y sacaría de la pantalla actual.
   const tRef = useRef(t);
@@ -175,65 +190,74 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
   useEffect(() => {
     void (async () => {
       const list = await workspaces.list();
-      if (!list.ok || list.value.length === 0) return setView("workspaces");
+      if (!list.ok || list.value.length === 0) { setNoWorkspaces(list.ok); return setView("workspaces"); }
       await openWorkspace((list.value.find((w) => w.isCaptureDefault) ?? list.value[0]!).id);
       // Antes de cualquier otra acción: resumen único de vencidos y tareas de hoy de todos los espacios (RF-12)
       if (center) { const s = await center.summary(); if (s.overdue.length + s.today.length > 0) setView("reminders"); }
     })();
   }, [workspaces, openWorkspace, center]);
 
+  useStorageSync(preferences);
+  useEffect(() => { applyAppearance(document.documentElement, loadAppearance(preferences)); }, [preferences]);
+  const [noWorkspaces, setNoWorkspaces] = useState(false);
+  const density = useDensity();
+  const searchCombo = formatCombo(loadBindings(preferences)["palette.open"] ?? null, detectPlatform());
   const sidebar = useMemo(
     () =>
       opened ? (
         <div className="flex h-full flex-col">
-          <div className="border-b p-2">
-            <p role="status" className="truncate text-sm font-semibold">{opened.workspace.name}</p>
-            <button type="button" onClick={() => setView("workspaces")} className="text-sm underline">{t("workspace.title")}</button>
+          <div className="border-b border-[var(--c-border)] p-2">
+            <WorkspaceSwitcher manager={workspaces} active={{ id: opened.workspace.id, name: opened.workspace.name }} onOpen={(id) => void openWorkspace(id)} onManage={() => setView("workspaces")} />
           </div>
           <div className="min-h-0 flex-1">
-            <Sidebar controller={opened.controller} onOpenTrash={() => setView("trash")} onPageOpened={() => setView("page")} />
+            <Sidebar controller={opened.controller} onOpenTrash={() => setView("trash")} onPageOpened={() => setView("page")} onSearch={() => setPaletteOpen(true)} searchCombo={searchCombo} rowHeight={rowHeightFor(density)} />
           </div>
-          <div className="flex flex-col border-t p-2 text-sm">
-            <button type="button" className="text-left" onClick={() => setCaptureOpen(true)}>{t("capture.open")}</button>
-            <button type="button" className="text-left" onClick={() => setView("graph")}>{t("graph.title")}</button>
-            {backup && <button type="button" className="text-left" onClick={() => setView("import")}>{t("import.title")}</button>}
-            {center && <button type="button" className="text-left" onClick={() => setView("reminders")}>{t("reminders.title")}</button>}
-            <button type="button" className="text-left" onClick={() => setView("settings")}>{t("app.settings")}</button>
-          </div>
-          {backup && (
-            <div className="flex flex-col border-t p-2 text-sm">
-              <button type="button" className="text-left" onClick={() => setView("backup")}>{t("app.backup")}</button>
-              <button type="button" className="text-left" onClick={() => { setRestoreSource(backup.createRestoreSource()); setView("restore"); }}>{t("app.restore")}</button>
-            </div>
-          )}
+          <SidebarLinks
+            groups={[
+              [
+                { id: "capture", label: t("capture.open"), icon: "inbox", onClick: () => setCaptureOpen(true) },
+                { id: "graph", label: t("graph.title"), icon: "graph", onClick: () => setView("graph") },
+                ...(backup ? [{ id: "import", label: t("import.title"), icon: "import" as const, onClick: () => setView("import") }] : []),
+                ...(center ? [{ id: "reminders", label: t("reminders.title"), icon: "reminder" as const, onClick: () => setView("reminders") }] : []),
+                { id: "settings", label: t("app.settings"), icon: "settings", onClick: () => setView("settings") },
+              ],
+              ...(backup ? [[
+                { id: "backup", label: t("app.backup"), icon: "backup" as const, onClick: () => setView("backup") },
+                { id: "restore", label: t("app.restore"), icon: "restore" as const, onClick: () => { setRestoreSource(backup.createRestoreSource()); setView("restore"); } },
+              ]] : []),
+            ]}
+          />
         </div>
       ) : view === "loading" ? (
         <div />
       ) : (
         <div className="p-2"><button type="button" onClick={() => setView("workspaces")}>{t("workspace.title")}</button></div>
       ),
-    [opened, t, view],
+    [opened, t, view, workspaces, openWorkspace, backup, center, density, searchCombo],
   );
 
   return (
     <GlobalShortcutProvider value={shortcutState}>
-    <AppShell sidebar={sidebar}>
+    <AppShell sidebar={sidebar} preferences={preferences} header={opened && view === "page" ? <AppHeader controller={opened.controller} now={() => clock.now()} onNavigate={(id) => { void opened.controller.select(id); setView("page"); }} /> : undefined}>
       {updates && <UpdateNotice check={updates.check} onDownload={updates.openDownload} />}
-      {error && <p role="alert" className="m-4 rounded border border-red-500 bg-red-50 p-2 text-red-900">{error}</p>}
+      {error && <InlineAlert tone="error">{error}</InlineAlert>}
       {view === "loading" && <p role="status" className="p-4 opacity-70">{t("app.loading")}</p>}
-      {view === "workspaces" && (
+      {view === "workspaces" && noWorkspaces && !opened && (
+        <WelcomeScreen
+          onCreate={(name) => void workspaces.create({ name }).then((r) => { if (r.ok) { setNoWorkspaces(false); void openWorkspace(r.value.id); } else setError(r.error.message); })}
+          {...(backup ? { onRestore: () => { setRestoreSource(backup.createRestoreSource()); setView("restore"); } } : {})}
+        />
+      )}
+      {view === "workspaces" && !(noWorkspaces && !opened) && (
         <WorkspaceManagerView manager={workspaces} activeId={opened?.workspace.id ?? null} onOpen={(id) => void openWorkspace(id)} onCreated={(w) => void openWorkspace(w.id)} {...(revealLocation ? { onRevealLocation: revealLocation } : {})} {...(pickFolder ? { pickFolder } : {})} />
       )}
-      {view === "workspaces" && !opened && backup && (
+      {view === "workspaces" && !opened && !noWorkspaces && backup && (
         <div className="px-4">
           <button type="button" onClick={() => { setRestoreSource(backup.createRestoreSource()); setView("restore"); }}>{t("app.restore")}</button>
         </div>
       )}
       {view === "locked" && lockedId && (
-        <div role="alert" className="m-4 flex flex-col gap-2 rounded border border-amber-500 bg-amber-50 p-3 text-amber-900">
-          <p>{t("workspace.lockedElsewhere")}</p>
-          <button type="button" className="self-start" onClick={() => void openWorkspace(lockedId)}>{t("workspace.retry")}</button>
-        </div>
+        <div className="m-4"><InlineAlert tone="warning" action={{ label: t("workspace.retry"), onClick: () => void openWorkspace(lockedId) }}>{t("workspace.lockedElsewhere")}</InlineAlert></div>
       )}
       {view === "reminders" && center && (
         <RemindersView center={center} activeWorkspaceId={opened?.workspace.id ?? null} onOpen={(wsId, pageId) => void (async () => {
@@ -273,6 +297,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
           onClose={() => setPaletteOpen(false)}
           onOpenPage={(id) => { void opened.controller.select(id); setView("page"); }}
           actions={paletteActions}
+          onCreatePage={(title) => { void opened.controller.createPage(null, title).then(() => setView("page")); }}
         />
       )}
       {captureOpen && (
@@ -301,6 +326,15 @@ function BackupPanelFor({ ws, workspaces, serviceFor, platform }: {
   return service ? <BackupPanel service={service} platform={platform} /> : null;
 }
 
+function findPage(nodes: readonly PageNode[], id: string): PageNode["page"] | null {
+  for (const n of nodes) {
+    if (n.page.id === id) return n.page;
+    const f = findPage(n.children, id);
+    if (f) return f;
+  }
+  return null;
+}
+
 function findKind(nodes: readonly { page: { id: string; kind: string }; children: readonly never[] }[] | readonly PageNode[], id: string): string | null {
   for (const n of nodes as readonly PageNode[]) {
     if (n.page.id === id) return n.page.kind;
@@ -315,6 +349,7 @@ function PageArea({ controller, workspace, renderPageBody, exporter }: { control
   const [exporting, setExporting] = useState<string | null>(null);
   if (!snap.selectedId) return <div className="p-8" />;
   const kind = findKind(snap.tree, snap.selectedId);
+  const fullWidth = findPage(snap.tree, snap.selectedId)?.fullWidth ?? false;
   const dialog = exporting && exporter ? (
     <ExportDialog key={exporting} controller={controller} pageId={exporting} assets={exporter.assetsFor(workspace.location)} runtime={exporter.runtime} onClose={() => setExporting(null)} />
   ) : null;
@@ -329,10 +364,10 @@ function PageArea({ controller, workspace, renderPageBody, exporter }: { control
     );
   }
   return (
-    <article className="mx-auto max-w-3xl p-6">
+    <PageBody fullWidth={fullWidth}>
       <PageHeader controller={controller} pageId={snap.selectedId} {...(onExport ? { onExport } : {})} />
       {renderPageBody?.(snap.selectedId, controller, workspace)}
       {dialog}
-    </article>
+    </PageBody>
   );
 }

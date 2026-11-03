@@ -1,7 +1,7 @@
 // T-265, T-266, T-283, T-284 (e2e real en Chrome): bases de datos y tableros kanban, con arrastre de ratón y persistencia.
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { Page } from "./cdp";
-import { clickButton, ensureSpace, setValue, startWeb, type Web } from "./webHarness";
+import { clickButton, clickTab, ensureSpace, setValue, startWeb, type Web } from "./webHarness";
 
 let web: Web;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -62,7 +62,7 @@ describe("base de datos en la aplicación real", () => {
     await setValue(p, 'select[aria-label="Tipo de vista nueva"]', "gallery");
     await clickButton(p, "Nueva vista");
     await p.waitFor("document.querySelector('article[aria-label=\"Café\"]')", 8000);
-    await p.eval("[...document.querySelectorAll('[role=tab]')].find(t => t.innerText.trim() === 'Tabla').click()");
+    await clickTab(p, "Tabla");
     await p.waitFor("[...document.querySelectorAll('[role=tab]')].some(t => t.innerText.trim() === 'Tabla' && t.getAttribute('aria-selected') === 'true')");
     await p.close();
   }, 60000);
@@ -95,7 +95,7 @@ describe("fórmulas y filtros en la aplicación real", () => {
     await p.waitFor("document.querySelector('aside nav')", 20000);
     await p.click("[role=treeitem]");
     await p.waitFor("document.querySelector('[role=tab]')", 15000);
-    await p.eval("[...document.querySelectorAll('[role=tab]')].find(t => t.innerText.trim() === 'Tabla').click()");
+    await clickTab(p, "Tabla");
     await clickButton(p, "Filtros y orden");
     await p.waitFor("document.querySelector('[role=region][aria-label=\"Filtros y orden\"]')");
     await clickButton(p, "Añadir filtro");
@@ -162,7 +162,7 @@ describe("calendario y línea de tiempo en la aplicación real", () => {
     await sleep(500);
     await newView(p, "calendar");
     await p.waitFor("document.querySelector('[role=grid]')");
-    const cellOf = (day: number) => `[role=gridcell]:not([class*="opacity-50"])[aria-label^="${day} de"]`;
+    const cellOf = (day: number) => `[role=gridcell]:not([data-outside])[aria-label^="${day} de"]`;
     await p.waitFor(`document.querySelector('${cellOf(10)} button')`, 8000);
     const from = await p.center(`${cellOf(10)} button`);
     const to = await p.center(cellOf(14));
@@ -175,7 +175,7 @@ describe("calendario y línea de tiempo en la aplicación real", () => {
   it("T-275/T-276: la barra se mueve arrastrándola y se alarga con el borde derecho", async () => {
     const p = await web.open();
     await openFirst(p);
-    await p.eval("[...document.querySelectorAll('[role=tab]')].find(t => t.innerText.trim() === 'Calendario').click()");
+    await clickTab(p, "Calendario");
     await newView(p, "timeline");
     await p.waitFor("document.querySelector('button[aria-label^=\"Café:\"]')", 8000);
     const label = () => p.eval<string>(`document.querySelector('button[aria-label^="Café:"]').getAttribute('aria-label')`);
@@ -193,7 +193,7 @@ describe("calendario y línea de tiempo en la aplicación real", () => {
     await p.waitFor("document.querySelector('aside nav')", 20000);
     await p.click("[role=treeitem]");
     await p.waitFor("document.querySelector('[role=tab]')", 15000);
-    await p.eval("[...document.querySelectorAll('[role=tab]')].find(t => t.innerText.trim() === 'Línea de tiempo').click()");
+    await clickTab(p, "Línea de tiempo");
     await p.waitFor(`document.querySelector('button[aria-label="Café: ${ym}-16 → ${ym}-19"]')`, 8000);
     await p.close();
   }, 90000);

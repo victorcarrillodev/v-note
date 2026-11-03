@@ -1,7 +1,11 @@
 import {
-  BoardService, DatabaseService, PageService, TaskService, ViewService, appError, err,
+  BoardService, moveCardWithUndo, DatabaseService, PageService, TaskService, ViewService, appError, err,
   type Clock, type DatabaseInfo, type Property, type PropertyType, type Result, type SqlStore, type View, type ViewConfig, type ViewResult, type ViewType,
 } from "@vnote/core";
+
+const withKeyword = (r: ViewResult, keyword: string): ViewResult =>
+  keyword.trim() === "" ? r : { ...r, rows: r.rows.filter((x) => matchesKeyword(x, keyword)), groups: r.groups ? r.groups.map((g) => ({ ...g, rows: g.rows.filter((x) => matchesKeyword(x, keyword)) })) : null };
+import { matchesKeyword } from "./toolbar";
 
 export type DatabaseSnapshot = {
   database: DatabaseInfo | null;
@@ -9,6 +13,8 @@ export type DatabaseSnapshot = {
   views: View[];
   activeViewId: string | null;
   result: ViewResult | null;
+  /** Palabra clave de la barra: filtra por título y texto sin tocar la configuración guardada de la vista. */
+  keyword: string;
 };
 
 /** Lógica de interfaz de una base de datos: mantiene el estado visible y delega TODO el dominio en el núcleo. */
@@ -19,7 +25,7 @@ export class DatabaseController {
   private tasks: TaskService;
   private pages: PageService;
   private listeners = new Set<() => void>();
-  private snapshot: DatabaseSnapshot = { database: null, properties: [], views: [], activeViewId: null, result: null };
+  private snapshot: DatabaseSnapshot = { database: null, properties: [], views: [], activeViewId: null, result: null, keyword: "" };
   private seq = 0;
 
   constructor(store: SqlStore, clock: Clock, private dbId: string) {
@@ -60,7 +66,8 @@ export class DatabaseController {
     const active = views.find((v) => v.id === this.snapshot.activeViewId)?.id ?? views[0]?.id ?? null;
     const run = active ? await this.views.run(this.dbs, active) : null;
     if (mine !== this.seq) return;
-    this.set({ database: database.ok ? database.value : null, properties, views, activeViewId: active, result: run && run.ok ? run.value : null });
+    const result = run && run.ok ? withKeyword(run.value, this.snapshot.keyword) : null;
+    this.set({ database: database.ok ? database.value : null, properties, views, activeViewId: active, result });
   }
 
   /** Tras cada cambio: se relee el estado y se mantiene al día el índice de tareas de esta base (tarjetas y filas con fecha). */
@@ -73,9 +80,10 @@ export class DatabaseController {
   /** Tareas del espacio (casillas, tarjetas y filas) ya indexadas. */
   listTasks() { return this.tasks.list(); }
 
+  async setKeyword(keyword: string): Promise<void> { this.set({ keyword }); await this.refresh(); }
   async setActiveView(id: string): Promise<void> { this.set({ activeViewId: id }); await this.refresh(); }
 
-  async addRow(title = ""): Promise<Result<{ pageId: string }>> { return this.after(await this.dbs.addRow(this.dbId, { title })); }
+  async addRow(title = "", values?: Record<string, unknown>): Promise<Result<{ pageId: string }>> { return this.after(await this.dbs.addRow(this.dbId, { title, ...(values ? { values: values as never } : {}) })); }
   async setTitle(pageId: string, title: string) { return this.after(await this.pages.rename(pageId, title)); }
   async setCell(pageId: string, propId: string, raw: unknown) { return this.after(await this.dbs.setCell(this.dbId, pageId, propId, raw)); }
   async removeRow(pageId: string) { return this.after(await this.dbs.removeFromDatabase(this.dbId, pageId)); }
@@ -110,6 +118,12 @@ export class DatabaseController {
   // ---- Tablero (kanban) ----
   async addCard(title: string, columnId?: string) { return this.after(await this.boards.createCard(this.dbId, { title, ...(columnId ? { columnId } : {}) })); }
   async moveCard(pageId: string, columnId: string, afterPageId?: string | null) { return this.after(await this.boards.moveCard(this.dbId, pageId, columnId, afterPageId)); }
+  /** Mover tarjeta ofreciendo la operación inversa (RF-11.1). */
+  async moveCardUndoable(pageId: string, columnId: string, afterPageId?: string | null): Promise<Result<{ undo: () => Promise<void> }>> {
+    const r = await moveCardWithUndo(this.boards, this.dbId, pageId, columnId, afterPageId);
+    await this.refresh();
+    return r.ok ? { ok: true, value: { undo: async () => { await r.value.undo(); await this.refresh(); } } } : r;
+  }
   async addColumn(name: string) { return this.after(await this.boards.addColumn(this.dbId, name)); }
   async renameColumn(id: string, name: string) { return this.after(await this.boards.renameColumn(this.dbId, id, name)); }
   async deleteColumn(id: string, opts: { moveTo?: string } = {}) { return this.after(await this.boards.deleteColumn(this.dbId, id, opts)); }

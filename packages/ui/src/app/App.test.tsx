@@ -26,7 +26,8 @@ async function mount(opts: { existing?: string[]; lng?: string } = {}) {
 describe("App", () => {
   it("primer inicio sin espacios: ofrece crear el primero", async () => {
     const { user } = await mount();
-    expect(await screen.findByRole("heading", { name: "Espacios de trabajo" })).toBeInTheDocument();
+    // La pantalla de bienvenida (spec 002, RF-12.2) sustituye al gestor de espacios en el primer inicio.
+    expect(await screen.findByRole("heading", { name: "Tu cuaderno de notas, solo tuyo" })).toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "Nombre del espacio" }), "Personal");
     await user.click(screen.getByRole("button", { name: "Crear espacio" }));
     // al crear el primero se abre solo: aparece la barra lateral con su mensaje de vacío
@@ -57,9 +58,10 @@ describe("App", () => {
   });
   it("un botón lleva a la gestión de espacios y se puede cambiar de espacio", async () => {
     const { user } = await mount({ existing: ["Personal", "Trabajo"] });
-    await user.click(await screen.findByRole("button", { name: "Espacios de trabajo" }));
+    await user.click(await screen.findByRole("button", { name: /Espacio activo/ }));
+    await user.click(await screen.findByRole("menuitem", { name: "Gestionar espacios" }));
     await user.click(await screen.findByRole("button", { name: "Abrir Trabajo" }));
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Trabajo"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Espacio activo: Trabajo" })).toBeInTheDocument());
   });
   it("si un espacio no se puede abrir muestra el error sin quedarse en blanco", async () => {
     const clock = new FakeClock(1);

@@ -125,6 +125,15 @@ describe("respaldar ahora y estado (T-207, T-208)", () => {
 });
 
 describe("avisos de fallo (T-209, T-210)", () => {
+  it("el aviso de fallo usa el sistema unificado: ícono de gravedad, causa y reintento en el mismo aviso (U-134, RF-11.2, RF-14.9)", async () => {
+    const { user, gh } = await setup();
+    await fillAndConnect(user, gh);
+    gh.offline = true;
+    await user.click(await screen.findByRole("button", { name: "Respaldar ahora" }));
+    const alert = await screen.findByRole("alert");
+    expect(alert.querySelector("svg")).not.toBeNull();
+    expect(within(alert).getByRole("button", { name: "Reintentar" })).toBeInTheDocument();
+  });
   it("muestra la causa con un botón para reintentar, que funciona", async () => {
     const { user, gh } = await setup();
     await fillAndConnect(user, gh);

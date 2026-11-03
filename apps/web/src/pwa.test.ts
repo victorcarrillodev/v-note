@@ -36,3 +36,12 @@ describe("manifiesto de la PWA", () => {
     }
   });
 });
+
+describe("colores del manifiesto (spec 002)", () => {
+  it("usan el acento y el lienzo del sistema de diseño, no valores sueltos", async () => {
+    const { colors } = await import("../../../packages/ui/src/design/tokens");
+    const m = buildManifest(brand);
+    expect(m.theme_color).toBe(colors.accent.light);
+    expect(m.background_color).toBe(colors.canvas.light);
+  });
+});

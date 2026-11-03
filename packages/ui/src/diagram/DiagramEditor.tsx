@@ -2,23 +2,21 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { Background, ConnectionMode, Controls, Handle, MarkerType, NodeResizer, Position, ReactFlow, ReactFlowProvider, useNodesState, useReactFlow, type Edge, type Node, type NodeProps } from "@xyflow/react";
 import { useTranslation } from "react-i18next";
+import { DIAGRAM_COLORS, fillFor } from "../design/diagramPalette";
 import {
   DiagramHistory, SHAPES, addEdge, addNode, centerOnEdgeEnd, deleteEdge, deleteNode, fitToView, moveNode, parseDiagram, resizeNode, serializeDiagram,
   setEdgeLabel, setNodeColor, setNodeText, type DNode, type Diagram, type Shape,
 } from "@vnote/core";
 
-export const COLORS: { id: string; hex: string }[] = [
-  { id: "blue", hex: "#dbeafe" }, { id: "green", hex: "#dcfce7" }, { id: "yellow", hex: "#fef9c3" }, { id: "red", hex: "#fee2e2" },
-  { id: "purple", hex: "#ede9fe" }, { id: "orange", hex: "#ffedd5" }, { id: "gray", hex: "#e5e7eb" }, { id: "white", hex: "#ffffff" },
-];
+export const COLORS = DIAGRAM_COLORS;
 
 type NodeData = { shape: Shape; text: string; color: string; label: string; onResize: (id: string, x: number, y: number, w: number, h: number) => void };
 
 const shapeStyle = (shape: Shape, color: string): CSSProperties => {
-  const base: CSSProperties = { background: color, border: "2px solid #334155", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 6, boxSizing: "border-box", overflow: "hidden", fontSize: 13, color: "#0f172a" };
+  const base: CSSProperties = { background: fillFor(color), border: "2px solid var(--c-text)", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 6, boxSizing: "border-box", overflow: "hidden", fontSize: 13, color: "var(--c-text)" };
   switch (shape) {
     case "terminator": return { ...base, borderRadius: 999 };
-    case "decision": return { ...base, clipPath: "polygon(50% 0, 100% 50%, 50% 100%, 0 50%)", border: "none", boxShadow: "inset 0 0 0 2px #334155" };
+    case "decision": return { ...base, clipPath: "polygon(50% 0, 100% 50%, 50% 100%, 0 50%)", border: "none", boxShadow: "inset 0 0 0 2px var(--c-text)" };
     case "io": return { ...base, transform: "skewX(-15deg)" };
     case "note": return { ...base, borderRadius: 4, borderStyle: "dashed" };
     default: return { ...base, borderRadius: 4 };

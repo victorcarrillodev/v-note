@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import { EmptyState } from "../empty/EmptyState";
+import { InlineAlert } from "../components/InlineAlert";
 import { useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import type { SnoozeOption, Task } from "@vnote/core";
+import { useUndoToast } from "../feedback/useUndoToast";
 import type { ReminderCenter, Summary, SummaryItem } from "./reminderCenter";
 
 /** Recordatorios: vencidos de todos los espacios, tareas de hoy y agenda del espacio activo (RF-11, RF-12). */
@@ -9,6 +12,8 @@ export function RemindersView({ center, activeWorkspaceId, onOpen }: { center: R
   const { t } = useTranslation();
   const snap = useSyncExternalStore(center.subscribe, center.getSnapshot, center.getSnapshot);
   const [summary, setSummary] = useState<Summary | null>(null);
+  const announce = useUndoToast();
+  const complete = (wsId: string, taskId: string) => void center.completeUndoable(wsId, taskId).then((undo) => { if (undo) announce("task-done", t("toast.taskDone"), undo); });
   const [agenda, setAgenda] = useState<Task[]>([]);
 
   const reload = useCallback(async () => {
@@ -24,11 +29,9 @@ export function RemindersView({ center, activeWorkspaceId, onOpen }: { center: R
     <section aria-label={t("reminders.title")} className="flex flex-col gap-4 p-4">
       <h1 className="text-xl font-semibold">{t("reminders.title")}</h1>
       {snap.permissionWarning && (
-        <p role="alert" className="rounded border border-amber-500 bg-amber-50 p-2 text-sm text-amber-900">
-          {t("reminders.permissionDenied")} <button type="button" onClick={() => center.dismissPermissionWarning()}>{t("reminders.dismissWarning")}</button>
-        </p>
+        <InlineAlert tone="warning" action={{ label: t("reminders.dismissWarning"), onClick: () => center.dismissPermissionWarning() }}>{t("reminders.permissionDenied")}</InlineAlert>
       )}
-      {empty && <p>{t("reminders.nothing")}</p>}
+      {empty && <EmptyState illustration="reminders" title={t("reminders.nothing")} />}
 
       {summary.overdue.length > 0 && (
         <ul aria-label={t("reminders.overdue")} className="flex flex-col divide-y rounded border">
@@ -39,7 +42,7 @@ export function RemindersView({ center, activeWorkspaceId, onOpen }: { center: R
                 <small className="opacity-75">{o.workspace.name} · {when(o)}{o.missed > 0 ? ` · ${t("reminders.missed", { count: o.missed })}` : ""}</small>
               </div>
               <button type="button" aria-label={t("reminders.open", { title: o.task.title })} onClick={() => onOpen(o.workspace.id, o.task.pageId)}>{t("reminders.openShort")}</button>
-              <button type="button" aria-label={t("reminders.markDone", { title: o.task.title })} onClick={() => void center.complete(o.workspace.id, o.task.id)}>{t("reminders.done")}</button>
+              <button type="button" aria-label={t("reminders.markDone", { title: o.task.title })} onClick={() => complete(o.workspace.id, o.task.id)}>{t("reminders.done")}</button>
               <select aria-label={t("reminders.snooze", { title: o.task.title })} value="" onChange={(e) => e.target.value && void center.snooze(o.workspace.id, o.task.id, e.target.value as SnoozeOption)}>
                 <option value="">{t("reminders.snoozeLabel")}</option>
                 <option value="10m">{t("reminders.snooze10")}</option>
@@ -58,7 +61,7 @@ export function RemindersView({ center, activeWorkspaceId, onOpen }: { center: R
             <li key={`${o.workspace.id}:${o.task.id}`} className="flex items-center gap-2 p-2">
               <span className="flex-1"><span>{o.task.title}</span> <small className="opacity-75">· {o.workspace.name}</small></span>
               <button type="button" aria-label={t("reminders.open", { title: o.task.title })} onClick={() => onOpen(o.workspace.id, o.task.pageId)}>{t("reminders.openShort")}</button>
-              <button type="button" aria-label={t("reminders.markDone", { title: o.task.title })} onClick={() => void center.complete(o.workspace.id, o.task.id)}>{t("reminders.done")}</button>
+              <button type="button" aria-label={t("reminders.markDone", { title: o.task.title })} onClick={() => complete(o.workspace.id, o.task.id)}>{t("reminders.done")}</button>
             </li>
           ))}
         </ul>

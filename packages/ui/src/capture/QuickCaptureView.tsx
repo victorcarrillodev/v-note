@@ -85,9 +85,9 @@ export function QuickCaptureView({ manager, clock, onSaved, onClose }: { manager
     <section aria-label={t("capture.title")} className="flex flex-col gap-2 p-4">
       <h1 className="text-lg font-semibold">{t("capture.title")}</h1>
       <p className="text-sm opacity-70">{t("capture.destination", { space: state.workspace.name })}</p>
-      {recovered && <p role="status" className="rounded border border-amber-500 bg-amber-50 p-1 text-sm text-amber-900">{t("capture.recovered")}</p>}
-      {message && <p role="status" className="rounded border border-green-600 bg-green-50 p-1 text-sm text-green-900">{message}</p>}
-      {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+      {recovered && <p role="status" className="rounded border border-[var(--c-warning)] bg-[var(--chip-warning-bg)] p-1 text-sm text-[var(--chip-warning-fg)]">{t("capture.recovered")}</p>}
+      {message && <p role="status" className="rounded border border-[var(--c-success)] bg-[var(--chip-success-bg)] p-1 text-sm text-[var(--chip-success-fg)]">{message}</p>}
+      {error && <p role="alert" className="text-sm text-[var(--c-danger)]">{error}</p>}
       <textarea
         ref={area} aria-label={t("capture.noteLabel")} value={text} rows={6} className="w-full rounded border p-2"
         onChange={(e) => onChange(e.target.value)}

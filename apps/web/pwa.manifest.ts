@@ -1,3 +1,4 @@
+import { colors } from "../../packages/ui/src/design/tokens";
 export type Brand = { name: string; appId: string };
 
 type Icon = { src: string; sizes: string; type: string; purpose?: string };
@@ -16,8 +17,8 @@ export function buildManifest(brand: Brand): Manifest {
     display: "standalone",
     start_url: "/",
     scope: "/",
-    theme_color: "#2563eb",
-    background_color: "#ffffff",
+    theme_color: colors.accent.light,
+    background_color: colors.canvas.light,
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },

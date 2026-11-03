@@ -91,6 +91,35 @@ describe("accesibilidad (T-145, RNF-9)", () => {
     await p.close();
   }, 120000);
 
+  it("axe: editor, estados vacíos y diálogos sin infracciones graves en claro y oscuro (U-181)", async () => {
+    const p = await Page.open(CDP_PORT, URL_);
+    await p.waitFor(`document.querySelector('${SPACE_INPUT}') || document.querySelector('aside nav')`, 20000);
+    if (await p.eval<boolean>(`!!document.querySelector('${SPACE_INPUT}')`)) {
+      await p.eval(`(() => { const i = document.querySelector('${SPACE_INPUT}'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'Personal'); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      await clickText(p, "Crear espacio");
+    }
+    await p.waitFor("document.querySelector('aside nav')", 20000);
+    const theme = async (t: "light" | "dark") => { await p.eval(`document.documentElement.setAttribute('data-theme', '${t}')`); await sleep(250); };
+
+    for (const t of ["light", "dark"] as const) { await theme(t); expect(await audit(p, `shell vacío ${t}`)).toEqual([]); }
+
+    await clickText(p, "Papelera"); await p.waitFor("document.body.innerText.includes('Papelera')");
+    for (const t of ["light", "dark"] as const) { await theme(t); expect(await audit(p, `papelera vacía ${t}`)).toEqual([]); }
+
+    await clickText(p, "Nueva página");
+    await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+    await p.click('[aria-label="Título de la página"]'); await p.typeText("Auditoría"); await p.key("Enter", "Enter", 13);
+    await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
+    await p.eval("document.querySelector('.bn-editor').focus()"); await sleep(300);
+    await p.typeText("Texto para la auditoría"); await sleep(500);
+    for (const t of ["light", "dark"] as const) { await theme(t); expect(await audit(p, `editor ${t}`)).toEqual([]); }
+
+    await clickText(p, "Exportar"); await p.waitFor("document.querySelector('[role=alertdialog]')");
+    for (const t of ["light", "dark"] as const) { await theme(t); expect(await audit(p, `exportar ${t}`, true)).toEqual([]); }
+    await p.key("Escape", "Escape", 27);
+    await p.close();
+  }, 120000);
+
   it("teclado: abrir la paleta, buscar y abrir una página sin usar el ratón; el foco siempre es visible y navegable", async () => {
     const p = await Page.open(CDP_PORT, URL_);
     await p.waitFor(`document.querySelector('${SPACE_INPUT}') || document.querySelector('aside nav')`, 20000);

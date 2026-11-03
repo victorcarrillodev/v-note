@@ -17,20 +17,20 @@ export function MentionView({ pageId, title }: { pageId: string; title: string }
   if (state === "ok") {
     return (
       <span contentEditable={false} data-mention={pageId} data-state="ok">
-        <button type="button" className={`${base} bg-blue-50 text-blue-800 underline`} onClick={() => api?.open(pageId)}>{`@${name}`}</button>
+        <button type="button" className={`${base} bg-[var(--chip-info-bg)] text-[var(--chip-info-fg)] underline`} onClick={() => api?.open(pageId)}>{`@${name}`}</button>
       </span>
     );
   }
   if (state === "trashed") {
     return (
-      <span contentEditable={false} data-mention={pageId} data-state="trashed" className={`${base} bg-amber-50 text-amber-900`}>
+      <span contentEditable={false} data-mention={pageId} data-state="trashed" className={`${base} bg-[var(--chip-warning-bg)] text-[var(--chip-warning-fg)]`}>
         <span>{`@${name} `}</span><span>{t("links.inTrash")}</span>{" "}
         <button type="button" className="underline" onClick={() => void api?.restore(pageId).then(load)}>{t("links.restore")}</button>
       </span>
     );
   }
   return (
-    <span contentEditable={false} data-mention={pageId} data-state="missing" className={`${base} bg-red-50 text-red-900 line-through`} title={t("links.broken")}>
+    <span contentEditable={false} data-mention={pageId} data-state="missing" className={`${base} bg-[var(--chip-error-bg)] text-[var(--c-danger)] line-through`} title={t("links.broken")}>
       {`@${name}`}<span className="sr-only">{` ${t("links.broken")}`}</span>
     </span>
   );

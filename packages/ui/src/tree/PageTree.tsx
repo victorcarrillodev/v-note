@@ -5,6 +5,9 @@ import { useTranslation } from "react-i18next";
 import { isUntitled, type PageNode } from "@vnote/core";
 import { flattenTree, type TreeRow } from "./flatten";
 import { dropTarget, zoneAt, type DropTarget, type Zone } from "./dropTarget";
+import { Icon } from "../design/Icon";
+import { treeIndent } from "../layout/treeIndent";
+import type { IconName } from "../design/iconMap";
 
 export type PageTreeProps = {
   nodes: readonly PageNode[];
@@ -17,9 +20,11 @@ export type PageTreeProps = {
   /** Alto del área desplazable en píxeles (por defecto llena el contenedor). */
   height?: number;
   rowHeight?: number;
+  /** Acción de la fila (aparece al pasar el cursor o con foco, sin mover el texto): crear una subpágina. */
+  onCreateChild?: (parentId: string) => void;
 };
 
-export function PageTree({ nodes, expanded, selectedId, onSelect, onToggle, onMove, height = 600, rowHeight = 32 }: PageTreeProps) {
+export function PageTree({ nodes, expanded, selectedId, onSelect, onToggle, onMove, onCreateChild, height = 600, rowHeight = 32 }: PageTreeProps) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
   const rows = flattenTree(nodes, expanded);
@@ -114,6 +119,7 @@ export function PageTree({ nodes, expanded, selectedId, onSelect, onToggle, onMo
               onSelect={() => onSelect(id)}
               onToggle={() => onToggle(id)}
               toggleLabel={t("sidebar.toggleSubpages", { title: title(r) })}
+              {...(onCreateChild ? { onCreateChild: () => onCreateChild(id), createLabel: t("sidebar.newSubpageIn", { title: title(r) }) } : {})}
             />
           );
         })}
@@ -123,15 +129,17 @@ export function PageTree({ nodes, expanded, selectedId, onSelect, onToggle, onMo
   );
 }
 
-function Row({ row: r, label, selected, rowHeight, top, draggable, hintZone, onSelect, onToggle, toggleLabel }: {
+const KIND_ICON: Record<string, IconName> = { note: "note", database: "database", board: "board" };
+
+function Row({ row: r, label, selected, rowHeight, top, draggable, hintZone, onSelect, onToggle, toggleLabel, onCreateChild, createLabel }: {
   row: TreeRow; label: string; selected: boolean; rowHeight: number; top: number; draggable: boolean; hintZone: Zone | null;
-  onSelect: () => void; onToggle: () => void; toggleLabel: string;
+  onSelect: () => void; onToggle: () => void; toggleLabel: string; onCreateChild?: () => void; createLabel?: string;
 }) {
   const id = r.node.page.id;
   const drag = useDraggable({ id, disabled: !draggable });
   const drop = useDroppable({ id });
   const setRef = (el: HTMLElement | null) => { drag.setNodeRef(el); drop.setNodeRef(el); };
-  const marker = hintZone === "before" ? "inset 0 2px 0 0 var(--accent, #2563eb)" : hintZone === "after" ? "inset 0 -2px 0 0 var(--accent, #2563eb)" : hintZone === "inside" ? "inset 0 0 0 2px var(--accent, #2563eb)" : undefined;
+  const marker = hintZone === "before" ? "inset 0 2px 0 0 var(--c-accent)" : hintZone === "after" ? "inset 0 -2px 0 0 var(--c-accent)" : hintZone === "inside" ? "inset 0 0 0 2px var(--c-accent)" : undefined;
   return (
     <div
       ref={setRef}
@@ -143,19 +151,26 @@ function Row({ row: r, label, selected, rowHeight, top, draggable, hintZone, onS
       {...(r.hasChildren ? { "aria-expanded": r.expanded } : {})}
       {...(draggable ? drag.listeners : {})}
       onClick={onSelect}
-      className={`flex cursor-pointer items-center gap-1 rounded pr-2 hover:bg-[var(--hover)] ${selected ? "bg-[var(--selected)]" : ""} ${drag.isDragging ? "opacity-50" : ""}`}
+      className={`group flex cursor-pointer items-center gap-1 rounded border-l-2 pr-8 text-[length:var(--text-ui-small-size)] hover:bg-[var(--c-raised)] ${selected ? "border-[var(--c-accent)] bg-[var(--c-raised)] font-medium" : "border-transparent"} ${drag.isDragging ? "opacity-50" : ""}`}
       // `top` y no `transform`: dnd-kit mide los destinos ignorando transformaciones CSS.
-      style={{ position: "absolute", top, left: 0, width: "100%", height: rowHeight, paddingLeft: 8 + r.depth * 16, boxShadow: marker, touchAction: "none" }}
+      style={{ position: "absolute", top, left: 0, width: "100%", height: rowHeight, paddingLeft: 6 + treeIndent(r.depth), boxShadow: marker, touchAction: "none" }}
     >
       {r.hasChildren ? (
-        <button type="button" tabIndex={-1} aria-label={toggleLabel} onClick={(e) => { e.stopPropagation(); onToggle(); }} className="w-5 shrink-0">
-          <span aria-hidden="true">{r.expanded ? "▾" : "▸"}</span>
+        <button type="button" tabIndex={-1} aria-label={toggleLabel} onClick={(e) => { e.stopPropagation(); onToggle(); }} className="flex w-5 shrink-0 items-center justify-center text-[var(--c-text-muted)]">
+          <Icon name={r.expanded ? "collapse" : "expand"} size={14} />
         </button>
       ) : (
         <span className="w-5 shrink-0" aria-hidden="true" />
       )}
-      {r.node.page.icon ? <span aria-hidden="true">{r.node.page.icon}</span> : null}
-      <span className="truncate" aria-hidden="true">{label}</span>
+      {r.node.page.icon ? <span aria-hidden="true">{r.node.page.icon}</span> : <span className="text-[var(--c-text-muted)]"><Icon name={KIND_ICON[r.node.page.kind] ?? "note"} /></span>}
+      <span data-row-title className="truncate" title={label} aria-hidden="true">{label}</span>
+      {onCreateChild && (
+        <span className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-100 focus-within:opacity-100 group-hover:opacity-100">
+          <button type="button" aria-label={createLabel} onClick={(e) => { e.stopPropagation(); onCreateChild(); }} className="inline-flex h-6 w-6 items-center justify-center rounded text-[var(--c-text-muted)] hover:bg-[var(--c-card)] hover:text-[var(--c-text)]">
+            <Icon name="create" />
+          </button>
+        </span>
+      )}
     </div>
   );
 }

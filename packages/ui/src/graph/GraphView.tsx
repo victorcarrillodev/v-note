@@ -1,3 +1,4 @@
+import { readTokens, GRAPH_TOKENS } from "../design/canvasColors";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { GraphData, PageKind, Positions } from "@vnote/core";
@@ -5,7 +6,6 @@ import type { WorkspaceController } from "../workspace/controller";
 import { computeLayout } from "./layoutRunner";
 import { connections, fitTransform, hitNode, nodeRadius, panBy, toScreen, toWorld, zoomAt, type Pt, type Transform } from "./graphGeometry";
 
-const KIND_COLOR: Record<PageKind, string> = { note: "#3b82f6", board: "#16a34a", database: "#f97316" };
 type Scope = "local" | "all";
 
 /** Vista de grafo (RF-7): páginas como nodos y enlaces como conexiones, dibujados en canvas con zoom y arrastre. */
@@ -69,14 +69,15 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size.w, size.h);
-    const text = getComputedStyle(c).color || "#111";
+    const col = readTokens(c, GRAPH_TOKENS);
+    const text = col.text;
     data.edges.forEach((e, i) => {
       const a = positions.get(e.from), b = positions.get(e.to);
       if (!a || !b) return;
       const sa = toScreen(tf, a), sb = toScreen(tf, b);
       const on = highlight?.edges.includes(i) ?? false;
       ctx.beginPath(); ctx.moveTo(sa.x, sa.y); ctx.lineTo(sb.x, sb.y);
-      ctx.strokeStyle = on ? "#2563eb" : "#94a3b8"; ctx.globalAlpha = highlight && !on ? 0.15 : on ? 1 : 0.6; ctx.lineWidth = on ? 2 : 1; ctx.stroke();
+      ctx.strokeStyle = on ? col.edgeOn : col.edge; ctx.globalAlpha = highlight && !on ? 0.15 : on ? 1 : 0.6; ctx.lineWidth = on ? 2 : 1; ctx.stroke();
     });
     ctx.globalAlpha = 1;
     for (const n of data.nodes) {
@@ -88,8 +89,8 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
       const dim = highlight && !highlight.nodes.has(n.id);
       ctx.globalAlpha = dim ? 0.2 : 1;
       ctx.beginPath(); ctx.arc(s.x, s.y, Math.max(2, r), 0, Math.PI * 2);
-      ctx.fillStyle = n.trashed ? "#9ca3af" : KIND_COLOR[n.kind]; ctx.fill();
-      if (n.id === selected) { ctx.lineWidth = 3; ctx.strokeStyle = "#111827"; ctx.stroke(); }
+      ctx.fillStyle = n.trashed ? col.trashed : col[n.kind]; ctx.fill();
+      if (n.id === selected) { ctx.lineWidth = 3; ctx.strokeStyle = col.selected; ctx.stroke(); }
       if (tf.k >= 1.2 || highlight?.nodes.has(n.id) || n.id === currentPageId) {
         ctx.fillStyle = text; ctx.font = "12px sans-serif"; ctx.textAlign = "center";
         ctx.fillText(n.title.trim() || t("app.untitled"), s.x, s.y + Math.max(2, r) + 12);
@@ -187,7 +188,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
       <div ref={wrap} className={!busy && data && data.nodes.length > 0 && data.hasLinks ? "" : "hidden"}>
         <canvas
           ref={canvas} data-testid="graph-canvas" role="img" aria-label={t("graph.canvas", { nodes: data?.nodes.length ?? 0, edges: data?.edges.length ?? 0 })}
-          style={{ width: size.w, height: size.h, touchAction: "none", border: "1px solid #94a3b8", borderRadius: 6, cursor: "grab" }}
+          className="rounded-md border border-[var(--c-border-control)]" style={{ width: size.w, height: size.h, touchAction: "none", cursor: "grab" }}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
           onDoubleClick={(e) => { if (!data) return; const r = canvas.current!.getBoundingClientRect(); const hit = hitNode(data, positions, tf, { x: e.clientX - r.left, y: e.clientY - r.top }); if (hit) onOpen(hit); }}
         />

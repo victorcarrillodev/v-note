@@ -90,7 +90,7 @@ describe("restauración en la aplicación", () => {
   });
   it("primer inicio sin espacios: la pantalla inicial ofrece «Restaurar desde GitHub» (equipo nuevo)", async () => {
     const { user } = await mount({ existing: false });
-    expect(await screen.findByRole("heading", { name: "Espacios de trabajo" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Tu cuaderno de notas, solo tuyo" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Restaurar desde GitHub" }));
     expect(await screen.findByLabelText("Token de GitHub")).toBeInTheDocument();
   });

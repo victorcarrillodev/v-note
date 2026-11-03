@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
+import { EmptyState } from "../empty/EmptyState";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "react-i18next";
 import type { Property } from "@vnote/core";
+import { Icon } from "../design/Icon";
 import { CellEditor } from "./cells";
 import type { DatabaseController } from "./databaseController";
 import { useDatabase } from "./useDatabase";
@@ -9,7 +11,7 @@ import { useDatabase } from "./useDatabase";
 const ROW_H = 40;
 
 /** Tabla virtualizada: solo se pintan las filas visibles (RNF-11). */
-export function TableView({ controller, height = 480, onOpenRow }: { controller: DatabaseController; height?: number; onOpenRow?: (pageId: string) => void }) {
+export function TableView({ controller, height = 480, onOpenRow, onNewProperty }: { controller: DatabaseController; height?: number; onOpenRow?: (pageId: string) => void; onNewProperty?: () => void }) {
   const { t } = useTranslation();
   const snap = useDatabase(controller);
   const ref = useRef<HTMLDivElement>(null);
@@ -35,15 +37,15 @@ export function TableView({ controller, height = 480, onOpenRow }: { controller:
       return () => ro.disconnect();
     },
   });
-  const template = `260px ${props.map(() => "200px").join(" ")}`;
-  const width = 260 + props.length * 200;
+  const template = `260px ${props.map(() => "200px").join(" ")} 48px`;
+  const width = 260 + props.length * 200 + 48;
 
   return (
-    <div role="table" aria-label={t("databases.table", { name: snap.database?.name ?? "" })} aria-rowcount={rows.length + 1} className="text-sm">
-      <div ref={ref} style={{ height, overflow: "auto", position: "relative" }}>
-        <div style={{ width, minWidth: "100%" }}>
-          <div role="row" className="sticky top-0 z-10 grid border-b bg-[var(--bg)] font-semibold" style={{ gridTemplateColumns: template }}>
-            <div role="columnheader" className="px-2 py-2">{t("databases.name")}</div>
+    <div className="text-[length:var(--text-ui-size)]">
+      <div ref={ref} data-table-scroll role="presentation" className="max-w-full" style={{ height, overflow: "auto", position: "relative" }}>
+        <div role="table" aria-label={t("databases.table", { name: snap.database?.name ?? "" })} aria-rowcount={rows.length + 1} style={{ width: `${width}px`, minWidth: "100%" }}>
+          <div role="row" className="sticky top-0 z-10 grid border-b border-[var(--c-border)] bg-[var(--c-canvas)] font-semibold" style={{ gridTemplateColumns: template }}>
+            <div role="columnheader" className="sticky left-0 z-10 bg-[var(--c-canvas)] px-2 py-2">{t("databases.name")}</div>
             {props.map((p) => (
               <div key={p.id} role="columnheader" className="relative flex items-center gap-1 px-2 py-2">
                 <span className="truncate">{p.name}</span>
@@ -65,15 +67,17 @@ export function TableView({ controller, height = 480, onOpenRow }: { controller:
                 )}
               </div>
             ))}
+            <div role="columnheader" className="flex items-center justify-center">
+              <button type="button" aria-label={t("databases.newColumn")} onClick={() => onNewProperty?.()} className="rounded p-1 text-[var(--c-text-muted)] hover:bg-[var(--c-raised)]"><Icon name="create" size={16} /></button>
+            </div>
           </div>
-          {rows.length === 0 && <p className="p-3 opacity-70">{t("databases.empty")}</p>}
           <div role="rowgroup" style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
             {virtualizer.getVirtualItems().map((v) => {
               const r = rows[v.index]!;
               const title = r.title.trim() === "" ? t("databases.untitled") : r.title;
               return (
-                <div key={r.pageId} role="row" aria-label={title} aria-rowindex={v.index + 2} className="grid items-center border-b hover:bg-[var(--hover)]" style={{ position: "absolute", top: v.start, left: 0, width: "100%", height: ROW_H, gridTemplateColumns: template }}>
-                  <div role="cell" data-col="title" className="flex items-center gap-1 px-2">
+                <div key={r.pageId} role="row" aria-label={title} aria-rowindex={v.index + 2} className="group grid items-center border-b border-[var(--c-border)] hover:bg-[var(--c-raised)]" style={{ position: "absolute", top: v.start, left: 0, width: "100%", height: ROW_H, gridTemplateColumns: template }}>
+                  <div role="cell" data-col="title" className="sticky left-0 z-[1] flex items-center gap-1 bg-[var(--c-canvas)] px-2 group-hover:bg-[var(--c-raised)]">
                     <input
                       aria-label={t("databases.rowTitle", { title: r.title })}
                       defaultValue={r.title}
@@ -96,6 +100,8 @@ export function TableView({ controller, height = 480, onOpenRow }: { controller:
           </div>
         </div>
       </div>
+      {rows.length === 0 && <EmptyState illustration="table" title={t("databases.empty")} />}
+      <p role="status" aria-label={t("databases.rowCountLabel")} className="px-2 py-1 text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("databases.rowCount", { count: rows.length })}</p>
     </div>
   );
 }

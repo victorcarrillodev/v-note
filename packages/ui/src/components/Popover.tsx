@@ -1,0 +1,16 @@
+import * as P from "@radix-ui/react-popover";
+import type { ReactNode } from "react";
+
+/** Popover con detección de colisiones (se voltea y desplaza), Escape y devolución de foco. Máximo 360 px. */
+export function Popover({ trigger, children, align = "start", open, onOpenChange }: { trigger: ReactNode; children: ReactNode; align?: "start" | "center" | "end"; open?: boolean; onOpenChange?: (o: boolean) => void }) {
+  return (
+    <P.Root {...(open !== undefined ? { open } : {})} {...(onOpenChange ? { onOpenChange } : {})}>
+      <P.Trigger asChild>{trigger}</P.Trigger>
+      <P.Portal>
+        <P.Content sideOffset={4} align={align} collisionPadding={8} className="z-[var(--z-menu)] max-w-[var(--size-popover-max)] rounded-md border border-[var(--c-border)] bg-[var(--c-card)] p-3 text-[length:var(--text-ui-size)] text-[var(--c-text)] shadow-[var(--elevation-3)]">
+          {children}
+        </P.Content>
+      </P.Portal>
+    </P.Root>
+  );
+}

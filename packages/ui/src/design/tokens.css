@@ -1,0 +1,237 @@
+/* GENERADO por build-css.ts a partir de tokens.ts. No editar a mano. */
+:root, [data-theme="light"] {
+  --c-canvas: #FCF9F5;
+  --c-sidebar: #F7F6F3;
+  --c-card: #FFFFFF;
+  --c-raised: #EFEDE8;
+  --c-border: #E9E8E4;
+  --c-border-control: #8A8884;
+  --c-text: #37352F;
+  --c-text-muted: #65635F;
+  --c-text-placeholder: #6E6C68;
+  --c-text-disabled: #A8A6A1;
+  --c-accent: #0B6BCB;
+  --c-on-accent: #FFFFFF;
+  --c-success: #1B7F6E;
+  --c-warning: #9A4F08;
+  --c-danger: #C0312F;
+  --c-scrim: rgba(0, 0, 0, 0.4);
+  --chip-info-fg: #0B5CAD;
+  --chip-info-bg: #DCEBFA;
+  --chip-success-fg: #145E4F;
+  --chip-success-bg: #DDF1E5;
+  --chip-warning-fg: #7A3F06;
+  --chip-warning-bg: #FCE8D3;
+  --chip-error-fg: #9E2523;
+  --chip-error-bg: #FBE3E1;
+  --block-gray-text: #6B6A66;
+  --block-gray-bg: #EBEAE6;
+  --block-brown-text: #8A4F2A;
+  --block-brown-bg: #EFE3DA;
+  --block-red-text: #C0312F;
+  --block-red-bg: #FBE3E1;
+  --block-orange-text: #A8540A;
+  --block-orange-bg: #FCE8D3;
+  --block-yellow-text: #8A6500;
+  --block-yellow-bg: #FBF0C2;
+  --block-green-text: #1B7F4E;
+  --block-green-bg: #DDF1E5;
+  --block-blue-text: #0B6BCB;
+  --block-blue-bg: #DCEBFA;
+  --block-purple-text: #7A3FB5;
+  --block-purple-bg: #EBE0F7;
+  --block-pink-text: #B5307A;
+  --block-pink-bg: #F8DFEC;
+  --cover-sand: linear-gradient(135deg, #F3E7D3, #E9D4B5);
+  --cover-sage: linear-gradient(135deg, #DCE8DA, #BFD6C2);
+  --cover-sky: linear-gradient(135deg, #DCEBFA, #B9D6F2);
+  --cover-lavender: linear-gradient(135deg, #E7DDF5, #D2C3EC);
+  --cover-rose: linear-gradient(135deg, #F6DDE6, #EDBFD1);
+  --cover-graphite: linear-gradient(135deg, #E4E3DF, #C9C7C0);
+  --elevation-1: 0px 1px 2px rgba(55, 53, 47, 0.06);
+  --elevation-2: 0px 2px 4px rgba(55, 53, 47, 0.08);
+  --elevation-3: 0px 8px 16px rgba(55, 53, 47, 0.12);
+  --elevation-4: 0px 16px 32px rgba(55, 53, 47, 0.18);
+  --text-page-title-size: 36px;
+  --text-page-title-line: 44px;
+  --text-page-title-weight: 700;
+  --text-h1-size: 28px;
+  --text-h1-line: 36px;
+  --text-h1-weight: 700;
+  --text-h2-size: 22px;
+  --text-h2-line: 30px;
+  --text-h2-weight: 600;
+  --text-h3-size: 18px;
+  --text-h3-line: 26px;
+  --text-h3-weight: 600;
+  --text-reading-size: 16px;
+  --text-reading-line: 26px;
+  --text-reading-weight: 400;
+  --text-dialog-title-size: 18px;
+  --text-dialog-title-line: 24px;
+  --text-dialog-title-weight: 600;
+  --text-component-size: 14px;
+  --text-component-line: 20px;
+  --text-component-weight: 600;
+  --text-ui-size: 14px;
+  --text-ui-line: 20px;
+  --text-ui-weight: 400;
+  --text-ui-small-size: 13px;
+  --text-ui-small-line: 18px;
+  --text-ui-small-weight: 500;
+  --text-note-size: 12px;
+  --text-note-line: 16px;
+  --text-note-weight: 500;
+  --text-label-size: 11px;
+  --text-label-line: 14px;
+  --text-label-weight: 600;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-base: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+  --motion-instant: 0ms;
+  --motion-fast: 100ms;
+  --motion-base: 150ms;
+  --motion-slow: 220ms;
+  --motion-exit: 120ms;
+  --motion-theme: 150ms;
+  --z-content: 0;
+  --z-sticky: 10;
+  --z-sidebar-overlay: 30;
+  --z-menu: 40;
+  --z-tooltip: 50;
+  --z-scrim: 55;
+  --z-dialog: 60;
+  --z-toast: 70;
+  --z-skip-link: 100;
+  --size-modal-s: 400px;
+  --size-modal-m: 520px;
+  --size-modal-l: 720px;
+  --size-popover-max: 360px;
+  --size-panel-width: 380px;
+  --size-palette-width: 640px;
+  --size-sidebar-width: 240px;
+  --size-header-height: 44px;
+  --size-reading-width: 720px;
+  --size-window-margin: 24px;
+  --size-window-min: 900px;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-content: var(--font-sans);
+  --density-pad: 0px;
+  color-scheme: light;
+  --bg: var(--c-canvas);
+  --fg: var(--c-text);
+  --border: var(--c-border);
+  --hover: var(--c-raised);
+  --selected: var(--c-raised);
+}
+:root[data-theme="dark"], [data-theme="dark"] {
+  --c-canvas: #131313;
+  --c-sidebar: #1B1C1C;
+  --c-card: #222323;
+  --c-raised: #2A2B2B;
+  --c-border: #282828;
+  --c-border-control: #807F7B;
+  --c-text: #E3E2DE;
+  --c-text-muted: #A3A29E;
+  --c-text-placeholder: #8C8B87;
+  --c-text-disabled: #5F5E5B;
+  --c-accent: #5CA6D6;
+  --c-on-accent: #0B1B26;
+  --c-success: #4DAB9A;
+  --c-warning: #E08A3C;
+  --c-danger: #EC6A67;
+  --c-scrim: rgba(0, 0, 0, 0.6);
+  --chip-info-fg: #8EC3E8;
+  --chip-info-bg: #1D3447;
+  --chip-success-fg: #7BD0AE;
+  --chip-success-bg: #1F3A2B;
+  --chip-warning-fg: #F0AE72;
+  --chip-warning-bg: #46301B;
+  --chip-error-fg: #F5A19E;
+  --chip-error-bg: #472624;
+  --block-gray-text: #A3A29E;
+  --block-gray-bg: #2F2F2E;
+  --block-brown-text: #C98B5E;
+  --block-brown-bg: #3A2F27;
+  --block-red-text: #EC6A67;
+  --block-red-bg: #472624;
+  --block-orange-text: #E08A3C;
+  --block-orange-bg: #46301B;
+  --block-yellow-text: #D9AE3A;
+  --block-yellow-bg: #463A16;
+  --block-green-text: #5BC08A;
+  --block-green-bg: #1F3A2B;
+  --block-blue-text: #5CA6D6;
+  --block-blue-bg: #1D3447;
+  --block-purple-text: #B58AE0;
+  --block-purple-bg: #33283F;
+  --block-pink-text: #E06BA8;
+  --block-pink-bg: #42263A;
+  --cover-sand: linear-gradient(135deg, #4A3D2A, #33291C);
+  --cover-sage: linear-gradient(135deg, #2E4033, #22302A);
+  --cover-sky: linear-gradient(135deg, #243C52, #1A2B3B);
+  --cover-lavender: linear-gradient(135deg, #3A2F4F, #2A223B);
+  --cover-rose: linear-gradient(135deg, #4D2E3C, #37212B);
+  --cover-graphite: linear-gradient(135deg, #3A3A39, #2A2A29);
+  --elevation-1: none;
+  --elevation-2: none;
+  --elevation-3: none;
+  --elevation-4: none;
+  color-scheme: dark;
+}
+:root[data-density="compact"] {
+  --density-pad: -4px;
+  --text-reading-size: 15px;
+  --text-reading-line: 22px;
+}
+:root[data-font="serif"] { --font-content: var(--font-serif); }
+:root[data-font="mono"] { --font-content: var(--font-mono); }
+
+/* Foco: anillo doble (2 px de acento + 2 px de separación con la superficie), visible en ambos temas. */
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--c-canvas);
+}
+
+/* Cambio de tema: solo color de fondo y texto. */
+body, #root, aside, main, header {
+  transition: background-color var(--motion-theme) linear, color var(--motion-theme) linear;
+}
+
+/* Reducir movimiento: sin desplazamientos ni escalas; como máximo desvanecimientos breves. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Contraste forzado: bordes y foco con los colores del sistema. */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+    box-shadow: none;
+  }
+  button, input, select, textarea, [role="button"] {
+    border: 1px solid CanvasText;
+  }
+}
