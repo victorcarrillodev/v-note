@@ -1,9 +1,9 @@
 # Especificación 002 — Estándar de diseño UI/UX de v-note
 
-> **Estado:** borrador para revisión · **Segunda parte de v-note** (la primera es `specs/001-v-note-mvp`).
+> **Estado:** implementada y cerrada el 4 de noviembre de 2026 · **Segunda parte de v-note** (la primera es `specs/001-v-note-mvp`).
 > **Alcance de este documento:** el QUÉ y el POR QUÉ. No define tecnología, arquitectura ni archivos: eso va en el plan.
 > **Referencia visual:** el mockup «Atelier Notes» (24 pantallas en modo claro y oscuro, más su guía de estilos). Es una referencia visual, no una especificación literal (ver decisión D-2).
-> **Notación:** los criterios usan EARS en español (*Cuando… el sistema deberá…*, *Mientras…*, *Si… entonces…*, *Donde…*). Lo que no está claro se marca con **[NECESITA ACLARACIÓN]**.
+> **Notación:** los criterios usan EARS en español (*Cuando… el sistema deberá…*, *Mientras…*, *Si… entonces…*, *Donde…*). Las dudas se marcaban con **[NECESITA ACLARACIÓN]** y quedaron resueltas en la sección 9.
 
 ---
 
@@ -111,7 +111,7 @@ Un conjunto único de valores de diseño gobierna toda la interfaz: color, tipog
 - **RF-5.6** El sistema deberá dar a cada tipo de bloque una presentación coherente con el estándar: citas, avisos destacados (informativo, advertencia, éxito, error), listas de verificación, bloques de código con lenguaje y botón de copiar, tablas, imágenes con pie, desplegables y tarjetas de enlace.
 - **RF-5.7** Cuando la persona pase el cursor sobre un bloque, el sistema deberá mostrar su asa de arrastre y su acción de insertar, sin que aparezcan en reposo.
 - **RF-5.8** Cuando una página tenga tres o más encabezados, el sistema deberá ofrecer una **tabla de contenidos** que permita ir a cada sección y marque la sección visible. Si la página tiene menos de tres encabezados, no deberá mostrarla.
-- **RF-5.9** El sistema deberá permitir asignar **etiquetas** a una página y mostrarlas como chips de color. **[NECESITA ACLARACIÓN]** (ver dudas, DA-2).
+- **RF-5.9** El sistema deberá permitir asignar **etiquetas** a una página y mostrarlas como chips de color (ver DA-2).
 
 ### RF-6 — Bases de datos y tableros
 - **RF-6.1** Una base de datos deberá mostrar su título, sus vistas como pestañas (tabla, tablero, lista, galería, calendario, línea de tiempo) y, debajo, la barra de filtros y orden.
@@ -124,7 +124,7 @@ Un conjunto único de valores de diseño gobierna toda la interfaz: color, tipog
 
 ### RF-7 — Calendarios y cronograma
 - **RF-7.1** El sistema deberá ofrecer la vista **mensual** como rejilla de semanas con el día actual destacado, los eventos de cada día legibles y un indicador cuando haya más eventos de los que caben.
-- **RF-7.2** El sistema deberá ofrecer una vista **semanal por franjas horarias** con cabecera de día, el día actual destacado, una línea que marque la hora actual y los eventos colocados según su hora de inicio y duración. **[NECESITA ACLARACIÓN]** (ver DA-1).
+- **RF-7.2** El sistema deberá ofrecer una vista **semanal por franjas horarias** con cabecera de día, el día actual destacado, una línea que marque la hora actual y los eventos colocados según su hora de inicio y duración (ver DA-1).
 - **RF-7.3** Cuando dos eventos coincidan en horario, el sistema deberá mostrarlos uno junto al otro sin taparse.
 - **RF-7.4** Cuando una tarea tenga fecha pero no hora, el sistema deberá mostrarla en una franja de «Todo el día» en la vista semanal.
 - **RF-7.5** El sistema deberá ofrecer la **línea de tiempo** (cronograma) con barras por rango, agrupación jerárquica y un panel lateral de detalle al seleccionar un elemento.
@@ -300,17 +300,19 @@ La spec se da por terminada cuando se cumplen **todos** estos puntos, con eviden
 10. **Respaldo:** el ancho completo por página se respalda y restaura, y los respaldos anteriores siguen restaurándose (RNF-11, CL-23).
 11. **Revisión visual** por la persona responsable del producto de cada pantalla frente al mockup y al estándar, con los casos límite CL-1 a CL-28 revisados.
 
+**Estado de cierre:** la spec se da por terminada el 4 de noviembre de 2026. La evidencia está registrada en `tasks.md` (U-263 a U-277); `bun run typecheck` y `bun run test` están en verde.
+
 ---
 
-## 9. Dudas abiertas
+## 9. Dudas resueltas
 
-| ID | Duda | Por qué importa |
+| ID | Duda | Resolución adoptada |
 |---|---|---|
-| **DA-1** | **[NECESITA ACLARACIÓN]** Hoy las tareas tienen fecha y, opcionalmente, hora de recordatorio, pero **no tienen hora de inicio ni de fin ni duración**. La vista semanal por horas y el modal de tarea con horario (RF-7.2, RF-8) las requieren. ¿Se acepta que esta spec **añada hora de inicio y fin (o duración) a las tareas** como dato nuevo, o la vista semanal debe limitarse a colocar tareas por su hora de recordatorio? | Cambia el modelo de datos, el respaldo y la restauración, y la complejidad de la vista. |
-| **DA-2** | **[NECESITA ACLARACIÓN]** El mockup muestra **etiquetas** de página y **plantillas**. Las etiquetas (RF-5.9) hoy no existen como función. ¿Entran las etiquetas de página como función nueva (con su modelo, búsqueda y respaldo) o se resuelven con las propiedades de bases de datos que ya existen? Las plantillas se dejaron fuera: ¿se confirma? | Determina si hay datos y respaldo nuevos más allá del ancho completo. |
-| **DA-3** | **[NECESITA ACLARACIÓN]** **Estado de guardado en la cabecera.** El mockup muestra «Editado hace 2m» y un estado de sincronización. ¿Se usa «Guardado / Guardando… / Error al guardar» y «Editado hace X», o se prefiere solo un indicador discreto? | Define cuánta presencia tiene el estado de guardado en el diseño. |
-| **DA-4** | **[NECESITA ACLARACIÓN]** **Tipografía.** El mockup usa una sans (Inter) y una monoespaciada. Como no se pueden descargar fuentes (RNF-5), hay que incluirlas en la aplicación. ¿Se confirma esa elección y la inclusión de una serif para el ajuste «serif», o se prefiere usar fuentes del sistema? | Afecta al peso de la aplicación, a la coherencia entre plataformas y a la licencia. |
-| **DA-5** | **[NECESITA ACLARACIÓN]** **Valores corregidos del mockup.** Hay valores que parecen no cumplir AA (por ejemplo, el gris secundario sobre fondo marfil) y tamaños de 10–11 px. Se corregirán según RF-1.8; ¿quieres revisar cada ajuste antes de fijarlo o delegas en el criterio del estándar? | Evita rehacer trabajo si hay un color que consideras intocable. |
-| **DA-6** | **[NECESITA ACLARACIÓN]** **Punto de plegado y ancho mínimo.** Se propone 900 px de mínimo, pero el punto exacto en que la barra lateral se pliega y los anchos de lectura (por ejemplo, 720 px en el mockup) son valores a confirmar con pruebas de uso. ¿Hay un tamaño de ventana habitual en tu equipo que debamos tomar de referencia? | Evita decisiones que no coincidan con el uso real. |
-| **DA-7** | **[NECESITA ACLARACIÓN]** **Ubicación del mockup.** El mockup vive fuera del repositorio. ¿Se guarda una copia en el proyecto como referencia oficial de esta spec? | Sin copia versionada la referencia puede perderse o cambiar. |
-| **DA-8** | **[NECESITA ACLARACIÓN]** **Ubicación de esta spec.** La constitución indica que las specs viven en `specs/`; esta se pidió en `docs/specs/`. ¿Se mueve a `specs/002-…` para mantener una sola convención? | Mantener una sola convención evita confusiones con la regla «La spec manda». |
+| **DA-1** | Hora de inicio y fin de las tareas. | Se **añaden hora de inicio y fin (o duración)** a las tareas como dato nuevo; el calendario semanal y el modal de tarea con horario las usan. Forman parte del modelo, el respaldo y la restauración (plan §16.3). |
+| **DA-2** | Etiquetas de página y plantillas. | Se implementan **etiquetas por espacio** (nombre y color), asignables a páginas, buscables y respaldadas; las **plantillas quedan fuera** de esta spec (plan §16.4). |
+| **DA-3** | Estado de guardado en la cabecera. | Se usa un **indicador discreto**: «Guardado» / «Guardando…» / «No se guardó · Reintentar»; la última edición se muestra en la fila de datos de la página (plan §10.3). |
+| **DA-4** | Tipografías. | Se incluyen en la aplicación **Inter**, **JetBrains Mono** y **Source Serif 4** (subconjunto latino, sin red); el ajuste «serif» usa la serif incluida. |
+| **DA-5** | Valores corregidos del mockup. | Se aplican los **valores corregidos** del plan §4.1 conforme a RF-1.8, con el contraste documentado; las excepciones quedan registradas en la guía de estilo. |
+| **DA-6** | Punto de plegado y ancho mínimo. | Se adoptan **900 px de mínimo**, plegado de la barra lateral en **1 040 px**, tabla de contenidos desde **1 280 px** y **720 px** de ancho de lectura (plan §10.4). |
+| **DA-7** | Ubicación del mockup. | El mockup **permanece fuera del repositorio**; el estándar documentado en esta spec y en la guía de estilo es la referencia oficial. |
+| **DA-8** | Ubicación de esta spec. | La spec **permanece en `docs/specs/002-v-note-ui/`**; se acepta como excepción documentada a la convención de la constitución. |

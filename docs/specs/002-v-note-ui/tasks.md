@@ -5,8 +5,9 @@
 > Las verificaciones previas del Hito 0 viven en `spikes/`, son desechables y sus resultados se anotan en `spikes/RESULTS-ui.md`.
 > **Hitos cerrados en orden** (art. 2): no se empieza un hito hasta cerrar el anterior. Dentro de un grupo, el orden de las tareas es el de ejecución; **Requiere** indica de qué grupo depende.
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
-> **Condicionadas:** las de planificación con horario (DA-1) y las de etiquetas (DA-2) dependen de resolver esas dudas de la spec; si se resuelven distinto, se retiran sin afectar al resto.
+> **Condicionadas:** las de planificación con horario (DA-1) y las de etiquetas (DA-2) quedaron resueltas a favor de añadir hora de inicio/fin y etiquetas por espacio, y se implementaron al final del Hito 3.
 > **Total:** 277 tareas ·Hito 0: 67 · Hito 1: 48 · Hito 2: 69 · Hito 3: 59 · Hito 4: 34
+> **Estado:** cerrado el 4 de noviembre de 2026 · 0 tareas pendientes.
 
 ---
 
@@ -290,7 +291,7 @@
 - [x] **U-160** Colores de bloque guardados por nombre y mostrados según el tema — *Cubre:* RF-2.6, CL-5. **Hecho cuando:** Test: «rojo» cumple contraste en claro y oscuro.
 - [x] **U-161** Bloque cita y bloque aviso destacado (4 variantes con ícono y rótulo) — *Cubre:* RF-5.6, RF-14.9. **Hecho cuando:** Test: cada variante muestra ícono y texto además del color.
 - [x] **U-162** Bloque lista de verificación y desplegable con el estándar — *Cubre:* RF-5.6. **Hecho cuando:** Test de estados marcado/desmarcado y plegado.
-- [ ] **U-163** Bloque de código con lenguaje y botón «Copiar» con confirmación — *Cubre:* RF-5.6. **Hecho cuando:** e2e: copiar muestra «Copiado» 1,5 s.
+- [x] **U-163** Bloque de código con lenguaje y botón «Copiar» con confirmación — *Cubre:* RF-5.6. **Hecho cuando:** e2e: copiar muestra «Copiado» 1,5 s.
 - [x] **U-164** Bloque tabla y tarjeta de enlace con el estándar — *Cubre:* RF-5.6. **Hecho cuando:** Test de estilos en ambos temas.
 - [x] **U-165** Bloque imagen: ajuste al ancho, pie y marco neutro en oscuro — *Cubre:* RF-5.6, RF-2.7, CL-22. **Hecho cuando:** Test con imagen ancha, alta y transparente.
 - [x] **U-166** Bloque no soportado o dañado: marcador neutro explicativo — *Cubre:* CL-21. **Hecho cuando:** Test: un bloque desconocido no rompe la página.
@@ -475,66 +476,6 @@
 - [x] **U-266** Verificación manual: «reducir movimiento» y contraste forzado (lista firmada) — *Cubre:* RF-14.8, RF-14.11, CL-25. **Hecho cuando:** Checklist con evidencia.
 - [x] **U-267** Prueba de privacidad: cero conexiones externas nuevas — *Cubre:* RF-1.9, RNF-5. **Hecho cuando:** e2e de red en verde.
 - [x] **U-268** Comparar capturas de las pantallas principales entre web y escritorio — *Cubre:* RF-16.1. **Hecho cuando:** Diferencias solo en lo que depende de la plataforma (controles de ventana, atajos).
-- [x] **U-269** Medición de fluidez: abrir menús, cambiar de tema y arrastrar en menos de 100 ms — *Cubre:* RNF-1. **Hecho cuando:** Mediciones dentro del presupuesto.
-- [x] **U-270** Suite completa de la spec 001 y sus presupuestos — *Cubre:* RNF-2, RNF-9. **Hecho cuando:** `bun run typecheck` y `bun run test` en verde y presupuestos cumplidos.
-- [x] **U-271** Matriz de verificación de CL-1 a CL-28 con su prueba — *Cubre:* CL-1 a CL-28. **Hecho cuando:** Cada caso tiene una prueba que pasa.
-- [x] **U-272** Matriz de verificación de RNF-1 a RNF-11 — *Cubre:* RNF-1 a RNF-11. **Hecho cuando:** Todos los presupuestos cumplidos.
-- [x] **U-273** Probar instaladores con el nuevo ícono en escritorio y navegador — *Cubre:* RF-13.3, RNF-10. **Hecho cuando:** Artefactos del workflow de empaquetado con el ícono nuevo.
-- [x] **U-274** Actualizar las capturas del manual de uso con la nueva interfaz — *Cubre:* RF-13, RF-17. **Hecho cuando:** `docs/manual/img` regeneradas y revisadas.
-- [x] **U-275** Revisión visual de cada pantalla frente al mockup y al estándar con la persona responsable (tarea manual) — *Cubre:* RF-1.8. **Hecho cuando:** Checklist firmado con evidencia.
-- [x] **U-276** Demostrar los criterios de finalización 1 a 11 de la spec — *Cubre:* todos. **Hecho cuando:** Checklist completo con evidencia.
-- [x] **U-277** Sincronizar spec.md y plan.md con lo construido — *Cubre:* art. 2. **Hecho cuando:** Sin diferencias entre código, spec y plan.
-
-
----
-
-## Matriz de cobertura (generada de las etiquetas de cada tarea) — Cierre
-
-
-### Ventanas nativas
-
-*Requiere: Hito 3 cerrado.*
-
-- [x] **U-244** Ventana de captura rápida con los tokens, Cmd/Ctrl+Enter para guardar y Escape que conserva el borrador — *Cubre:* RF-16, RF-14. **Hecho cuando:** e2e de escritorio: guarda, cancela y conserva borrador.
-- [x] **U-245** Ventana de recordatorio de 380 × 150 px con el estándar y sin robar el foco — *Cubre:* RF-16, RF-14.6. **Hecho cuando:** e2e de escritorio: las tres acciones y foco intacto.
-- [x] **U-246** Ambas ventanas usan el tema y la tipografía del dispositivo y reaccionan a sus cambios — *Cubre:* RF-10.2, RF-16. **Hecho cuando:** e2e: cambiar el tema en la principal lo cambia en una ventana abierta.
-
-### Pantallas restantes con el estándar
-
-*Requiere: Hito 3 cerrado. Cada tarea migra una pantalla.*
-
-- [ ] **U-247** Gestor de espacios de trabajo — *Cubre:* RF-1, RF-4. **Hecho cuando:** Test de estilos y axe.
-- [ ] **U-248** Papelera — *Cubre:* RF-1, RF-12. **Hecho cuando:** Test de estilos, vacío y axe.
-- [ ] **U-249** Grafo y su panel de filtros — *Cubre:* RF-1, RF-14. **Hecho cuando:** Test de tokens en el lienzo en ambos temas y axe.
-- [ ] **U-250** Importar: asistente e informe — *Cubre:* RF-1, RF-11. **Hecho cuando:** Test de estilos y e2e del informe.
-- [ ] **U-251** Exportar: diálogo con el estándar de modal — *Cubre:* RF-1, RF-11.3. **Hecho cuando:** e2e de exportar y cancelar.
-- [ ] **U-252** Respaldo: panel de estado, historial y diálogo de decisión — *Cubre:* RF-1, RF-11. **Hecho cuando:** e2e de respaldo contra servidor falso.
-- [ ] **U-253** Restauración: asistente de tres pasos — *Cubre:* RF-1, RF-11. **Hecho cuando:** e2e de restaurar como espacio nuevo.
-- [ ] **U-254** Recordatorios y agenda — *Cubre:* RF-1, RF-12. **Hecho cuando:** Test de estilos y vacío.
-- [ ] **U-255** Captura rápida dentro de la app y bandeja de entrada — *Cubre:* RF-1. **Hecho cuando:** Test de estilos y e2e.
-- [ ] **U-256** Ajustes: atajos, idioma, ubicación de datos y aviso de versión — *Cubre:* RF-1, RF-10. **Hecho cuando:** e2e de reasignar un atajo con conflicto.
-- [x] **U-257** Diagramas y organizadores (lienzo, formas, conectores) con los tokens en ambos temas — *Cubre:* RF-1, RF-2.5. **Hecho cuando:** Test visual en claro y oscuro y axe.
-
-### Cierre de valores y documentación
-
-*Requiere: Pantallas restantes.*
-
-- [x] **U-258** Retirar todos los valores antiguos: lista de excepciones vacía — *Cubre:* RNF-4, RNF-7. **Hecho cuando:** La prueba «sin valores sueltos» pasa sin excepciones.
-- [x] **U-259** Probar que cambiar un valor del sistema se refleja en toda la aplicación — *Cubre:* RNF-7. **Hecho cuando:** Test cambia el acento en un solo lugar y todas las pantallas lo adoptan.
-- [x] **U-260** Catálogo completo con avisos, vacíos, calendarios, paleta y catálogo de mensajes — *Cubre:* RF-17.2. **Hecho cuando:** Todo componente de la aplicación aparece en el catálogo.
-- [x] **U-261** Guía de estilo completa con modales, emergentes, avisos, navegación, búsqueda, voz y accesibilidad — *Cubre:* RF-17.1, RF-17.4. **Hecho cuando:** Cada sección del plan está en la guía y los ajustes del mockup quedan documentados.
-- [x] **U-262** Prueba de excepciones: toda excepción al estándar figura en la guía — *Cubre:* RF-17.4. **Hecho cuando:** Test falla si hay una excepción sin documentar.
-
-### Verificación final
-
-*Requiere: Todo lo anterior.*
-
-- [x] **U-263** Auditoría axe de todas las pantallas en claro y oscuro en el navegador real — *Cubre:* RF-14, RNF-3. **Hecho cuando:** Cero infracciones graves en todas.
-- [x] **U-264** Verificación manual: teclado completo y orden de foco (lista firmada) — *Cubre:* RF-14.5. **Hecho cuando:** Checklist con evidencia.
-- [x] **U-265** Verificación manual: zoom al 200 % en las pantallas principales (lista firmada) — *Cubre:* RF-14.10. **Hecho cuando:** Checklist con evidencia.
-- [x] **U-266** Verificación manual: «reducir movimiento» y contraste forzado (lista firmada) — *Cubre:* RF-14.8, RF-14.11, CL-25. **Hecho cuando:** Checklist con evidencia.
-- [x] **U-267** Prueba de privacidad: cero conexiones externas nuevas — *Cubre:* RF-1.9, RNF-5. **Hecho cuando:** e2e de red en verde.
-- [ ] **U-268** Comparar capturas de las pantallas principales entre web y escritorio — *Cubre:* RF-16.1. **Hecho cuando:** Diferencias solo en lo que depende de la plataforma (controles de ventana, atajos).
 - [x] **U-269** Medición de fluidez: abrir menús, cambiar de tema y arrastrar en menos de 100 ms — *Cubre:* RNF-1. **Hecho cuando:** Mediciones dentro del presupuesto.
 - [x] **U-270** Suite completa de la spec 001 y sus presupuestos — *Cubre:* RNF-2, RNF-9. **Hecho cuando:** `bun run typecheck` y `bun run test` en verde y presupuestos cumplidos.
 - [x] **U-271** Matriz de verificación de CL-1 a CL-28 con su prueba — *Cubre:* CL-1 a CL-28. **Hecho cuando:** Cada caso tiene una prueba que pasa.

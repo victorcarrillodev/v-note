@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Icon } from "../design/Icon";
 import type { IconName } from "../design/iconMap";
 import { TaskBlockView, type TaskProps } from "./TaskBlock";
+import { codeBlock } from "./CodeBlock";
 import { DatabasePicker, EmbeddedDatabaseView } from "../databases/EmbeddedDatabase";
 import { DiagramEditor } from "../diagram/DiagramEditor";
 import { MentionView } from "./MentionView";
@@ -157,5 +158,5 @@ export const mentionInline = createReactInlineContentSpec(
 
 export const schema = BlockNoteSchema.create({
   inlineContentSpecs: { ...defaultInlineContentSpecs, mention: mentionInline },
-  blockSpecs: { ...defaultBlockSpecs, callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock() },
+  blockSpecs: { ...defaultBlockSpecs, codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock() },
 });

@@ -1,6 +1,6 @@
 # Plan 002 — Estándar de diseño UI/UX de v-note
 
-> **Estado:** borrador para revisión · **Implementa:** `docs/specs/002-v-note-ui/spec.md` (RF-1 a RF-18, RNF-1 a RNF-11, CL-1 a CL-28).
+> **Estado:** implementado y cerrado el 4 de noviembre de 2026 · **Implementa:** `docs/specs/002-v-note-ui/spec.md` (RF-1 a RF-18, RNF-1 a RNF-11, CL-1 a CL-28).
 > **Marco:** `docs/constitution.md`. Este plan no contiene código; fija el **cómo**: valores del estándar, comportamientos, decisiones técnicas, dependencias justificadas, hitos y pruebas.
 > **Nota sobre la ubicación:** el encargo mencionaba `specs/001-v-note-ui/spec.md` y `specs/001-v-note/plan.md`. Esas rutas no existen: las especificaciones viven ahora en `docs/specs/`, la primera parte es `001-v-note-mvp` y esta segunda parte es `002-v-note-ui`. Por eso el plan se guarda junto a su spec. Si prefieres otra ruta, solo hay que moverlo.
 > **Cómo leerlo:** cada parte indica entre corchetes los requisitos que cubre, por ejemplo **[RF-2.3]**. Al final (sección 20) hay una matriz que comprueba que no queda ningún RF sin cubrir.
@@ -637,8 +637,8 @@ No se inicia un hito hasta cerrar el anterior. Cada hito es utilizable por sí m
 
 ---
 
-## 21. Dudas abiertas y supuestos del plan
-| ID | Duda de la spec | Supuesto que toma este plan | Si se resuelve distinto |
+## 21. Decisiones sobre las dudas de la spec
+| ID | Duda de la spec | Decisión adoptada | Alternativa descartada |
 |---|---|---|---|
 | **DA-1** | Hora de inicio/fin de tareas | Se añade como dato nuevo (16.3) | El calendario semanal usa solo la hora de recordatorio; se retira el campo del modal. |
 | **DA-2** | Etiquetas y plantillas | Etiquetas por espacio (16.4); plantillas fuera | Se retira la fila de etiquetas o se resuelven con propiedades de bases de datos. |

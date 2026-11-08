@@ -165,6 +165,36 @@ describe("divisor y desplegable (T-124)", () => {
   });
 });
 
+describe("bloque de código (U-163)", () => {
+  it("tiene lenguaje, copia el contenido y confirma «Copiado» durante 1,5 s", async () => {
+    const { find } = await import("./webdriver");
+    await launch(env);
+    try {
+      await ensureWorkspace();
+      const ed = await freshEditor("Código");
+      await type(ed, "/código");
+      await sleep(400);
+      await type(ed, ENTER);
+      await sleep(500);
+      expect(await count('[data-content-type="codeBlock"]')).toBe(1);
+      await run("const s = document.querySelector('.bn-editor [data-code-language]'); s.value = 'javascript'; s.dispatchEvent(new Event('change', { bubbles: true }));");
+      await sleep(300);
+      expect(await run<string>("return document.querySelector('.bn-editor [data-code-language]').value")).toBe("javascript");
+      await run("try { Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__copiado = t; } }, configurable: true }); } catch (e) { window.__clipboardError = String(e); } window.__copiado = null;");
+      await click(await find('.bn-editor [data-code-content]'));
+      await type(ed, "const a = 1;");
+      await sleep(300);
+      await click(await find('.bn-editor [data-copy-code]'));
+      await sleep(200);
+      const button = () => run<string>("return document.querySelector('.bn-editor [data-copy-code]').innerText");
+      expect(await button()).toContain("Copiado");
+      expect(await run<string | null>("return window.__copiado")).toContain("const a = 1;");
+      await sleep(1600);
+      expect(await button()).toContain("Copiar");
+    } finally { await stopApp(); }
+  });
+});
+
 describe("color y resaltado (T-126)", () => {
   it("aplica color de texto y resaltado al texto seleccionado", async () => {
     const { find } = await import("./webdriver");
