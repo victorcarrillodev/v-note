@@ -1,0 +1,68 @@
+{
+  "nodes": [
+    {
+      "id": "a",
+      "shape": "process",
+      "x": 10,
+      "y": 10,
+      "w": 140,
+      "h": 60,
+      "text": "Mayúsculas",
+      "color": "#DBEAFE"
+    },
+    {
+      "id": "b",
+      "shape": "process",
+      "x": 200,
+      "y": 10,
+      "w": 140,
+      "h": 60,
+      "text": "Blanco",
+      "color": "#FFFFFF"
+    },
+    {
+      "id": "c",
+      "shape": "process",
+      "x": 400,
+      "y": 10,
+      "w": 140,
+      "h": 60,
+      "text": "Personalizado",
+      "color": "#ff8800"
+    },
+    {
+      "id": "d",
+      "shape": "note",
+      "x": 10,
+      "y": 150,
+      "w": 160,
+      "h": 80,
+      "text": "Con alfa",
+      "color": "#12345680"
+    },
+    {
+      "id": "e",
+      "shape": "io",
+      "x": 200,
+      "y": 150,
+      "w": 140,
+      "h": 60,
+      "text": "Corto",
+      "color": "#abc"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "a",
+      "to": "b",
+      "label": ""
+    },
+    {
+      "id": "e2",
+      "from": "b",
+      "to": "c",
+      "label": "x"
+    }
+  ]
+}

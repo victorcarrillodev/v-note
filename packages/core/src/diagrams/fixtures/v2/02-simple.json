@@ -1,0 +1,62 @@
+{
+  "edges": [
+    {
+      "from": {
+        "anchor": "e",
+        "node": "a"
+      },
+      "id": "e1",
+      "label": "",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "b"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "h": 50,
+      "id": "a",
+      "shape": "terminator",
+      "style": {
+        "fill": "palette:green",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Inicio",
+      "w": 140,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 60,
+      "id": "b",
+      "shape": "process",
+      "style": {
+        "fill": "palette:blue",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Trabajo",
+      "w": 140,
+      "x": 0,
+      "y": 120
+    }
+  ],
+  "version": 2
+}

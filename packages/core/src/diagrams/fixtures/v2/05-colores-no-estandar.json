@@ -1,0 +1,134 @@
+{
+  "edges": [
+    {
+      "from": {
+        "anchor": "e",
+        "node": "a"
+      },
+      "id": "e1",
+      "label": "",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "b"
+      }
+    },
+    {
+      "from": {
+        "anchor": "e",
+        "node": "b"
+      },
+      "id": "e2",
+      "label": "x",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "c"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "h": 60,
+      "id": "a",
+      "shape": "process",
+      "style": {
+        "fill": "palette:blue",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Mayúsculas",
+      "w": 140,
+      "x": 10,
+      "y": 10
+    },
+    {
+      "h": 60,
+      "id": "b",
+      "shape": "process",
+      "style": {
+        "fill": "palette:white",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Blanco",
+      "w": 140,
+      "x": 200,
+      "y": 10
+    },
+    {
+      "h": 60,
+      "id": "c",
+      "shape": "process",
+      "style": {
+        "fill": "#ff8800",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Personalizado",
+      "w": 140,
+      "x": 400,
+      "y": 10
+    },
+    {
+      "h": 80,
+      "id": "d",
+      "shape": "note",
+      "style": {
+        "fill": "#12345680",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "dashed",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Con alfa",
+      "w": 160,
+      "x": 10,
+      "y": 150
+    },
+    {
+      "h": 60,
+      "id": "e",
+      "shape": "io",
+      "style": {
+        "fill": "#abc",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Corto",
+      "w": 140,
+      "x": 200,
+      "y": 150
+    }
+  ],
+  "version": 2
+}

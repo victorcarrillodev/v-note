@@ -66,6 +66,16 @@ Al restaurar se valida todo antes de escribir: tipos de propiedad y de vista con
 
 Las **menciones** de otras páginas son contenido en línea `{ "type": "mention", "pageId": "…", "title": "…" }` (el título es el último conocido; el destino es el id). En el Markdown de lectura se escriben `[Título](page:ID)`. La tabla `links` de la base es un índice derivado: al restaurar se reconstruye desde las menciones. Añadir este tipo de contenido es compatible hacia atrás, por lo que `formatVersion` sigue en 1.
 
+## Diagramas de flujo (spec 003)
+El bloque `diagram` guarda su contenido como texto JSON en `props.data`. Desde la spec 003 ese JSON lleva `version: 2` e incluye, además de las formas y los conectores de antes:
+- **Formas:** `style` (`fill`, `fillOpacity`, `stroke`, `strokeWidth`, `strokeDash`, `textColor`) en lugar del `color` único.
+- **Conectores:** `from` y `to` son un extremo **unido** (`{ node, anchor }`, con `anchor` ∈ `n, ne, e, se, s, sw, w, nw`) o **libre** (`{ x, y }`); además `route` (`straight | orthogonal | curved | free`), `style` (`color`, `width`, `dash`, `startCap`, `endCap`, `textColor`) y, según el trazado, `waypoints`, `curvature`, `points` y `smooth`.
+- Los colores son `palette:<id>` (cambian con el tema) o hexadecimales (fijos).
+
+**Compatibilidad:** `formatVersion` **sigue en 1**. Un diagrama guardado sin `version` (versión 1: `color` en la forma y `from`/`to` como ids) se **migra al abrirlo**, sin reescribir el respaldo hasta que la persona lo edite; un respaldo anterior a la spec 003 se restaura completo (comprobado con `tests/golden/backup-pre003-diagrams.json`). Una aplicación más antigua no sabe leer un diagrama v2 y lo marcará como dañado en pantalla, pero su texto se conserva intacto en el respaldo. El Markdown legible no cambia de forma (`> - A → B (etiqueta)`); los extremos libres se escriben `(extremo libre)`.
+
+**Estilos predeterminados (Hito 3):** si el espacio definió estilos predeterminados de diagramas, el respaldo añade el archivo opcional `diagram-defaults.json` en la raíz (`{ shape?, edge? }`, JSON determinista); si no hay, no se escribe. Un respaldo sin él se restaura con los estilos del sistema.
+
 ## Rutas del Markdown
 `pages/<slug-del-título>--<id corto>.md`; el slug no tiene acentos ni caracteres especiales y mide como máximo 40 caracteres. Si dos páginas coincidieran, se alarga el id corto. Renombrar una página cambia la ruta del `.md`, **no** la de `data/<id>.json`.
 

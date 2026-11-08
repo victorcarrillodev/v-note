@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "a",
+      "shape": "terminator",
+      "x": 0,
+      "y": 0,
+      "w": 140,
+      "h": 50,
+      "text": "Inicio",
+      "color": "#dcfce7"
+    },
+    {
+      "id": "b",
+      "shape": "process",
+      "x": 0,
+      "y": 120,
+      "w": 140,
+      "h": 60,
+      "text": "Trabajo",
+      "color": "#dbeafe"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "a",
+      "to": "b",
+      "label": ""
+    }
+  ]
+}

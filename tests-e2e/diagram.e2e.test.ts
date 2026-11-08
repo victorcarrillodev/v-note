@@ -13,7 +13,9 @@ const nodes = (p: Page) => p.eval<{ text: string; shape: string; x: number; y: n
   `[...document.querySelectorAll('[data-testid=diagram] .react-flow__node')].map(n => { const g = n.querySelector('[role=group]'); return { text: g.innerText.trim(), shape: g.dataset.shape, x: Number(g.dataset.x), y: Number(g.dataset.y), w: n.getBoundingClientRect().width, h: n.getBoundingClientRect().height }; })`);
 const canvas = (p: Page) => p.eval<{ left: number; top: number; width: number; height: number }>(`(() => { const r = document.querySelector('[data-testid=diagram] .react-flow').getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; })()`);
 const transform = (p: Page) => p.eval<{ x: number; y: number; k: number }>(`(() => { const m = new DOMMatrix(getComputedStyle(document.querySelector('[data-testid=diagram] .react-flow__viewport')).transform); return { x: m.e, y: m.f, k: m.a }; })()`);
-const edgeCount = (p: Page) => p.eval<number>("document.querySelectorAll('[data-testid=diagram] .react-flow__edge').length");
+const edgeCount = (p: Page) => p.eval<number>("document.querySelectorAll('[data-testid=diagram] [data-connector]').length");
+const nodeIds = (p: Page) => p.eval<string[]>("[...document.querySelectorAll('[data-testid=diagram] .react-flow__node')].map(n => n.getAttribute('data-id'))");
+const anchorHit = (id: string, anchor: string) => `[data-testid=diagram] [data-anchor-group][data-node="${id}"][data-anchor="${anchor}"] [data-anchor-hit]`;
 
 async function openDiagram(p: Page) {
   await ensureSpace(p);
@@ -34,7 +36,7 @@ describe("diagrama de flujo en la aplicación real", () => {
 
     // T-324: bloque con lienzo vacío; T-335/CL-8: «Ajustar a pantalla» está disponible aun vacío
     expect(await nodes(p)).toEqual([]);
-    expect(await p.eval<boolean>("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Ajustar a pantalla')")).toBe(true);
+    expect(await p.eval<boolean>("[...document.querySelectorAll('button')].some(b => b.getAttribute('aria-label') === 'Ajustar a pantalla')")).toBe(true);
 
     // T-326: la paleta muestra las cinco formas
     expect(await p.eval<string[]>("[...document.querySelectorAll('[data-shape-button]')].map(b => b.dataset.shapeButton)")).toEqual(["terminator", "process", "decision", "io", "note"]);
@@ -78,28 +80,31 @@ describe("diagrama de flujo en la aplicación real", () => {
     await sleep(300);
     expect((await nodes(p))[0]!.w).toBeGreaterThan(wBefore + 20);
 
-    // T-332: cambiar el color
-    await setValue(p, '[role=region][aria-label="Propiedades de la forma"] select', "#dcfce7");
-    await p.waitFor("getComputedStyle(document.querySelector('[data-testid=diagram] .react-flow__node [role=group]')).backgroundColor === 'rgb(220, 252, 231)'");
+    // T-332 (spec 003): cambiar el relleno con el selector de color (botón de la paleta)
+    await p.eval(`[...document.querySelectorAll('[role=region][aria-label="Propiedades de la forma"] [role=group][aria-label=Relleno] button')].find(b => b.getAttribute('aria-label') === 'Verde').click()`);
+    await p.waitFor("getComputedStyle(document.querySelector('[data-testid=diagram] .react-flow__node [role=group]')).backgroundColor === 'rgb(221, 241, 229)'");
 
-    // T-330: conectar arrastrando de una forma a la otra; el conector sigue a las formas
+    // T-330 (spec 003): conectar arrastrando de un punto de unión de una forma al de la otra; el conector sigue a las formas
     await p.eval("document.querySelector('[data-testid=diagram] .react-flow__pane').click()");
-    const h1 = await p.center('[data-testid=diagram] .react-flow__node:nth-of-type(1) .react-flow__handle-right');
-    const n2 = await p.center('[data-testid=diagram] .react-flow__node:nth-of-type(2) .react-flow__handle-left'); // se suelta sobre un punto de conexión de la otra forma
-    await p.drag(h1, n2);
-    await p.waitFor("document.querySelectorAll('[data-testid=diagram] .react-flow__edge').length === 1", 8000);
-    const pathBefore = await p.eval<string>("document.querySelector('[data-testid=diagram] .react-flow__edge-path').getAttribute('d')");
+    const [idA, idB] = await nodeIds(p);
+    await p.click('[data-testid=diagram] .react-flow__node:nth-of-type(1) [role=group]'); // seleccionar la forma muestra sus puntos de unión
+    await p.waitFor(`document.querySelector('${anchorHit(idA!, "e")}')`, 5000);
+    const h1 = await p.center(anchorHit(idA!, "e"));
+    await p.drag(h1, await p.center('[data-testid=diagram] .react-flow__node:nth-of-type(2) [role=group]')); // se suelta sobre la forma: el imán busca el punto más cercano
+    await p.waitFor("document.querySelectorAll('[data-testid=diagram] [data-connector]').length === 1", 8000);
+    const pathBefore = await p.eval<string>("document.querySelector('[data-testid=diagram] [data-connector-path]').getAttribute('d')");
     const b2 = await p.center('[data-testid=diagram] .react-flow__node:nth-of-type(2) [role=group]');
     await p.drag(b2, { x: b2.x + 40, y: b2.y + 90 });
     await sleep(300);
-    expect(await p.eval<string>("document.querySelector('[data-testid=diagram] .react-flow__edge-path').getAttribute('d')")).not.toBe(pathBefore);
+    expect(await p.eval<string>("document.querySelector('[data-testid=diagram] [data-connector-path]').getAttribute('d')")).not.toBe(pathBefore);
+    expect(idB).toBeTruthy();
 
     // CDP no emite `click` sobre el trazo SVG del conector; se usa el teclado, que React Flow soporta (Enter).
-    await p.eval(`document.querySelector('[data-testid=diagram] .react-flow__edge').focus()`);
+    await p.eval(`document.querySelector('[data-testid=diagram] [data-connector]').focus()`);
     await p.key('Enter', 'Enter', 13);
     await p.waitFor("document.querySelector('[role=region][aria-label=\"Propiedades del conector\"]')", 5000);
     await setValue(p, '[role=region][aria-label="Propiedades del conector"] input', "sí");
-    await p.waitFor("document.querySelector('[data-testid=diagram] .react-flow__edge-text')?.textContent.includes('sí')");
+    await p.waitFor("document.querySelector('[data-testid=diagram] [data-connector] text')?.textContent.includes('sí')");
 
     // CL-9 / T-335: centrar en cualquiera de los extremos del conector
     await clickButton(p, "Centrar en el destino");
@@ -107,11 +112,11 @@ describe("diagrama de flujo en la aplicación real", () => {
 
     // T-334: zoom con los controles y desplazamiento arrastrando el fondo
     const k0 = (await transform(p)).k;
-    await p.click('[data-testid=diagram] .react-flow__controls-zoomin');
+    await clickButton(p, "Acercar");
     await sleep(400);
     expect((await transform(p)).k).toBeGreaterThan(k0);
-    await p.click('[data-testid=diagram] .react-flow__controls-zoomout');
-    await p.click('[data-testid=diagram] .react-flow__controls-zoomout');
+    await clickButton(p, "Alejar");
+    await clickButton(p, "Alejar");
     await sleep(400);
     expect((await transform(p)).k).toBeLessThan(k0);
     const t0 = await transform(p);
@@ -128,15 +133,15 @@ describe("diagrama de flujo en la aplicación real", () => {
     const inside = await p.eval<boolean>(`[...document.querySelectorAll('[data-testid=diagram] .react-flow__node')].every(n => { const r = n.getBoundingClientRect(); return r.left >= ${area.left} - 1 && r.right <= ${area.left + area.width} + 1 && r.top >= ${area.top} - 1 && r.bottom <= ${area.top + area.height} + 1; })`);
     expect(inside).toBe(true);
 
-    // T-333: eliminar una forma elimina sus conectores explícitamente e informa
+    // T-333 (spec 003, RF-4): eliminar una forma NO pierde sus conectores: quedan con extremo libre y se informa
     await p.click('[data-testid=diagram] .react-flow__node:nth-of-type(1) [role=group]');
     await p.waitFor("document.querySelector('[role=region][aria-label=\"Propiedades de la forma\"]')");
     await clickButton(p, "Eliminar forma");
     await p.waitFor("document.querySelectorAll('[data-testid=diagram] .react-flow__node').length === 1", 5000);
-    expect(await edgeCount(p)).toBe(0);
-    expect(await p.eval<string>("document.querySelector('[data-testid=diagram] [role=status]').innerText")).toMatch(/1 conector/);
+    expect(await edgeCount(p)).toBe(1);
+    expect(await p.eval<string>("document.querySelector('[data-testid=diagram] [data-diagram-notice]').innerText")).toMatch(/1 conector/);
 
-    // T-336: deshacer devuelve la forma y su conector; rehacer vuelve a quitarlos
+    // T-336: deshacer devuelve la forma y reúne su conector; rehacer vuelve a liberarlo
     await clickButton(p, "Deshacer");
     await p.waitFor("document.querySelectorAll('[data-testid=diagram] .react-flow__node').length === 2", 5000);
     expect(await edgeCount(p)).toBe(1);

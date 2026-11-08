@@ -1,5 +1,9 @@
 import { inlineToText, type Block, type Inline } from "../blocks/types";
-import { parseDiagram } from "../diagrams/diagram";
+import { isAttached, parseDiagram, type Endpoint } from "../diagrams/diagram";
+import type { Anchor } from "../diagrams/anchors";
+
+/** Nombre en español de cada punto de unión, para el Markdown legible del respaldo. */
+const ANCHOR_ES: Record<Anchor, string> = { n: "arriba", ne: "arriba a la derecha", e: "derecha", se: "abajo a la derecha", s: "abajo", sw: "abajo a la izquierda", w: "izquierda", nw: "arriba a la izquierda" };
 import { parseMatrix } from "../diagrams/matrix";
 import { sortedEvents, parseTimeline } from "../diagrams/timeline";
 import { parseTree, type TNode } from "../diagrams/tree";
@@ -64,7 +68,7 @@ function render(blocks: Block[], indent: string): string[] {
       case "diagram": {
         const d = parseDiagram(String(b.props.data ?? ""));
         if (!d.ok) { lines.push("> Diagrama (no se pudo leer)"); break; }
-        const label = (id: string) => d.value.nodes.find((n) => n.id === id)?.text.trim() || "(sin texto)";
+        const label = (e: Endpoint) => (isAttached(e) ? `${d.value.nodes.find((n) => n.id === e.node)?.text.trim() || "(sin texto)"} (${ANCHOR_ES[e.anchor]})` : "(extremo libre)");
         lines.push("> Diagrama");
         for (const n of d.value.nodes) lines.push(`> - ${n.text.trim() || "(sin texto)"} [${n.shape}]`);
         for (const e of d.value.edges) lines.push(`> - ${label(e.from)} → ${label(e.to)}${e.label.trim() ? ` (${e.label.trim()})` : ""}`);

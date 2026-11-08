@@ -8,7 +8,9 @@ import { migrate } from "../db/migrate";
 import { migrations } from "../db/migrations";
 import { toYjs } from "../blocks/toYjs";
 import type { Block } from "../blocks/types";
-import { addEdge, addNode, emptyDiagram, serializeDiagram, setEdgeLabel } from "../diagrams/diagram";
+import { addEdge, addNode, emptyDiagram, parseDiagram, serializeDiagram, setEdgeLabel } from "../diagrams/diagram";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { addChild, newTree, serializeTree, toggleCollapsed } from "../diagrams/tree";
 import { addEvent, emptyTimeline, serializeTimeline } from "../diagrams/timeline";
 import { addItem, serializeMatrix, template2x2 } from "../diagrams/matrix";
@@ -91,5 +93,33 @@ describe("archivo dorado con gráficos (T-354, RNF-7)", () => {
       const snapshot = Object.fromEntries([...files.entries()].filter(([k]) => k.startsWith("data/") || k.startsWith("pages/")).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => [k, dec.decode(v)]));
       await expect(JSON.stringify(snapshot, null, 2) + "\n").toMatchFileSnapshot("../../tests/golden/backup-v1-diagrams.json");
     } finally { spy.mockRestore(); }
+  });
+});
+
+describe("respaldo anterior a la spec 003 (G-040, CL-13)", () => {
+  // Salida real del respaldo con diagramas en versión 1, guardada antes de pasar a la versión 2.
+  const legacy = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/backup-pre003-diagrams.json"), "utf8")) as Record<string, string>;
+  const enc = new TextEncoder();
+  const legacyFiles = () => {
+    const files = new Map<string, Uint8Array>(Object.entries(legacy).map(([k, v]) => [k, enc.encode(v)]));
+    files.set("workspace.json", enc.encode(JSON.stringify({ formatVersion: 1, id: "w1", name: "Espacio", pageCount: 1 })));
+    files.set("trash.json", enc.encode("[]"));
+    return files;
+  };
+  it("se restaura completo y el diagrama se abre con sus formas, textos y conectores", async () => {
+    const dst = await newStore();
+    expect((await restoreFromFiles(legacyFiles(), { store: dst, assets: new MemoryAssetStore() })).ok).toBe(true);
+    const again = await ser(dst);
+    const page = JSON.parse(dec.decode([...again.entries()].find(([k]) => k.startsWith("data/"))![1]));
+    const diagram = must(parseDiagram(String(page.blocks[0].props.data)));
+    expect(diagram.nodes.map((n) => n.text)).toEqual(["Inicio del flujo", "¿Aprobado?"]);
+    expect(diagram.edges.map((e) => e.label)).toEqual(["revisar"]);
+    expect(diagram.edges[0]).toMatchObject({ from: { node: "n1", anchor: "e" }, to: { node: "n2", anchor: "w" } });
+  });
+  it("tras restaurarlo, el Markdown legible es el de antes con el punto de unión de cada extremo (G-079)", async () => {
+    const dst = await newStore();
+    expect((await restoreFromFiles(legacyFiles(), { store: dst, assets: new MemoryAssetStore() })).ok).toBe(true);
+    const again = await ser(dst);
+    expect(dec.decode([...again.entries()].find(([k]) => k.startsWith("pages/"))![1])).toBe(legacy["pages/nota-con-graficos--00000000.md"]!.replace("> - Inicio del flujo → ¿Aprobado? (revisar)", "> - Inicio del flujo (derecha) → ¿Aprobado? (izquierda) (revisar)"));
   });
 });

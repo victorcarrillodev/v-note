@@ -11,9 +11,10 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { withCollaboration } from "@blocknote/core/yjs";
 import { en as bnEn, es as bnEs } from "@blocknote/core/locales";
 import { Awareness } from "y-protocols/awareness";
-import { countBlocks, fromYjs, type DocSession } from "@vnote/core";
+import { clearDiagramDefaults, countBlocks, fromYjs, loadDiagramDefaults, saveEdgeDefault, saveShapeDefault, type DocSession } from "@vnote/core";
 import { LargePageNotice } from "./LargePageNotice";
 import { LinkProvider, type LinkApi } from "./LinkContext";
+import { DiagramDefaultsProvider, type DiagramDefaultsApi } from "../diagram/DiagramDefaults";
 import { Backlinks } from "./Backlinks";
 import { InboxTriage } from "./InboxTriage";
 import type { AssetStore } from "@vnote/core";
@@ -56,6 +57,14 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
     resolve: (id) => controller.resolveLink(id),
     open: (id) => void controller.select(id),
     restore: async (id) => { await controller.restore(id); },
+  }), [controller]);
+
+  // Estilos predeterminados de los diagramas: viven en la base de este espacio de trabajo.
+  const diagramDefaults = useMemo<DiagramDefaultsApi>(() => ({
+    load: () => loadDiagramDefaults(controller.store),
+    saveShape: async (style) => { await saveShapeDefault(controller.store, style); },
+    saveEdge: async (style, route) => { await saveEdgeDefault(controller.store, style, route); },
+    reset: () => clearDiagramDefaults(controller.store),
   }), [controller]);
 
   useEffect(() => {
@@ -110,7 +119,7 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
           {n} <button type="button" onClick={() => setNotes((all) => all.filter((_, j) => j !== i))}>{t("editor.dismiss")}</button>
         </p>
       ))}
-      {session ? <DatabaseEmbedProvider value={{ list: () => controller.listDatabases(), open: (id) => controller.openDatabaseById(id), openRow: (id) => void controller.select(id) }}><LinkProvider value={links}><Editor key={pageId} session={session} handlers={handlers} findPages={(q) => controller.findPages(q)} /></LinkProvider></DatabaseEmbedProvider> : <p role="status" className="opacity-70">{t("app.loading")}</p>}
+      {session ? <DatabaseEmbedProvider value={{ list: () => controller.listDatabases(), open: (id) => controller.openDatabaseById(id), openRow: (id) => void controller.select(id) }}><LinkProvider value={links}><DiagramDefaultsProvider value={diagramDefaults}><Editor key={pageId} session={session} handlers={handlers} findPages={(q) => controller.findPages(q)} /></DiagramDefaultsProvider></LinkProvider></DatabaseEmbedProvider> : <p role="status" className="opacity-70">{t("app.loading")}</p>}
       {session ? <Backlinks controller={controller} pageId={pageId} /> : null}
     </div>
   );

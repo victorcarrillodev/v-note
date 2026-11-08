@@ -10,4 +10,25 @@ export const DIAGRAM_COLORS: { id: string; hex: string; token: string }[] = [
 ];
 
 /** Relleno a dibujar para un color guardado: el token del tema si es de la paleta; si es otro valor (archivos antiguos), tal cual. */
-export const fillFor = (stored: string): string => DIAGRAM_COLORS.find((c) => c.hex.toLowerCase() === stored.toLowerCase())?.token ?? stored;
+export const fillFor = (stored: string): string => {
+  if (stored === "none") return "transparent";
+  if (stored.startsWith("palette:")) {
+    const id = stored.slice(8);
+    return id === "white" ? "var(--c-card)" : id === "ink" ? "var(--c-text)" : `var(--block-${id}-bg)`;
+  }
+  return DIAGRAM_COLORS.find((c) => c.hex.toLowerCase() === stored.toLowerCase())?.token ?? stored;
+};
+
+/** Ids de la paleta de diagramas (los mismos que valida el núcleo): los ocho rellenos de siempre, marrón, rosa y la tinta. */
+export const PALETTE_IDS: readonly string[] = [...DIAGRAM_COLORS.map((c) => c.id), "brown", "pink", "ink"];
+
+/** Color de contorno, línea o texto a dibujar: id de paleta → token de texto del color de bloque; hexadecimal → tal cual. */
+export const strokeFor = (stored: string): string => {
+  if (!stored.startsWith("palette:")) return stored;
+  const id = stored.slice(8);
+  return id === "ink" || id === "white" ? "var(--c-text)" : `var(--block-${id}-text)`;
+};
+
+/** Colores de paleta que se ofrecen según el uso: relleno (con blanco, marrón y rosa) o contorno/línea/texto (tinta y los tonos fuertes). */
+export const paletteFor = (role: "fill" | "stroke" | "text"): string[] =>
+  role === "fill" ? [...DIAGRAM_COLORS.map((c) => c.id), "brown", "pink"] : ["ink", "gray", "brown", "red", "orange", "yellow", "green", "blue", "purple", "pink"];

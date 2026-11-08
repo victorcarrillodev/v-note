@@ -3,6 +3,7 @@ import type { AssetStore } from "../assets/assetStore";
 import { DocStore } from "../docs/docStore";
 import { systemClock } from "../clock";
 import { serializeTags } from "./tags";
+import { loadDiagramDefaults, serializeDiagramDefaults } from "../diagrams/defaults";
 import { fromYjs } from "../blocks/fromYjs";
 import { stableJson } from "./stableJson";
 import { buildPagePaths } from "./paths";
@@ -63,6 +64,9 @@ export async function serializeWorkspace(
   if (reminders) put("reminders.json", reminders);
   const tags = await serializeTags(store);
   if (tags) put("tags.json", tags);
+  // Estilos predeterminados de diagramas del espacio (spec 003): solo si se definieron; sin ellos el respaldo es idéntico al de antes.
+  const diagramDefaults = serializeDiagramDefaults(await loadDiagramDefaults(store));
+  if (diagramDefaults) put("diagram-defaults.json", diagramDefaults);
 
   put("trash.json", stableJson(rows.filter((r) => r.deleted_at !== null).map((r) => ({ id: r.id, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id }))));
   put("workspace.json", stableJson({ formatVersion: FORMAT_VERSION, id: workspace.id, name: workspace.name, pageCount: rows.length }));

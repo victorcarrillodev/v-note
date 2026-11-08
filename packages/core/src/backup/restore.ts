@@ -1,3 +1,4 @@
+import { parseDiagramDefaults, restoreDiagramDefaults, type DiagramDefaults } from "../diagrams/defaults";
 import * as Y from "yjs";
 import { appError, err, ok, type AppError, type Result } from "../result";
 import type { AssetStore } from "../assets/assetStore";
@@ -28,7 +29,7 @@ export async function listBackups(client: GitHubClient, branch: string): Promise
   return r.ok ? ok(r.value) : fromBackupError(r.error);
 }
 
-const NEEDED = (p: string) => p === "workspace.json" || p === "trash.json" || p === "reminders.json" || p.startsWith("databases/") || p.startsWith("data/") || p.startsWith("assets/");
+const NEEDED = (p: string) => p === "workspace.json" || p === "trash.json" || p === "reminders.json" || p === "tags.json" || p === "diagram-defaults.json" || p.startsWith("databases/") || p.startsWith("data/") || p.startsWith("assets/");
 
 /** Descarga de un commit los archivos necesarios para restaurar (no los Markdown, que son solo de lectura). */
 export async function readBackup(client: GitHubClient, commitSha: string): Promise<Result<Map<string, Uint8Array>>> {
@@ -61,7 +62,7 @@ function parseJson(bytes: Uint8Array | undefined, what: string): Result<Record<s
 }
 
 /** Valida TODO el respaldo antes de escribir nada. */
-export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null; tags: TagsFile | null }>> {
+export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ diagramDefaults: DiagramDefaults; pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null; tags: TagsFile | null }>> {
   const ws = parseJson(files.get("workspace.json"), "workspace.json");
   if (!ws.ok) return ws;
   if (typeof ws.value.formatVersion !== "number") return invalid("workspace.json no indica la versión del formato");
@@ -122,7 +123,15 @@ export async function validateBackup(files: Map<string, Uint8Array>): Promise<Re
   }
   const tags = validateTags(tagsRaw, new Set(pages.map((p) => p.id)));
   if (!tags.ok) return tags;
-  return ok({ pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders, tags: tags.value });
+  let diagramDefaults: DiagramDefaults = {};
+  if (files.has("diagram-defaults.json")) {
+    const r = parseJson(files.get("diagram-defaults.json"), "diagram-defaults.json");
+    if (!r.ok) return r;
+    const dd = parseDiagramDefaults(r.value);
+    if (!dd.ok) return dd;
+    diagramDefaults = dd.value;
+  }
+  return ok({ pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders, tags: tags.value, diagramDefaults });
 }
 
 /**
@@ -156,6 +165,7 @@ export async function restoreFromFiles(files: Map<string, Uint8Array>, target: {
       }
       await insertDatabases(tx, v.value.databases, v.value.reminders);
       await insertTags(tx, v.value.tags);
+      await restoreDiagramDefaults(tx, v.value.diagramDefaults);
     });
     return ok({ pages: v.value.pages.length, assets: v.value.assets.length });
   } catch (e) {

@@ -36,7 +36,42 @@ async function seed(p: Page, nodes: number, edges: number) {
   })()`);
 }
 
+/** Igual que `seed`, pero en formato v2 con conectores de 90° (spec 003). */
+async function seedV2(p: Page, nodes: number, edges: number) {
+  await p.eval(`(() => {
+    const shapes = ['terminator','process','decision','io','note'], anchors = ['e','s','w','n'];
+    const ns = Array.from({ length: ${nodes} }, (_, i) => ({ id: 'n' + i, shape: shapes[i % 5], x: (i % 20) * 220, y: Math.floor(i / 20) * 140, w: 140, h: 60, text: 'Paso ' + i }));
+    const es = Array.from({ length: ${edges} }, (_, i) => { const a = i % ${nodes}, b = (a + 1 + (i % 37) * 5) % ${nodes}; return { id: 'e' + i, from: { node: 'n' + a, anchor: anchors[i % 4] }, to: { node: 'n' + b, anchor: anchors[(i + 2) % 4] }, route: 'orthogonal', label: '' }; });
+    const ed = document.querySelector('.bn-editor').editor; const view = ed.view; let target = null;
+    view.state.doc.descendants((node, pos) => { if (node.type.name === 'diagram') target = { node, pos }; });
+    view.dispatch(view.state.tr.setNodeMarkup(target.pos, undefined, { ...target.node.attrs, data: JSON.stringify({ version: 2, nodes: ns, edges: es }) }));
+  })()`);
+}
+
 describe("diagrama grande y accesibilidad", () => {
+  it("G-118 (RNF-1): 200 formas y 300 conectores de 90° se desplazan, se amplían y se mueven sin pausas notorias", async () => {
+    const p = await web.open();
+    await openDiagram(p);
+    await seedV2(p, 200, 300);
+    await p.waitFor("document.querySelectorAll('[data-testid=diagram] .react-flow__node').length >= 4", 15000);
+    await p.waitFor("document.querySelectorAll('[data-testid=diagram] [data-connector]').length >= 1", 15000);
+    await p.eval(`window.__gaps = []; (function loop(last) { requestAnimationFrame((t) => { if (last) window.__gaps.push(t - last); loop(t); }); })(0)`);
+    const r = await p.eval<{ left: number; top: number; width: number; height: number }>(`(() => { const r = document.querySelector('[data-testid=diagram] .react-flow').getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; })()`);
+    const a = { x: r.left + r.width - 30, y: r.top + r.height - 30 };
+    await p.drag(a, { x: a.x - 120, y: a.y - 60 });                   // desplazar el lienzo
+    for (let i = 0; i < 4; i++) { await p.send("Input.dispatchMouseEvent", { type: "mouseWheel", x: r.left + r.width / 2, y: r.top + r.height / 2, deltaX: 0, deltaY: -120, modifiers: 2 }); await sleep(60); }
+    const c = await p.center("[data-testid=diagram] .react-flow__node [role=group]");
+    await p.drag(c, { x: c.x + 60, y: c.y + 40 });                   // mover una forma con conectores
+    await sleep(400);
+    const gaps = await p.eval<number[]>("window.__gaps");
+    const worst = Math.max(...gaps);
+    console.log("G-118 peor fotograma (ms):", Math.round(worst), "fotogramas:", gaps.length);
+    expect(gaps.length).toBeGreaterThan(10);
+    expect(worst).toBeLessThan(250);
+    const sorted = [...gaps].sort((x, y) => x - y);
+    expect(sorted[Math.floor(sorted.length * 0.95)]!).toBeLessThan(100);
+  }, 120000);
+
   it("T-337: 500 elementos se mueven y se amplían sin pausas notorias", async () => {
     const p = await web.open();
     await openDiagram(p);

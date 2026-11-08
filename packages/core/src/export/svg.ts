@@ -1,5 +1,8 @@
 import type { Diagram, DNode } from "../diagrams/diagram";
 import { diagramBounds } from "../diagrams/diagram";
+import { connectorPath, pathToSvg, type ConnectorPath } from "../diagrams/path";
+import { EDGE_WIDTH_PX, dashArray, fillHexLight, isColor, strongHexLight } from "../diagrams/style";
+import { styledPath, type CapShape } from "../diagrams/caps";
 import { layoutTree, NODE_H, NODE_W, type TNode, type Tree } from "../diagrams/tree";
 import { EVENT_H, EVENT_W, placeEvents, sortedEvents, type Timeline } from "../diagrams/timeline";
 import type { Matrix } from "../diagrams/matrix";
@@ -43,53 +46,63 @@ function wrapSvg(box: Box, body: string, defs = ""): string {
 const EMPTY = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0" width="0" height="0" role="img"></svg>`;
 const ARROW = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker></defs>`;
 
-function label(cx: number, cy: number, w: number, h: number, text: string, anchor = "middle"): string {
+function label(cx: number, cy: number, w: number, h: number, text: string, anchor = "middle", color = "#0f172a"): string {
   const lines = wrapText(text, w / 7.2).slice(0, Math.max(1, Math.floor(h / 16)));
   if (lines.length === 0) return "";
   const top = cy - ((lines.length - 1) * 16) / 2;
-  return lines.map((l, i) => `<text x="${n(cx)}" y="${n(top + i * 16)}" text-anchor="${anchor}" dominant-baseline="central" ${FONT} fill="#0f172a">${escapeXml(l)}</text>`).join("");
+  return lines.map((l, i) => `<text x="${n(cx)}" y="${n(top + i * 16)}" text-anchor="${anchor}" dominant-baseline="central" ${FONT} fill="${color}">${escapeXml(l)}</text>`).join("");
+}
+
+/** Relleno de una forma para exportar (siempre con los valores del tema claro): «none», id de paleta o hexadecimal válido. */
+function exportFill(value: string): string {
+  if (value === "none") return "none";
+  if (value.startsWith("palette:")) return fillHexLight(value.slice(8)) ?? "#dbeafe";
+  return isColor(value) ? value : "#dbeafe";
 }
 
 function nodeShape(nd: DNode): string {
-  const c = fill(nd.color, "#dbeafe");
+  const c = exportFill(nd.style.fill);
   const { x, y, w, h } = nd;
-  const stroke = `stroke="#334155" stroke-width="1.5"`;
+  const sw = nd.style.strokeWidth, dash = dashArray(nd.style.strokeDash, sw);
+  const paint = `fill="${c}"${nd.style.fillOpacity < 1 ? ` fill-opacity="${n(nd.style.fillOpacity)}"` : ""} stroke="${exportStroke(nd.style.stroke, "#334155")}" stroke-width="${sw}"${dash ? ` stroke-dasharray="${dash}"` : ""}`;
   switch (nd.shape) {
-    case "decision": return `<polygon points="${n(x + w / 2)},${n(y)} ${n(x + w)},${n(y + h / 2)} ${n(x + w / 2)},${n(y + h)} ${n(x)},${n(y + h / 2)}" fill="${c}" ${stroke}/>`;
-    case "io": return `<polygon points="${n(x + 16)},${n(y)} ${n(x + w)},${n(y)} ${n(x + w - 16)},${n(y + h)} ${n(x)},${n(y + h)}" fill="${c}" ${stroke}/>`;
-    case "terminator": return `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(h / 2)}" fill="${c}" ${stroke}/>`;
-    case "note": return `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" fill="${c}" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-    default: return `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="4" fill="${c}" ${stroke}/>`;
+    case "decision": return `<polygon points="${n(x + w / 2)},${n(y)} ${n(x + w)},${n(y + h / 2)} ${n(x + w / 2)},${n(y + h)} ${n(x)},${n(y + h / 2)}" ${paint}/>`;
+    case "io": return `<polygon points="${n(x + 16)},${n(y)} ${n(x + w)},${n(y)} ${n(x + w - 16)},${n(y + h)} ${n(x)},${n(y + h)}" ${paint}/>`;
+    case "terminator": return `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${n(h / 2)}" ${paint}/>`;
+    default: return `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="${nd.shape === "note" ? 0 : 4}" ${paint}/>`;
   }
 }
 
-/** Punto del borde de `node` por donde sale (o llega) el conector hacia `other`: así la punta de la flecha no queda tapada por la forma. */
-function borderPoint(node: DNode, other: DNode): [number, number] {
-  const cx = node.x + node.w / 2, cy = node.y + node.h / 2;
-  const dx = other.x + other.w / 2 - cx, dy = other.y + other.h / 2 - cy;
-  if (dx === 0 && dy === 0) return [cx, cy];
-  const hw = node.w / 2, hh = node.h / 2;
-  // Rombo: |dx|/hw + |dy|/hh = 1; el resto de formas se tratan como rectángulos: max(|dx|/hw, |dy|/hh) = 1.
-  const k = node.shape === "decision" ? Math.abs(dx) / hw + Math.abs(dy) / hh : Math.max(Math.abs(dx) / hw, Math.abs(dy) / hh);
-  return [cx + dx / k, cy + dy / k];
+/** Color de línea o texto para exportar (tema claro): tinta → gris de siempre; id de paleta → su tono fuerte; hexadecimal válido → tal cual. */
+function exportStroke(value: string, ink: string): string {
+  if (value.startsWith("palette:")) return strongHexLight(value.slice(8)) ?? ink;
+  return isColor(value) ? value : ink;
 }
 
-/** Diagrama de flujo (RF-9) como SVG: formas, conectores con flecha y etiquetas. */
+/** Diagrama de flujo (RF-9) como SVG: formas, conectores (mismos caminos que el lienzo) con flecha y etiquetas. */
 export function diagramToSvg(d: Diagram): string {
-  const b = diagramBounds(d);
-  if (!b) return EMPTY;
-  const byId = new Map(d.nodes.map((nd) => [nd.id, nd]));
+  const nb = diagramBounds(d);
+  if (!nb) return EMPTY;
+  // El dibujo también debe incluir los conectores con extremos libres o curvas que salen de la caja de las formas.
+  let x0 = nb.x, y0 = nb.y, x1 = nb.x + nb.w, y1 = nb.y + nb.h;
   const edges = d.edges.flatMap((e) => {
-    const a = byId.get(e.from), z = byId.get(e.to);
-    if (!a || !z) return [];
-    const [x1, y1] = borderPoint(a, z), [x2, y2] = borderPoint(z, a);
-    const line = `<line x1="${n(x1)}" y1="${n(y1)}" x2="${n(x2)}" y2="${n(y2)}" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>`;
-    const text = e.label.trim() === "" ? "" : `<text x="${n((x1 + x2) / 2)}" y="${n((y1 + y2) / 2 - 6)}" text-anchor="middle" ${FONT} fill="#334155">${escapeXml(e.label)}</text>`;
-    return [line + text];
+    const p = connectorPath(d, e);
+    if (!p) return [];
+    for (const c of p.cmds) for (const q of c.t === "C" ? [c.c1, c.c2, c.p] : [c.p]) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
+    const stroke = exportStroke(e.style.color, "#475569"), width = EDGE_WIDTH_PX[e.style.width], dash = dashArray(e.style.dash, width);
+    const sp = styledPath(p, e.style);
+    for (const cap of [sp.start, sp.end]) if (cap) for (const q of cap.kind === "circle" ? [{ x: cap.center.x - cap.r, y: cap.center.y - cap.r }, { x: cap.center.x + cap.r, y: cap.center.y + cap.r }] : cap.points) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
+    const line = `<path data-connector="" d="${pathToSvg({ ...p, cmds: sp.cmds })}" fill="none" stroke="${stroke}" stroke-width="${width}"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`;
+    const capSvg = (c: CapShape | null, kind: string) => (c === null ? "" : c.kind === "circle"
+      ? `<circle data-cap="${kind}" cx="${n(c.center.x)}" cy="${n(c.center.y)}" r="${n(c.r)}" fill="${stroke}"/>`
+      : `<polygon data-cap="${kind}"${kind === "arrow" ? " data-arrow=\"\"" : ""} points="${c.points.map((q) => `${n(q.x)},${n(q.y)}`).join(" ")}" fill="${stroke}"/>`);
+    const arrow = capSvg(sp.start, e.style.startCap) + capSvg(sp.end, e.style.endCap);
+    const text = e.label.trim() === "" ? "" : `<text x="${n(p.midpoint.x)}" y="${n(p.midpoint.y - 6)}" text-anchor="middle" ${FONT} fill="${exportStroke(e.style.textColor, "#334155")}">${escapeXml(e.label)}</text>`;
+    return [line + arrow + text];
   });
-  // Las líneas van debajo: cada forma tapa el tramo de conector que la atraviesa hasta su borde.
-  const shapes = d.nodes.map((nd) => nodeShape(nd) + label(nd.x + nd.w / 2, nd.y + nd.h / 2, nd.w - 12, nd.h, nd.text));
-  return wrapSvg(b, edges.join("") + shapes.join(""), ARROW);
+  // Las líneas van debajo: cada forma tapa el tramo de conector que la atraviesa.
+  const shapes = d.nodes.map((nd) => nodeShape(nd) + label(nd.x + nd.w / 2, nd.y + nd.h / 2, nd.w - 12, nd.h, nd.text, "middle", exportStroke(nd.style.textColor, "#0f172a")));
+  return wrapSvg({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, edges.join("") + shapes.join(""));
 }
 
 /** Organigrama o mapa mental (solo las ideas visibles; lo plegado no se dibuja). */

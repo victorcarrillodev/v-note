@@ -1,0 +1,214 @@
+{
+  "edges": [
+    {
+      "from": {
+        "anchor": "e",
+        "node": "a"
+      },
+      "id": "e1",
+      "label": "",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "b"
+      }
+    },
+    {
+      "from": {
+        "anchor": "e",
+        "node": "b"
+      },
+      "id": "e2",
+      "label": "",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "c"
+      }
+    },
+    {
+      "from": {
+        "anchor": "e",
+        "node": "c"
+      },
+      "id": "e3",
+      "label": "no",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "d"
+      }
+    },
+    {
+      "from": {
+        "anchor": "e",
+        "node": "c"
+      },
+      "id": "e4",
+      "label": "sí",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "f"
+      }
+    },
+    {
+      "from": {
+        "anchor": "e",
+        "node": "d"
+      },
+      "id": "e5",
+      "label": "reintentar",
+      "route": "curved",
+      "style": {
+        "color": "palette:ink",
+        "dash": "solid",
+        "endCap": "arrow",
+        "startCap": "none",
+        "textColor": "palette:ink",
+        "width": "medium"
+      },
+      "to": {
+        "anchor": "w",
+        "node": "b"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "h": 50,
+      "id": "a",
+      "shape": "terminator",
+      "style": {
+        "fill": "palette:green",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Inicio",
+      "w": 140,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 60,
+      "id": "b",
+      "shape": "process",
+      "style": {
+        "fill": "palette:blue",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Leer datos",
+      "w": 140,
+      "x": 0,
+      "y": 100
+    },
+    {
+      "h": 80,
+      "id": "c",
+      "shape": "decision",
+      "style": {
+        "fill": "palette:yellow",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "¿Válido?",
+      "w": 140,
+      "x": 0,
+      "y": 200
+    },
+    {
+      "h": 60,
+      "id": "d",
+      "shape": "io",
+      "style": {
+        "fill": "palette:red",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Mostrar error",
+      "w": 140,
+      "x": 260,
+      "y": 210
+    },
+    {
+      "h": 80,
+      "id": "e",
+      "shape": "note",
+      "style": {
+        "fill": "palette:gray",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "dashed",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Nota: revisar a mano",
+      "w": 160,
+      "x": 260,
+      "y": 0
+    },
+    {
+      "h": 50,
+      "id": "f",
+      "shape": "terminator",
+      "style": {
+        "fill": "palette:green",
+        "fillOpacity": 1,
+        "stroke": "palette:ink",
+        "strokeDash": "solid",
+        "strokeWidth": 2,
+        "textColor": "palette:ink"
+      },
+      "text": "Fin",
+      "w": 140,
+      "x": 0,
+      "y": 340
+    }
+  ],
+  "version": 2
+}

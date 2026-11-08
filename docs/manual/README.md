@@ -225,7 +225,22 @@ Desde `/` puedes insertar lienzos visuales dentro de una página:
 | **Línea de tiempo** | Eventos ordenados por fecha; dos eventos en la misma fecha no se superponen. |
 | **Matriz** | Filas y columnas (plantilla 2×2 de importante/urgente). |
 
-En el diagrama: elige una forma de la paleta, colócala, **mueve y redimensiona**, cambia su texto y color, y une dos formas con un **conector**. Hay **zoom**, desplazamiento, **Ajustar a pantalla** y deshacer/rehacer. Al eliminar una forma se avisa de los conectores que se quitaron con ella. Un diagrama grande (500 elementos) se mueve y amplía con fluidez. Todos se pueden exportar como imagen vectorial dentro de HTML/PDF (sección 13).
+### Diagrama de flujo
+
+- **Formas:** elige una de la paleta (o arrástrala al lugar que quieras), **muévela**, **redimensiónala** con los tiradores de sus esquinas y edita su texto.
+- **Conectar donde tú quieras:** al seleccionar una forma, pasar el puntero por ella o arrastrar un conector cerca, aparecen sus **8 puntos de unión**. Arrastra desde uno y suéltalo en un punto de otra forma: el conector queda unido **exactamente ahí** y **sigue a ese punto** cuando mueves o cambias de tamaño las formas. Si sueltas en un lugar vacío, el extremo queda **libre** en ese punto; puedes arrastrarlo después a otra forma o despegarlo. Con el teclado, el panel del conector permite elegir la forma y el punto de unión de cada extremo.
+- **Trazado del conector:** en su panel elige **Recto**, **Ángulos de 90°** (se calcula solo y puedes arrastrar sus tramos intermedios; «Restablecer ruta» vuelve al cálculo automático), **Redondeado** (arrastra su asa o usa «Curvatura») o **Libre** (puntos de control: arrástralos, añade uno con doble clic o con «Añadir punto», quítalo con Supr; «Suavizado» alterna entre segmentos rectos y curva). Si cambias de trazado se avisa de los ajustes que se descartan y puedes deshacer.
+- **Colores y estilo:** cada forma tiene **relleno** (o sin relleno) con **opacidad**, **contorno** (color, grosor y tipo de línea) y **color del texto**; cada conector, **color**, **grosor**, **tipo de línea**, **punta de cada extremo** (flecha, círculo, rombo o ninguna) y color de su texto. Elige de la **paleta** (cambia con el tema claro u oscuro) o escribe un color **hexadecimal**; los colores personalizados se ven igual en ambos temas, y si el texto queda con poco contraste se te avisa sin impedirlo. Los últimos colores usados quedan a la mano.
+- **Estilo predeterminado:** «Usar como predeterminado» guarda el estilo de la forma (o del conector, con su trazado) para las nuevas de **ese espacio de trabajo**; «Restablecer predeterminados» vuelve al del sistema. Lo ya dibujado no cambia.
+- **Copiar y pegar:** **Copiar** y **Pegar** (Ctrl/Cmd+C y V con el foco en el diagrama) duplican las formas seleccionadas con los conectores que las unen, desplazadas; se puede pegar en otro diagrama mientras la ventana siga abierta. **Copiar formato** y **Pegar formato** (Ctrl/Cmd+Alt+C y V) pasan solo el estilo a otro elemento del mismo tipo. Nada de esto usa el portapapeles del sistema.
+- **Vista:** botones **Acercar**, **Alejar** y **Ajustar a pantalla** en una esquina del lienzo, desplazamiento arrastrando el fondo, y **Deshacer/Rehacer** de cada acción.
+- **Al eliminar una forma** sus conectores no se pierden: quedan con ese extremo libre y se avisa cuántos son; **Deshacer** los vuelve a unir.
+
+![Diagrama con una forma seleccionada: puntos de unión y panel de estilo](img/17-diagrama-estilo.png)
+
+![Conector seleccionado: asas de los extremos y panel de trazado](img/18-diagrama-conector.png)
+
+Un diagrama grande (200 formas y 300 conectores) se mueve y amplía con fluidez. Todos se pueden exportar como imagen vectorial dentro de HTML/PDF (sección 13), con los mismos colores, trazados y puntas que ves en el lienzo. Los diagramas guardados con una versión anterior se abren sin cambios de aspecto.
 
 ## 11. Captura rápida
 
