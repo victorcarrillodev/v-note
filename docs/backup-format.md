@@ -84,3 +84,9 @@ Adjuntos de más de **100 MB** (límite individual de GitHub): se omiten, se avi
 
 ## Restauración
 Se lee el árbol de un commit, se valida `formatVersion`, y se reconstruye el espacio desde `data/`, `trash.json` y `assets/`. Los `.md` son solo de lectura humana.
+
+## Pulido de diagramas y mapas mentales (spec 004)
+Sin cambios de formato: `formatVersion` **sigue en 1** y no se añade ningún archivo. Los datos nuevos viajan dentro del texto JSON del propio bloque (`props.data`) como **campos aditivos y opcionales**; el escritor no emite un campo sin valor, de modo que un diagrama o mapa sin editar produce exactamente los mismos bytes que antes.
+- **Diagrama (`diagram`):** `view` opcional con `height` (alto del lienzo en px, entre 240 y 1600). Sin él se usa el alto de siempre.
+- **Mapa mental (`mindmap`):** `view` opcional con `height` en el árbol; en cada globo, `off` opcional (`{x, y}`: desplazamiento respecto a la distribución automática, heredado por los hijos) y `style` opcional (`fill`, `stroke`, `text` y `line`, cada uno `palette:<id>`, hex o `none`). El organigrama comparte el modelo pero ignora estos campos.
+- **Compatibilidad:** un respaldo anterior se restaura sin cambios y se ve igual. Una versión anterior de la aplicación lee un mapa nuevo sin error: conserva los campos de los globos que no conoce y pierde solo el `view` del árbol (el alto vuelve al de por defecto). El Markdown legible y el texto de búsqueda no cambian.

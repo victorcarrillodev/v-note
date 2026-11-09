@@ -1,6 +1,6 @@
 # Plan 004 — Pulido de diagramas de flujo y mapas mentales
 
-> **Estado:** borrador · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
+> **Estado:** Hito 0 cerrado (resultados en `spikes/RESULTS-pulido.md`); Hito 1 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
 > **Marco:** `docs/constitution.md`. Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, decisiones con su alternativa descartada, hitos y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes los requisitos que cubre, por ejemplo **[RF-3]**. La sección 15 es una matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**
@@ -109,6 +109,7 @@ Responsabilidades, iguales para diagrama y mapa:
 - Anclas: **elemento DOM** (globo, forma) o **punto virtual** (conector: punto medio del trazado o el punto seleccionado, convertido con las funciones de coordenadas del lienzo, y actualizado al arrastrar, hacer zoom o desplazar).
 - Posición preferida: encima del elemento; si no cabe, debajo o a un lado (colisión de Radix); siempre completo (CL-1). Con un offset que **no tapa** el elemento (RNF-4); alto máximo 40 % del alto visible con desplazamiento interno.
 - Se cierra con Esc, clic en vacío o al seleccionar otro elemento, que **cambia** el menú al nuevo (CL-2). No roba el foco cuando el globo está en edición (sección 9.4).
+- **Se oculta mientras su ancla está fuera del área visible del lienzo** (con el ancla fuera, el menú se quedaría pegado al borde) y reaparece al volver; si arriba no cabe, pasa debajo (R-004).
 - Contenido en **grupos con etiqueta e ícono** (RF-2): *Apariencia* (relleno, contorno, texto, forma), *Estructura* (conexión, trazado, puntas / agregar hijo, hermano, colapsar), *Acciones* (copiar formato, pegar formato, eliminar). Mismo orden por tipo de elemento. Rol `menu`/`toolbar` con nombres accesibles y recorrido con flechas.
 - Los controles actuales (`ShapeStylePanel`, `EdgeStylePanel`, `RouteControls`, `EdgeEnds`) **se reutilizan dentro del menú**; solo cambia su contenedor.
 - Sin selección: solo los controles generales compactos (insertar forma, zoom, ampliar, deshacer, rehacer) en una barra delgada **sobre** el lienzo, no debajo. La franja inferior se elimina.
@@ -130,7 +131,8 @@ El marco observa su ancho (`ResizeObserver`); el lienzo se reencuadra **solo si*
 - El detector `useInputModality` fija `data-input="pointer"` ante un `pointerdown` y `data-input="keyboard"` ante un `keydown` de navegación (Tab, flechas, Enter, Esc).
 - La regla de foco pasa a: anillo doble **solo** cuando `data-input="keyboard"`; con `pointer` se quita el anillo azul y la sombra de separación. Los campos de texto con foco de ratón muestran un **borde de control reforzado** neutro (no azul) para que se note dónde se escribe.
 - En contraste forzado se mantiene el anillo del sistema.
-- Se identifican y neutralizan **las fuentes** del azul al hacer clic en un bloque: la regla `:focus-visible` global, el borde de selección del nodo (sección DP-14) y el contorno de selección que pone el editor de bloques al seleccionar un bloque «atómico». El Hito 0 las enumera midiendo el color de contorno calculado al hacer clic, para no dejar ninguna.
+- **Fuentes del azul (medidas en el Hito 0, R-002):** (1) la regla `:focus-visible` global aplicada al propio editor (`contenteditable`), que siempre cumple `:focus-visible` aunque el clic sea de ratón: es el «resaltado azul» que ve la persona; (2) la misma regla en los campos de texto; (3) el borde de acento del globo seleccionado (DP-14). El contorno de «bloque atómico seleccionado» **no existe**. El elemento activo de la barra lateral usa un borde de acento propio de la barra: queda fuera del alcance y se conserva.
+- El editor con foco de ratón **no muestra ningún contorno de sustitución**; solo los campos de texto muestran el borde neutro reforzado.
 - **Selección discreta [DP-14]:** halo neutro y borde más grueso en ambos temas; contraste 3:1 contra el fondo (criterio de componentes de interfaz).
 
 ---
@@ -206,7 +208,7 @@ asegurar continuidad C1 en cada punto (sin esquinas) y sin bucles
 efectiva(g) = automática(g) + suma de off(h) para h en [ancestros de g, g]
 ```
 - `automática` sigue siendo `layoutTree` (mapa mental: ramas a izquierda y derecha).
-- **Arrastrar** (`onNodeDrag`): en vista previa, el nodo y **toda su rama** se desplazan el mismo delta; al soltar (`onNodeDragStop`) se calcula el `off` del globo con `snapOffset` (si el acomodo está activo) y se confirma **un solo paso de historial**.
+- **Arrastrar:** el arrastre de una rama **no pasa por el estado de React** (plan B obligatorio, medido en el Hito 0: 200 nodos movidos por el estado dan un peor fotograma de ~1000 ms). Durante el gesto, el globo y su rama se mueven con una **única transformación de CSS** sobre un contenedor de la rama y se redibujan solo las líneas afectadas; al soltar se calcula el `off` del globo con `snapOffset` (si el acomodo está activo) y se confirma **un solo paso de historial** y una sola actualización de estado.
 - **Raíz:** su `off` mueve todo el mapa (CL-7); sus hijos no cambian.
 - **Colapsar** un globo movido: sus hijos se ocultan y reaparecen en su sitio porque conservan sus `off` (CL-8).
 - **Reordenar automáticamente** (RF-11): borra todos los `off` del árbol en **un** paso de historial.
@@ -301,7 +303,7 @@ Sin cambios: nada de plataforma interviene.
 | **3 — Mapa mental** | Modelo ampliado, historial, `MindMapEditor`: clic único, color y rama, mover con rama, controles de vista, alto y cuadrícula. | Criterios 7 a 11 y 12. |
 | **4 — Cierre** | Respaldo/export/búsqueda, accesibilidad, rendimiento, casos límite, documentación (`docs/manual`, formato de respaldo) y matriz de aceptación. | Criterio 13 y todos los CL con prueba. |
 
-### 13.1 Verificaciones previas del Hito 0 (código desechable)
+### 13.1 Verificaciones previas del Hito 0 (código desechable) — **resultados en `spikes/RESULTS-pulido.md`**
 1. **Vista ampliada con `fixed`** dentro del editor de bloques: ¿hay un ancestro con `transform`/`overflow` que lo rompa? ¿El lienzo se reencuadra bien al cambiar de tamaño? (decide DP-2).
 2. **Fuentes del contorno azul:** medir el color de contorno calculado al hacer clic en diagrama, mapa y bloques para listar **todas** las reglas que lo producen (sección 6.2).
 3. **Mapa sobre xyflow con 200 globos:** fluidez al arrastrar una rama completa; si el peor fotograma supera 100 ms, se evalúa mover la rama sin pasar por el estado de React durante el gesto.
@@ -401,7 +403,7 @@ Auditoría de accesibilidad (axe, ya en el proyecto) sobre diagrama, mapa, menú
 |---|---|
 | La vista ampliada con `fixed` falla por un ancestro con `transform` o por el editor de bloques | Hito 0 (1); alternativa: portal con estado elevado (DP-2) |
 | Quedan fuentes de contorno azul sin identificar (p. ej. selección del editor de bloques) | Hito 0 (2) enumera todas; prueba e2e mide el color de contorno tras clic |
-| Mover una rama de 200 globos en el estado de React cae por debajo del presupuesto | Hito 0 (3); mover por vista previa fuera del estado hasta soltar |
+| Mover una rama de 200 globos por el estado de React es inviable (medido: ~1000 ms) | **Ya asumido como diseño** (sección 9.2): transformación directa durante el gesto y confirmación al soltar; R-169 y R-182 lo miden |
 | Un clic con campo de texto se confunde con un arrastre | Umbral de 5 px y campo que se activa solo tras el clic (sección 9.4); prueba dedicada |
 | La spline produce bucles o picos con puntos cercanos | Regularización de puntos y pruebas de CL-5 con casos patológicos |
 | Un dato nuevo abre mal en una versión anterior | Prueba de lectura con el lector anterior (RNF-7); campos aditivos y opcionales |

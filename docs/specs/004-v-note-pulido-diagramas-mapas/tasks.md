@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Alcance:** diagrama de flujo y mapa mental. El organigrama, la línea de tiempo y la matriz no se tocan (salvo puntero y foco, que son globales).
 > **Total:** 191 tareas · Hito 0: 11 · Hito 1: 60 · Hito 2: 32 · Hito 3: 67 · Hito 4: 21
-> **Estado:** pendiente de empezar.
+> **Estado:** Hito 0 cerrado el 9 de noviembre de 2026 (11 de 191 tareas) · Hito 1 pendiente.
 
 ---
 
@@ -17,17 +17,17 @@
 
 *Requiere: nada. Resultados en `spikes/RESULTS-pulido.md`.*
 
-- [ ] **R-001** Probar la vista ampliada dejando el lienzo montado y en posición fija sobre la ventana, dentro del editor de bloques: ¿algún ancestro con `transform` u `overflow` lo rompe? ¿el lienzo se reencuadra al cambiar de tamaño? — *Cubre:* RF-3, CL-9 (DP-2). **Hecho cuando:** Spike indica funciona o falla; si falla, alternativa «portal con estado elevado» probada y decisión escrita.
-- [ ] **R-002** Medir el color de contorno calculado al hacer clic en un diagrama, un mapa y bloques atómicos, y listar todas las reglas que producen el azul — *Cubre:* RF-5. **Hecho cuando:** Lista completa de fuentes del azul anotada en `RESULTS-pulido.md`.
-- [ ] **R-003** Medir el arrastre de una rama completa en un mapa de 200 globos sobre `@xyflow/react` — *Cubre:* RNF-1, RF-11 (DP-4). **Hecho cuando:** Peor fotograma medido; si pasa de 100 ms, plan B anotado (mover la rama fuera del estado hasta soltar).
-- [ ] **R-004** Probar un menú emergente anclado a un punto virtual que sigue el desplazamiento y el zoom del lienzo — *Cubre:* RF-1 (DP-3). **Hecho cuando:** Spike sin parpadeo ni desfase en 3 niveles de zoom.
-- [ ] **R-005** Probar clic frente a arrastre sobre un nodo con campo de texto (umbral de 5 px) — *Cubre:* RF-14. **Hecho cuando:** Spike distingue clic de arrastre con ratón y con puntero táctil simulado.
-- [ ] **R-006** Medir el punto de partida de fluidez del diagrama con 200 formas y 300 conectores — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma de referencia anotado.
-- [ ] **R-007** Confirmar que `parseTree` y `serializeTree` hoy conservan o pierden campos desconocidos del árbol y de los globos — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Comportamiento actual anotado con un caso de prueba.
-- [ ] **R-008** Confirmar el paso de la cuadrícula que dibuja hoy el diagrama y que coincide con la constante del plan (20 px) — *Cubre:* RF-18. **Hecho cuando:** Medición anotada (o plan corregido).
-- [ ] **R-009** Confirmar con una prueba de lectura que el lector actual del árbol acepta campos adicionales en los globos — *Cubre:* RNF-7. **Hecho cuando:** Test de spike pasa o se anota qué cambia.
-- [ ] **R-010** Documentar en `docs/backup-format.md` los campos aditivos (`off`, `style`, `view`) sin cambiar `formatVersion` — *Cubre:* RF-16. **Hecho cuando:** Documento revisado; coincide con la sección 11 del plan.
-- [ ] **R-011** Cerrar el Hito 0: actualizar el plan con los resultados (DP-2, DP-3, DP-4, valores de la sección 16) — *Cubre:* RNF-8. **Hecho cuando:** Plan actualizado y sin decisiones abiertas.
+- [x] **R-001** Probar la vista ampliada dejando el lienzo montado y en posición fija sobre la ventana, dentro del editor de bloques: ¿algún ancestro con `transform` u `overflow` lo rompe? ¿el lienzo se reencuadra al cambiar de tamaño? — *Cubre:* RF-3, CL-9 (DP-2). **Hecho cuando:** Spike indica funciona o falla; si falla, alternativa «portal con estado elevado» probada y decisión escrita.
+- [x] **R-002** Medir el color de contorno calculado al hacer clic en un diagrama, un mapa y bloques atómicos, y listar todas las reglas que producen el azul — *Cubre:* RF-5. **Hecho cuando:** Lista completa de fuentes del azul anotada en `RESULTS-pulido.md`.
+- [x] **R-003** Medir el arrastre de una rama completa en un mapa de 200 globos sobre `@xyflow/react` — *Cubre:* RNF-1, RF-11 (DP-4). **Hecho cuando:** Peor fotograma medido; si pasa de 100 ms, plan B anotado (mover la rama fuera del estado hasta soltar).
+- [x] **R-004** Probar un menú emergente anclado a un punto virtual que sigue el desplazamiento y el zoom del lienzo — *Cubre:* RF-1 (DP-3). **Hecho cuando:** Spike sin parpadeo ni desfase en 3 niveles de zoom.
+- [x] **R-005** Probar clic frente a arrastre sobre un nodo con campo de texto (umbral de 5 px) — *Cubre:* RF-14. **Hecho cuando:** Spike distingue clic de arrastre con ratón y con puntero táctil simulado.
+- [x] **R-006** Medir el punto de partida de fluidez del diagrama con 200 formas y 300 conectores — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma de referencia anotado.
+- [x] **R-007** Confirmar que `parseTree` y `serializeTree` hoy conservan o pierden campos desconocidos del árbol y de los globos — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Comportamiento actual anotado con un caso de prueba.
+- [x] **R-008** Confirmar el paso de la cuadrícula que dibuja hoy el diagrama y que coincide con la constante del plan (20 px) — *Cubre:* RF-18. **Hecho cuando:** Medición anotada (o plan corregido).
+- [x] **R-009** Confirmar con una prueba de lectura que el lector actual del árbol acepta campos adicionales en los globos — *Cubre:* RNF-7. **Hecho cuando:** Test de spike pasa o se anota qué cambia.
+- [x] **R-010** Documentar en `docs/backup-format.md` los campos aditivos (`off`, `style`, `view`) sin cambiar `formatVersion` — *Cubre:* RF-16. **Hecho cuando:** Documento revisado; coincide con la sección 11 del plan.
+- [x] **R-011** Cerrar el Hito 0: actualizar el plan con los resultados (DP-2, DP-3, DP-4, valores de la sección 16) — *Cubre:* RNF-8. **Hecho cuando:** Plan actualizado y sin decisiones abiertas.
 
 ---
 
