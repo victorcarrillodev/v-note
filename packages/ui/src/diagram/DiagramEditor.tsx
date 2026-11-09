@@ -6,10 +6,14 @@ import {
   DiagramHistory, SHAPES, addEdge, addNode, centerOnEdgeEnd, connect, deleteEdge, deleteNode, emptyDiagram, fitToView, inflate, isAttached, magnetRadius, moveNode,
   nearestAnchor, parseDiagram, reconnectEnd, resizeNode, serializeDiagram, setEdgeLabel, setNodeText,
   applyDefaultsToDiagramParts, copySelection, copyStyle, pasteClip, pasteStyle, setEdgeStyle, setNodeStyle, addControlPoint, connectorPath, curvatureForPoint, insertIndexFor, moveControlPoint, removeControlPoint, resetRoute, routeWithPin, setCurvature, setRoute, setSmooth, setWaypoints,
+  DEFAULT_DIAGRAM_HEIGHT, GRID, MIN_SHAPE, pointAtPath, snapBox, snapPoint,
   type Attached, type DEdge, type DNode, type Diagram, type DiagramDefaults, type Endpoint, type Point, type Route, type Shape,
 } from "@vnote/core";
 import { AnchorOverlay } from "./AnchorOverlay";
-import { CanvasControls } from "./CanvasControls";
+import { CanvasFrame } from "../canvas/CanvasFrame";
+import { FloatingMenu, type MenuGroup } from "../canvas/FloatingMenu";
+import { useGridPrefs } from "../canvas/gridPrefs";
+import { useAltHeld } from "../canvas/useAltHeld";
 import { ConnectorLayer } from "./ConnectorLayer";
 import { EdgeEnds } from "./EdgeEnds";
 import { RouteControls } from "./RouteControls";
@@ -50,6 +54,11 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const { t, i18n } = useTranslation();
   const rf = useReactFlow();
   const zoom = useStore((s) => s.transform[2]);
+  const transform = useStore((s) => s.transform); // cambia con cada desplazamiento o zoom: reubica el menú de un conector
+  const [gridPrefs] = useGridPrefs();
+  const altHeld = useAltHeld();
+  const snapOn = gridPrefs.snap && !altHeld; // Alt suspende el acomodo mientras se arrastra
+  const snapRef = useRef(gridPrefs.snap); snapRef.current = gridPrefs.snap;
   const box = useRef<HTMLDivElement>(null);
   const coarse = useMemo(() => matches("(pointer: coarse)"), []);
   const initial = useMemo(() => { const r = parseDiagram(value); return r.ok ? r.value : emptyDiagram(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -88,7 +97,10 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     if (r.ok) { history.current = new DiagramHistory(r.value); setDiagram(r.value); lastSaved.current = serializeDiagram(r.value); }
   }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onResize = useCallback((id: string, x: number, y: number, w: number, h: number) => commit(moveNode(resizeNode(history.current.current, id, w, h), id, x, y)), [commit]);
+  const onResize = useCallback((id: string, x: number, y: number, w: number, h: number) => {
+    const b = snapRef.current ? snapBox({ x, y, w, h }, MIN_SHAPE) : { x, y, w, h };
+    commit(moveNode(resizeNode(history.current.current, id, b.w, b.h), id, b.x, b.y));
+  }, [commit]);
   const toRf = useCallback((d: Diagram): Node<NodeData>[] => d.nodes.map((n: DNode) => ({
     id: n.id, type: "shape", position: { x: n.x, y: n.y }, width: n.w, height: n.h, style: { width: n.w, height: n.h },
     data: { shape: n.shape, text: n.text, style: n.style, label: `${shapeName(n.shape)}: ${n.text}`, onResize },
@@ -104,7 +116,10 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const fit = () => { const v = fitToView(history.current.current, viewportSize()); void rf.setViewport({ x: v.x, y: v.y, zoom: v.zoom }, { duration: animMs }); };
   const centerEnd = (edgeId: string, end: "from" | "to") => { const v = centerOnEdgeEnd(history.current.current, edgeId, end, viewportSize(), rf.getZoom()); if (v) void rf.setViewport({ x: v.x, y: v.y, zoom: v.zoom }); };
 
-  const addAt = (shape: Shape, p: { x: number; y: number }) => commit(addNode(history.current.current, { shape, x: Math.round(p.x), y: Math.round(p.y), style: applyDefaultsToDiagramParts(defaultsRef.current).node }).diagram);
+  const addAt = (shape: Shape, p: { x: number; y: number }) => {
+    const q = gridPrefs.snap ? snapPoint(p) : { x: Math.round(p.x), y: Math.round(p.y) };
+    commit(addNode(history.current.current, { shape, x: q.x, y: q.y, style: applyDefaultsToDiagramParts(defaultsRef.current).node }).diagram);
+  };
   const addAtCenter = (shape: Shape) => { const s = viewportSize(); addAt(shape, rf.screenToFlowPosition({ x: (box.current?.getBoundingClientRect().left ?? 0) + s.w / 2 - 70, y: (box.current?.getBoundingClientRect().top ?? 0) + s.h / 2 - 30 })); };
 
   // Arrastrar una forma desde la paleta con el puntero (también funciona con ratón real automatizado)
@@ -142,7 +157,10 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   };
 
   // --- Conexión por anclajes ---------------------------------------------------------------------------------------------------------
-  const toFlow = (e: { clientX: number; clientY: number }): Point => rf.screenToFlowPosition({ x: e.clientX, y: e.clientY });
+  // Posición cruda (sin acomodo): el imán de los anclajes debe medir contra el puntero real; el acomodo se aplica solo al punto libre resultante.
+  const toFlow = (e: { clientX: number; clientY: number }): Point => rf.screenToFlowPosition({ x: e.clientX, y: e.clientY }, { snapToGrid: false });
+  const snapOnRef = useRef(snapOn); snapOnRef.current = snapOn;
+  const snapPt = (p: Point): Point => (snapOnRef.current ? snapPoint(p) : p);
   const candidateFor = useCallback((p: Point) => nearestAnchor(diagram.nodes, p, magnetRadius(zoom, coarse)), [diagram.nodes, zoom, coarse]);
   const stopDrag = useRef<(() => void) | null>(null);
   const dragEndedAt = useRef(0);
@@ -159,9 +177,9 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
       dragEndedAt.current = Date.now(); // al soltar sobre el fondo el navegador lanza un «clic» sobre él: no debe deseleccionar el conector
       cancelDrag();
       const hit = candidateFor(p);
-      const target: Endpoint = hit ? { node: hit.node, anchor: hit.anchor } : p;
+      const target: Endpoint = hit ? { node: hit.node, anchor: hit.anchor } : snapPt(p);
       const d = history.current.current;
-      if (cur.kind === "edit") { commit(cur.apply(d, p)); return; }
+      if (cur.kind === "edit") { commit(cur.apply(d, snapPt(p))); return; }
       if (cur.kind === "new") {
         const r = connect(d, cur.from, target, applyDefaultsToDiagramParts(defaultsRef.current).edge);
         if (r.ok) { commit(r.value.diagram); setSelectedEdge(r.value.edge.id); } else setNotice(r.error.message);
@@ -220,7 +238,8 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const addPointAt = (edgeId: string, p: Point) => {
     const edge = edgeOf(edgeId), path = edge && connectorPath(history.current.current, edge);
     if (!edge || !path) return;
-    applyEdit(addControlPoint(history.current.current, edgeId, insertIndexFor(path.start, edge.points ?? [], path.end, p), p));
+    const q = snapPt(p);
+    applyEdit(addControlPoint(history.current.current, edgeId, insertIndexFor(path.start, edge.points ?? [], path.end, q), q));
     setSelectedPoint(null);
   };
   const changeRoute = (edgeId: string, route: Route) => {
@@ -245,7 +264,9 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     diagramClipboard.countPaste();
     selectAfter.current = new Set(r.nodeIds);
     setSelectedEdge(null);
-    commit(r.diagram);
+    let pasted = r.diagram;
+    if (gridPrefs.snap) for (const id of r.nodeIds) { const n = pasted.nodes.find((x) => x.id === id); if (n) { const q = snapPoint(n); pasted = moveNode(pasted, id, q.x, q.y); } }
+    commit(pasted);
   };
   const copyFormat = (id: string) => { const f = copyStyle(history.current.current, id); if (f) { diagramClipboard.copyFormat(f); setNotice(t("diagram.formatCopied")); } };
   const pasteFormat = (targets: string[], kind: "node" | "edge") => {
@@ -275,9 +296,9 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   // Diagrama que se dibuja: durante un gesto muestra la vista previa; nada se guarda hasta soltar.
   const { shown, previewEdge, active } = useMemo(() => {
     if (!drag) return { shown: diagram, previewEdge: null as string | null, active: null };
-    if (drag.kind === "edit") return { shown: drag.apply(diagram, drag.point), previewEdge: null as string | null, active: null };
+    if (drag.kind === "edit") return { shown: drag.apply(diagram, snapOn ? snapPoint(drag.point) : drag.point), previewEdge: null as string | null, active: null };
     const hit = candidateFor(drag.point);
-    const target: Endpoint = hit ? { node: hit.node, anchor: hit.anchor } : drag.point;
+    const target: Endpoint = hit ? { node: hit.node, anchor: hit.anchor } : snapOn ? snapPoint(drag.point) : drag.point;
     const active = hit ? { node: hit.node, anchor: hit.anchor } : null;
     if (drag.kind === "new") {
       const r = connect(diagram, drag.from, target, applyDefaultsToDiagramParts(defaults).edge);
@@ -285,7 +306,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     }
     const r = reconnectEnd(diagram, drag.edgeId, drag.end, target);
     return { shown: r.ok ? r.value : diagram, previewEdge: null, active };
-  }, [diagram, drag, candidateFor, defaults]);
+  }, [diagram, drag, candidateFor, defaults, snapOn]);
 
   const showFor = useMemo(() => {
     const s = new Set<string>(selectedIds);
@@ -323,82 +344,133 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const node = selectedNodes.length === 1 ? selectedNodes[0] : undefined;
   const edge = selectedNodes.length === 0 && selectedEdge ? diagram.edges.find((x) => x.id === selectedEdge) : undefined;
 
-  return (
-    <div className="flex flex-col gap-2" onKeyDown={onKeyDown} data-testid="diagram" contentEditable={false}>
-      <div role="toolbar" aria-label={t("diagram.palette")} className="flex flex-wrap items-center gap-2 text-sm">
-        {SHAPES.map((s) => (
-          <button key={s} type="button" data-shape-button={s} onPointerDown={dragShape(s)} onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } addAtCenter(s); }} className="cursor-grab rounded border px-2 py-1">
-            {shapeName(s)}
-          </button>
-        ))}
-        <button type="button" onClick={copyShapes}>{t("diagram.copy")}</button>
-        <button type="button" onClick={pasteShapes}>{t("diagram.paste")}</button>
-        <span className="flex-1" />
-        <button type="button" disabled={!history.current.canUndo} onClick={() => apply(history.current.undo())}>{t("diagram.undo")}</button>
-        <button type="button" disabled={!history.current.canRedo} onClick={() => apply(history.current.redo())}>{t("diagram.redo")}</button>
-      </div>
-
-      <div ref={box} style={{ height: 420 }} className="vn-diagram relative rounded border" role="application" aria-label={t("diagram.canvas")} aria-description={t("diagram.canvasHint")}>
-        <style>{RESIZE_CORNER_CSS}</style>
-        <ReactFlow
-          nodes={nodes} edges={[]} onlyRenderVisibleElements nodeTypes={nodeTypes} onNodesChange={onNodesChange}
-          onNodeDragStop={(_e, _n, dragged) => { let d = history.current.current; for (const n of dragged) d = moveNode(d, n.id, Math.round(n.position.x), Math.round(n.position.y)); commit(d); }}
-          onNodeMouseEnter={(_e, n) => hover(n.id)} onNodeMouseLeave={() => hover(null)}
-          onNodeClick={() => setSelectedEdge(null)}
-          onPaneClick={() => { if (Date.now() - dragEndedAt.current > 400) { setSelectedEdge(null); setSelectedPoint(null); } }}
-          onDelete={({ nodes: ns }) => removeSelection(ns.map((n) => n.id), [])}
-          minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM} deleteKeyCode={["Backspace", "Delete"]} proOptions={{ hideAttribution: true }}
-        >
-          <Background />
-          <ViewportPortal>
-            <ConnectorLayer part="lines" diagram={shown} selectedEdge={selectedEdge} previewEdge={previewEdge} zoom={zoom} coarse={coarse} selectedPoint={selectedPoint} lang={i18n.language} {...layerHandlers} />
-            <ConnectorLayer part="handles" diagram={shown} selectedEdge={selectedEdge} previewEdge={previewEdge} zoom={zoom} coarse={coarse} selectedPoint={selectedPoint} lang={i18n.language} {...layerHandlers} />
-            <AnchorOverlay diagram={shown} showFor={showFor} selected={selectedIds} active={active} zoom={zoom} coarse={coarse} onAnchorDown={onAnchorDown} onHover={hover} />
-          </ViewportPortal>
-        </ReactFlow>
-        <CanvasControls zoom={zoom} minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM} onZoomIn={() => void rf.zoomIn({ duration: animMs })} onZoomOut={() => void rf.zoomOut({ duration: animMs })} onFit={fit} />
-      </div>
-
-      {notice && <p role="status" data-diagram-notice="" className="text-sm">{notice} <button type="button" onClick={() => setNotice(null)}>{t("diagram.dismiss")}</button></p>}
-
-      {selectedNodes.length > 0 && (
-        <section role="region" aria-label={t("diagram.shapePanel")} className="flex flex-col gap-2 rounded border p-2 text-sm">
-          {node && (
-            <div className="flex flex-wrap items-end gap-3">
-              <label className="flex flex-col gap-1">{t("diagram.text")}
-                <input aria-label={t("diagram.text")} value={node.text} onChange={(e) => commit(setNodeText(history.current.current, node.id, e.target.value))} className="rounded border px-1" />
-              </label>
-              <button type="button" onClick={() => removeSelection([node.id], [])}>{t("diagram.deleteShape")}</button>
-            </div>
-          )}
-          <ShapeStylePanel
-            nodes={selectedNodes}
-            onPatch={(patch) => commit(setNodeStyle(history.current.current, [...selectedIds], patch))}
-            defaults={shapeDefaults}
-            format={{ onCopy: () => { const id = [...selectedIds][0]; if (id) copyFormat(id); }, onPaste: () => pasteFormat([...selectedIds], "node") }}
-          />
-        </section>
-      )}
-      {edge && (
-        <section role="region" aria-label={t("diagram.connectorPanel")} className="flex flex-col gap-2 rounded border p-2 text-sm">
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1">{t("diagram.text")}
-              <input aria-label={t("diagram.connectorText")} value={edge.label} onChange={(e) => commit(setEdgeLabel(history.current.current, edge.id, e.target.value))} className="rounded border px-1" />
-            </label>
-            <button type="button" onClick={() => centerEnd(edge.id, "from")}>{t("diagram.centerFrom")}</button>
-            <button type="button" onClick={() => centerEnd(edge.id, "to")}>{t("diagram.centerTo")}</button>
-            <button type="button" onClick={() => removeSelection([], [edge.id])}>{t("diagram.deleteConnector")}</button>
-          </div>
+  // --- Menú emergente del elemento seleccionado (spec 004, RF-1, RF-2) -----------------------------------------------------------
+  const nodeElement = (id: string) => ([...(box.current?.querySelectorAll(".react-flow__node") ?? [])].find((n) => n.getAttribute("data-id") === id) as HTMLElement | undefined) ?? null;
+  const frameArea = box.current ? box.current.getBoundingClientRect() : undefined;
+  const edgeAnchor = (() => {
+    if (!edge) return null;
+    const p = connectorPath(shown, edge);
+    if (!p) return null;
+    // Rectángulo (en pantalla) que contiene todo el trazado: el menú queda fuera de él, sin tapar el conector ni sus asas.
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i <= 24; i++) { const q = rf.flowToScreenPosition(pointAtPath(p, i / 24)); x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
+    return { left: x0, top: y0, width: x1 - x0, height: y1 - y0 };
+  })();
+  void transform;
+  // Diferido: con el foco en una forma, la librería procesa el mismo Esc DESPUÉS y volvería a seleccionarla si ya estuviera deseleccionada.
+  const deselectAll = () => { setSelectedEdge(null); setSelectedPoint(null); setNodes((ns) => ns.map((n) => (n.selected ? { ...n, selected: false } : n))); };
+  const keepOpenOn = (el: Element) => el.closest(".react-flow__node, [data-connector], [data-connector-hit], [data-anchor-hit], [data-end-hit], [data-control-hit], [data-curve-hit], [data-segment-hit]") !== null;
+  const menuGroups: MenuGroup[] = [];
+  if (selectedNodes.length > 0) {
+    menuGroups.push({
+      id: "look", label: t("canvas.menu.appearance"), icon: "edit",
+      children: (
+        <ShapeStylePanel
+          nodes={selectedNodes}
+          onPatch={(patch) => commit(setNodeStyle(history.current.current, [...selectedIds], patch))}
+          defaults={shapeDefaults}
+          format={{ onCopy: () => { const id = [...selectedIds][0]; if (id) copyFormat(id); }, onPaste: () => pasteFormat([...selectedIds], "node") }}
+        />
+      ),
+    });
+    if (node) menuGroups.push({
+      id: "structure", label: t("canvas.menu.structure"), icon: "note",
+      children: (
+        <label className="flex flex-col gap-1">{t("diagram.text")}
+          <input aria-label={t("diagram.text")} value={node.text} onChange={(e) => commit(setNodeText(history.current.current, node.id, e.target.value))} className="rounded border px-1" />
+        </label>
+      ),
+    });
+    menuGroups.push({
+      id: "actions", label: t("canvas.menu.actions"), icon: "more",
+      children: <button type="button" onClick={() => removeSelection([...selectedIds], [])} className="rounded border px-2 py-1">{selectedNodes.length === 1 ? t("diagram.deleteShape") : t("diagram.deleteShape")}</button>,
+    });
+  } else if (edge) {
+    menuGroups.push({
+      id: "look", label: t("canvas.menu.appearance"), icon: "edit",
+      children: <EdgeStylePanel edge={edge} onPatch={(patch) => commit(setEdgeStyle(history.current.current, [edge.id], patch))} defaults={edgeDefaults(edge)} format={{ onCopy: () => copyFormat(edge.id), onPaste: () => pasteFormat([edge.id], "edge") }} />,
+    });
+    menuGroups.push({
+      id: "structure", label: t("canvas.menu.structure"), icon: "link",
+      children: (
+        <div className="flex flex-col gap-2">
+          <label className="flex flex-col gap-1">{t("diagram.text")}
+            <input aria-label={t("diagram.connectorText")} value={edge.label} onChange={(e) => commit(setEdgeLabel(history.current.current, edge.id, e.target.value))} className="rounded border px-1" />
+          </label>
           <RouteControls
             edge={edge} onRoute={(r) => changeRoute(edge.id, r)} onReset={() => applyEdit(resetRoute(history.current.current, edge.id))}
             onCurvature={(v) => applyEdit(setCurvature(history.current.current, edge.id, v))} onSmooth={(v) => applyEdit(setSmooth(history.current.current, edge.id, v))}
             onPointChange={(i, p) => applyEdit(moveControlPoint(history.current.current, edge.id, i, p))} onRemovePoint={(i) => applyEdit(removeControlPoint(history.current.current, edge.id, i))}
             onAddPoint={() => { const path = connectorPath(history.current.current, edge); if (!path) return; const P = [path.start, ...(edge.points ?? []), path.end]; const a = P[P.length - 2]!, b = P[P.length - 1]!; addPointAt(edge.id, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }); }}
           />
-          <EdgeStylePanel edge={edge} onPatch={(patch) => commit(setEdgeStyle(history.current.current, [edge.id], patch))} defaults={edgeDefaults(edge)} format={{ onCopy: () => copyFormat(edge.id), onPaste: () => pasteFormat([edge.id], "edge") }} />
           <EdgeEnds diagram={diagram} edge={edge} onChange={(end, target) => { const r = reconnectEnd(history.current.current, edge.id, end, target); if (r.ok) commit(r.value); else setNotice(r.error.message); }} />
-        </section>
-      )}
+        </div>
+      ),
+    });
+    menuGroups.push({
+      id: "actions", label: t("canvas.menu.actions"), icon: "more",
+      children: (
+        <>
+          <button type="button" onClick={() => centerEnd(edge.id, "from")}>{t("diagram.centerFrom")}</button>
+          <button type="button" onClick={() => centerEnd(edge.id, "to")}>{t("diagram.centerTo")}</button>
+          <button type="button" onClick={() => removeSelection([], [edge.id])}>{t("diagram.deleteConnector")}</button>
+        </>
+      ),
+    });
+  }
+  const menuAnchor = selectedNodes.length > 0 ? { element: nodeElement(selectedNodes[0]!.id) } : edgeAnchor ? { rect: edgeAnchor } : null;
+  const toolbar = (
+    <>
+      {SHAPES.map((s) => (
+        <button key={s} type="button" data-shape-button={s} onPointerDown={dragShape(s)} onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } addAtCenter(s); }} className="vn-grab rounded border px-2 py-1 text-sm">
+          {shapeName(s)}
+        </button>
+      ))}
+      <button type="button" onClick={copyShapes} className="rounded border px-2 py-1 text-sm">{t("diagram.copy")}</button>
+      <button type="button" onClick={pasteShapes} className="rounded border px-2 py-1 text-sm">{t("diagram.paste")}</button>
+    </>
+  );
+
+  return (
+    <div onKeyDown={onKeyDown} contentEditable={false}>
+      <CanvasFrame
+        testId="diagram" label={t("diagram.canvas")} height={diagram.view?.height} defaultHeight={DEFAULT_DIAGRAM_HEIGHT}
+        onHeightChange={(h) => commit({ ...history.current.current, view: { height: h } })}
+        toolbar={toolbar}
+        zoom={{ level: zoom, min: MIN_ZOOM, max: MAX_ZOOM, onIn: () => void rf.zoomIn({ duration: animMs }), onOut: () => void rf.zoomOut({ duration: animMs }), onFit: fit, onReset: () => void rf.zoomTo(1, { duration: animMs }) }}
+        history={{ canUndo: history.current.canUndo, canRedo: history.current.canRedo, onUndo: () => apply(history.current.undo()), onRedo: () => apply(history.current.redo()) }}
+      >
+        <div ref={box} className="vn-diagram relative h-full w-full" role="application" aria-label={t("diagram.canvas")} aria-description={t("diagram.canvasHint")}>
+          <style>{RESIZE_CORNER_CSS}</style>
+          <ReactFlow
+            nodes={nodes} edges={[]} onlyRenderVisibleElements nodeTypes={nodeTypes} onNodesChange={onNodesChange}
+            snapToGrid={snapOn} snapGrid={[GRID, GRID]}
+            onNodeDragStop={(_e, _n, dragged) => { let d = history.current.current; for (const n of dragged) d = moveNode(d, n.id, Math.round(n.position.x), Math.round(n.position.y)); commit(d); }}
+            onNodeMouseEnter={(_e, n) => hover(n.id)} onNodeMouseLeave={() => hover(null)}
+            onNodeClick={() => setSelectedEdge(null)}
+            onPaneClick={() => { if (Date.now() - dragEndedAt.current > 400) { setSelectedEdge(null); setSelectedPoint(null); } }}
+            onDelete={({ nodes: ns }) => removeSelection(ns.map((n) => n.id), [])}
+            minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM} deleteKeyCode={["Backspace", "Delete"]} proOptions={{ hideAttribution: true }}
+          >
+            {gridPrefs.show ? <Background gap={GRID} /> : null}
+            <ViewportPortal>
+              <ConnectorLayer part="lines" diagram={shown} selectedEdge={selectedEdge} previewEdge={previewEdge} zoom={zoom} coarse={coarse} selectedPoint={selectedPoint} lang={i18n.language} {...layerHandlers} />
+              <ConnectorLayer part="handles" diagram={shown} selectedEdge={selectedEdge} previewEdge={previewEdge} zoom={zoom} coarse={coarse} selectedPoint={selectedPoint} lang={i18n.language} {...layerHandlers} />
+              <AnchorOverlay diagram={shown} showFor={showFor} selected={selectedIds} active={active} zoom={zoom} coarse={coarse} onAnchorDown={onAnchorDown} onHover={hover} />
+            </ViewportPortal>
+          </ReactFlow>
+        </div>
+      </CanvasFrame>
+
+      {notice && <p role="status" data-diagram-notice="" className="text-sm">{notice} <button type="button" onClick={() => setNotice(null)}>{t("diagram.dismiss")}</button></p>}
+
+      {menuAnchor && menuGroups.length > 0 ? (
+        <FloatingMenu
+          open={!drag} anchor={menuAnchor} area={frameArea} label={t(selectedNodes.length > 0 ? "canvas.menu.shape" : "canvas.menu.connector")}
+          regionLabel={t(selectedNodes.length > 0 ? "diagram.shapePanel" : "diagram.connectorPanel")}
+          groups={menuGroups} onClose={() => { window.setTimeout(deselectAll, 0); }} keepOpenOn={keepOpenOn}
+        />
+      ) : null}
     </div>
   );
 }

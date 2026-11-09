@@ -39,7 +39,7 @@ function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, co
           const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, horizontal = a.y === b.y;
           return (
             <g key={`s${i}`} data-segment-handle={i} aria-hidden="true">
-              <line data-segment-hit="" x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="transparent" strokeWidth={hitPx(coarse) / zoom} strokeLinecap="butt" className="nopan nodrag nowheel" style={{ pointerEvents: "stroke", cursor: horizontal ? "ns-resize" : "ew-resize" }} onPointerDown={(ev) => onSegmentDown(e.id, i, ev)} />
+              <line data-segment-hit="" x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="transparent" strokeWidth={hitPx(coarse) / zoom} strokeLinecap="butt" className={`nopan nodrag nowheel ${horizontal ? "vn-resize-ns" : "vn-resize-ew"}`} style={{ pointerEvents: "stroke" }} onPointerDown={(ev) => onSegmentDown(e.id, i, ev)} />
               {grip(mx, my)}
             </g>
           );
@@ -48,14 +48,14 @@ function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, co
           const h = curveHandle(p.start, p.startDir, p.end, p.endDir, e.curvature);
           return (
             <g data-curve-handle="" aria-hidden="true">
-              <circle data-curve-hit="" cx={h.x} cy={h.y} r={hitR} fill="transparent" className="nopan nodrag nowheel" style={{ pointerEvents: "all", cursor: "grab" }} onPointerDown={(ev) => onCurveDown(e.id, ev)} />
+              <circle data-curve-hit="" cx={h.x} cy={h.y} r={hitR} fill="transparent" className="nopan nodrag nowheel vn-grab" style={{ pointerEvents: "all" }} onPointerDown={(ev) => onCurveDown(e.id, ev)} />
               {grip(h.x, h.y)}
             </g>
           );
         })()}
         {e.route === "free" && (e.points ?? []).map((q, i) => (
           <g key={`p${i}`} data-control-point={i} aria-hidden="true">
-            <circle data-control-hit="" cx={q.x} cy={q.y} r={hitR} fill="transparent" className="nopan nodrag nowheel" style={{ pointerEvents: "all", cursor: "grab" }} onPointerDown={(ev) => onPointDown(e.id, i, ev)} />
+            <circle data-control-hit="" cx={q.x} cy={q.y} r={hitR} fill="transparent" className="nopan nodrag nowheel vn-grab" style={{ pointerEvents: "all" }} onPointerDown={(ev) => onPointDown(e.id, i, ev)} />
             {grip(q.x, q.y, selectedPoint?.edgeId === e.id && selectedPoint.index === i)}
           </g>
         ))}
@@ -63,7 +63,7 @@ function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, co
           const at = end === "from" ? p.start : p.end;
           return (
             <g key={end} data-end-handle={end}>
-              <circle data-end-hit="" cx={at.x} cy={at.y} r={hitR} fill="transparent" className="nopan nodrag nowheel" style={{ pointerEvents: "all", cursor: "grab" }} onPointerDown={(ev) => onEndDown(e.id, end, ev)} />
+              <circle data-end-hit="" cx={at.x} cy={at.y} r={hitR} fill="transparent" className="nopan nodrag nowheel vn-grab" style={{ pointerEvents: "all" }} onPointerDown={(ev) => onEndDown(e.id, end, ev)} />
               <circle cx={at.x} cy={at.y} r={r} fill="var(--c-card)" stroke="var(--c-accent)" strokeWidth={2 * k} pointerEvents="none" />
             </g>
           );
@@ -87,7 +87,7 @@ function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, co
                 <path d={pathToSvg(p)} fill="none" stroke="var(--c-canvas)" strokeWidth={EDGE_WIDTH_PX[e.style.width] + 4} strokeLinecap="round" pointerEvents="none" />
               </>
             )}
-            {!isPreview && <path data-connector-hit="" d={pathToSvg(p)} fill="none" stroke="transparent" strokeWidth={hitPx(coarse) / zoom} className="nopan nodrag nowheel" style={{ pointerEvents: "stroke", cursor: "pointer" }} />}
+            {!isPreview && <path data-connector-hit="" d={pathToSvg(p)} fill="none" stroke="transparent" strokeWidth={hitPx(coarse) / zoom} className="nopan nodrag nowheel vn-clickable" style={{ pointerEvents: "stroke" }} />}
             {(() => {
               const sp = styledPath(p, e.style), w = EDGE_WIDTH_PX[e.style.width];
               return (

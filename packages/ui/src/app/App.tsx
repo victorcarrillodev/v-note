@@ -19,6 +19,7 @@ import { WelcomeScreen } from "../identity/WelcomeScreen";
 import { WorkspaceSwitcher } from "../sidebar/WorkspaceSwitcher";
 import { SidebarLinks } from "../sidebar/SidebarLinks";
 import { useDensity, rowHeightFor } from "../design/useDensity";
+import { installInputModality } from "../design/inputModality";
 import { detectPlatform } from "../design/platform";
 import { formatCombo, toAriaShortcut } from "../layout/formatCombo";
 import { ThemeProvider, useTheme, type PreferenceStore } from "../theme/theme";
@@ -199,6 +200,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
 
   useStorageSync(preferences);
   useEffect(() => { applyAppearance(document.documentElement, loadAppearance(preferences)); }, [preferences]);
+  useEffect(() => installInputModality(), []); // puntero frente a teclado: decide si se ve el anillo de foco (spec 004, RF-5)
   const [noWorkspaces, setNoWorkspaces] = useState(false);
   const density = useDensity();
   const searchCombo = formatCombo(loadBindings(preferences)["palette.open"] ?? null, detectPlatform());

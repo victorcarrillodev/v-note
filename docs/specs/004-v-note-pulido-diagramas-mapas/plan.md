@@ -1,6 +1,6 @@
 # Plan 004 — Pulido de diagramas de flujo y mapas mentales
 
-> **Estado:** Hito 0 cerrado (resultados en `spikes/RESULTS-pulido.md`); Hito 1 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
+> **Estado:** Hitos 0 y 1 cerrados (resultados del Hito 0 en `spikes/RESULTS-pulido.md`); Hito 2 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
 > **Marco:** `docs/constitution.md`. Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, decisiones con su alternativa descartada, hitos y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes los requisitos que cubre, por ejemplo **[RF-3]**. La sección 15 es una matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**
@@ -408,6 +408,17 @@ Auditoría de accesibilidad (axe, ya en el proyecto) sobre diagrama, mapa, menú
 | La spline produce bucles o picos con puntos cercanos | Regularización de puntos y pruebas de CL-5 con casos patológicos |
 | Un dato nuevo abre mal en una versión anterior | Prueba de lectura con el lector anterior (RNF-7); campos aditivos y opcionales |
 | Los atajos de teclado chocan con los del editor de bloques | Capturar solo con el foco dentro del lienzo; pruebas de foco |
+
+---
+
+## 17b. Notas de implementación del Hito 1
+- **Acomodo y imán:** `screenToFlowPosition` de la librería acomoda por sí sola el punto cuando `snapToGrid` está activo, lo que alejaba el puntero de los anclajes (el imán medía contra el punto ya movido). El editor convierte ahora sin acomodo (`snapToGrid: false`) para el imán y acomoda solo el punto libre resultante, la vista previa y los puntos de paso (RF-18).
+- **Menú de conectores:** se ancla al **rectángulo que contiene todo el trazado** (muestreado en 24 puntos) en vez de a su punto medio, para no tapar el conector ni sus asas; el de formas, al elemento DOM.
+- **Esc con el foco en una forma:** la librería procesa el mismo Esc después y volvería a seleccionarla si el menú ya la hubiera deseleccionado; el cierre del menú se difiere un ciclo (`setTimeout 0`). La vista ampliada atiende Esc en su propio elemento (un contenedor detiene el evento antes de que llegue al documento) y respeta el `defaultPrevented` que marca el menú.
+- **Región de compatibilidad:** el menú envuelve su contenido en una región con el nombre de los paneles anteriores («Propiedades de la forma/del conector»); los selectores de los e2e anteriores siguen valiendo, salvo el primer `input` de la región (ahora hay que usar el campo «Texto»).
+- **Aviso de la interfaz:** el aviso (`[data-diagram-notice]`) queda fuera del marco, debajo.
+- **Pruebas e2e:** se construyen desde `dist`; hay que ejecutar `bun run typecheck` antes de un e2e para que incluya los cambios.
+- **Fluidez (R-068):** 200 formas y 300 conectores: peor fotograma 183 ms, igual que el de partida (R-006); el p95 sigue bajo 100 ms.
 
 ---
 

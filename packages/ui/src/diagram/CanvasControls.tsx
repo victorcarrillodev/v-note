@@ -12,7 +12,7 @@ const BTN = cx(
 );
 
 /** Controles de zoom del lienzo del diagrama (RF-15, RF-16). Sustituyen a los de la librería, que no usan los tokens del estándar. */
-export function CanvasControls({ zoom, minZoom, maxZoom, onZoomIn, onZoomOut, onFit }: { zoom: number; minZoom: number; maxZoom: number; onZoomIn: () => void; onZoomOut: () => void; onFit: () => void }) {
+export function CanvasControls({ zoom, minZoom, maxZoom, onZoomIn, onZoomOut, onFit, onReset }: { zoom: number; minZoom: number; maxZoom: number; onZoomIn: () => void; onZoomOut: () => void; onFit: () => void; onReset?: () => void }) {
   const { t } = useTranslation();
   const btn = (icon: IconName, label: string, onClick: () => void, disabled = false) => (
     <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled} className={BTN}><Icon name={icon} size={20} /></button>
@@ -25,6 +25,7 @@ export function CanvasControls({ zoom, minZoom, maxZoom, onZoomIn, onZoomOut, on
       {btn("zoomOut", t("diagram.zoomOut"), onZoomOut, zoom <= minZoom + 1e-9)}
       <output aria-label={t("diagram.zoomLevel")} className="min-w-[4ch] text-center text-[length:var(--text-ui-size)] tabular-nums">{Math.round(zoom * 100)} %</output>
       {btn("zoomIn", t("diagram.zoomIn"), onZoomIn, zoom >= maxZoom - 1e-9)}
+      {onReset ? <button type="button" aria-label={t("canvas.frame.zoomReset")} title={t("canvas.frame.zoomReset")} onClick={onReset} className={cx(BTN, "w-auto px-2 text-[length:var(--text-ui-small-size)]")}>100 %</button> : null}
       {btn("fitView", t("diagram.fit"), onFit)}
     </div>
   );

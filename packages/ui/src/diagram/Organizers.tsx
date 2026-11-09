@@ -78,7 +78,7 @@ export function TreeEditor({ kind, value, onChange }: Props & { kind: "mindmap" 
 
   const nodeStyle = (id: string, active: boolean): CSSProperties => ({
     position: "absolute", ...pos(id), width: NODE_W, height: NODE_H, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-    border: `2px solid ${active ? "var(--c-accent)" : "var(--c-text)"}`, borderRadius: kind === "mindmap" ? 999 : 4, background: id === "root" ? "var(--chip-info-bg)" : "var(--c-raised)", cursor: id === "root" ? "pointer" : "grab", font: "inherit", touchAction: "none",
+    border: `2px solid ${active ? "var(--c-accent)" : "var(--c-text)"}`, borderRadius: kind === "mindmap" ? 999 : 4, background: id === "root" ? "var(--chip-info-bg)" : "var(--c-raised)", font: "inherit", touchAction: "none",
   });
 
   return (
@@ -92,7 +92,7 @@ export function TreeEditor({ kind, value, onChange }: Props & { kind: "mindmap" 
             })}
           </SvgLayer>
           {visible.map((n) => (
-            <button key={n.id} type="button" data-node-id={n.id} data-depth={n.depth} aria-label={label(n.id, n.text)} aria-pressed={n.id === current.id}
+            <button key={n.id} type="button" className={n.id === "root" ? "vn-clickable" : "vn-grab"} data-node-id={n.id} data-depth={n.depth} aria-label={label(n.id, n.text)} aria-pressed={n.id === current.id}
               aria-expanded={n.hasChildren ? !n.collapsed : undefined} style={nodeStyle(n.id, n.id === current.id)}
               onClick={() => setSelected(n.id)} onPointerDown={(e) => { if (n.id !== "root") startDrag(e, (_dx, _dy, under) => drop(n.id, under)); }}>
               <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{n.text}</span>{n.collapsed ? <span aria-hidden="true">{" +"}</span> : null}
@@ -150,8 +150,8 @@ export function TimelineEditor({ value, onChange }: Props) {
             const p = placed.find((q) => q.id === ev.id)!;
             return (
               <li key={ev.id} style={{ position: "absolute", left: p.x + 10, top: p.y + 10, width: EVENT_W, height: EVENT_H }}>
-                <button type="button" data-event-id={ev.id} data-date={ev.date} data-lane={p.lane} aria-pressed={ev.id === selected}
-                  style={{ width: "100%", height: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", border: `2px solid ${ev.id === selected ? "var(--c-accent)" : "var(--c-text)"}`, borderRadius: 4, background: "var(--chip-warning-bg)", cursor: "grab", font: "inherit", touchAction: "none" }}
+                <button type="button" className="vn-grab" data-event-id={ev.id} data-date={ev.date} data-lane={p.lane} aria-pressed={ev.id === selected}
+                  style={{ width: "100%", height: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", border: `2px solid ${ev.id === selected ? "var(--c-accent)" : "var(--c-text)"}`, borderRadius: 4, background: "var(--chip-warning-bg)", font: "inherit", touchAction: "none" }}
                   onClick={() => setSelected(ev.id)}
                   onPointerDown={(e) => startDrag(e, (dx) => { const days = Math.round(dx / DAY_W); if (days !== 0) { setSelected(ev.id); setDateOf(ev.id, addDays(ev.date, days)); } })}>
                   {ev.title} · {ev.date}
@@ -224,7 +224,7 @@ export function MatrixEditor({ value, onChange }: Props) {
                   <td key={c.id} data-cell="" data-row={r.id} data-col={c.id} style={cellStyle}>
                     {m.items.filter((i) => i.row === r.id && i.col === c.id).map((i) => (
                       <div key={i.id} data-item-id={i.id} style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 4 }}>
-                        <button type="button" aria-label={t("organizer.matrix.move", { text: i.text })} style={{ cursor: "grab", touchAction: "none" }} onPointerDown={(e) => startDrag(e, (_dx, _dy, under) => drop(i.id, under))}>⠿</button>
+                        <button type="button" className="vn-grab" aria-label={t("organizer.matrix.move", { text: i.text })} style={{ touchAction: "none" }} onPointerDown={(e) => startDrag(e, (_dx, _dy, under) => drop(i.id, under))}>⠿</button>
                         <input aria-label={t("organizer.matrix.item", { text: i.text })} value={i.text} onChange={(e) => commit(editItem(m, i.id, e.target.value))} />
                         <button type="button" aria-label={t("organizer.matrix.deleteItem", { text: i.text })} onClick={() => commit(deleteItem(m, i.id))}>✕</button>
                       </div>

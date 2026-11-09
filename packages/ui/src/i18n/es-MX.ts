@@ -472,4 +472,13 @@ export const esMX = {
     dark: "Oscuro",
     system: "Seguir al sistema",
   },
+  canvas: {
+    menu: { appearance: "Apariencia", structure: "Estructura", actions: "Acciones", shape: "Opciones de la forma", connector: "Opciones del conector", point: "Opciones del punto", node: "Opciones del globo" },
+    frame: {
+      tools: "Herramientas del lienzo", expand: "Ampliar", exit: "Salir de la vista ampliada", expandedView: "Vista ampliada",
+      resize: "Alto del lienzo", resizeHint: "Arrastra o usa las flechas arriba y abajo para cambiar el alto",
+      grid: "Cuadrícula", showGrid: "Mostrar cuadrícula", snapGrid: "Acomodar a la cuadrícula", zoomReset: "Restablecer al 100 %",
+      undo: "Deshacer", redo: "Rehacer",
+    },
+  },
 } as const;

@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Alcance:** diagrama de flujo y mapa mental. El organigrama, la línea de tiempo y la matriz no se tocan (salvo puntero y foco, que son globales).
 > **Total:** 191 tareas · Hito 0: 11 · Hito 1: 60 · Hito 2: 32 · Hito 3: 67 · Hito 4: 21
-> **Estado:** Hito 0 cerrado el 9 de noviembre de 2026 (11 de 191 tareas) · Hito 1 pendiente.
+> **Estado:** Hito 0 y Hito 1 cerrados (9 de noviembre de 2026; 71 de 191 tareas) · Hito 2 (conectores) pendiente.
 
 ---
 
@@ -37,91 +37,91 @@
 
 *Requiere: Verificaciones previas.*
 
-- [ ] **R-012** `grid.ts`: constante de cuadrícula y `snap` de un valor al múltiplo más cercano — *Cubre:* RF-18. **Hecho cuando:** Test con negativos, medias y múltiplos exactos.
-- [ ] **R-013** `grid.ts`: `snapPoint` — *Cubre:* RF-18. **Hecho cuando:** Test: ambos ejes se acomodan.
-- [ ] **R-014** `grid.ts`: `snapBox` acomoda esquina y bordes y respeta el tamaño mínimo — *Cubre:* RF-18, CL-16. **Hecho cuando:** Test: mínimo no múltiplo sube al siguiente múltiplo.
-- [ ] **R-015** `grid.ts`: `snapOffset` calcula el desplazamiento que deja un elemento en un punto de la cuadrícula — *Cubre:* RF-18, CL-17. **Hecho cuando:** Test: posición efectiva resultante es múltiplo exacto.
-- [ ] **R-016** `view.ts`: alto por defecto, mínimo y máximo, y `clampHeight` — *Cubre:* RF-12. **Hecho cuando:** Test de límites y de valores no numéricos.
-- [ ] **R-017** `view.ts`: lectura y escritura tolerantes del `view` del diagrama; sin cambio de bytes si no hay `view` — *Cubre:* RF-12, RF-16. **Hecho cuando:** Test: un diagrama sin editar se serializa idéntico a la golden anterior.
-- [ ] **R-018** `history.ts`: utilidad genérica de instantáneas con límite 100 — *Cubre:* RF-15. **Hecho cuando:** Test de deshacer, rehacer, límite y descarte del futuro al editar.
-- [ ] **R-019** `DiagramHistory` se apoya en la utilidad genérica sin cambiar su interfaz — *Cubre:* RF-15. **Hecho cuando:** La suite existente de historial pasa sin cambios.
-- [ ] **R-020** Exportar las funciones nuevas del núcleo desde el índice del paquete — *Cubre:* RF-18. **Hecho cuando:** Test de importación público pasa.
+- [x] **R-012** `grid.ts`: constante de cuadrícula y `snap` de un valor al múltiplo más cercano — *Cubre:* RF-18. **Hecho cuando:** Test con negativos, medias y múltiplos exactos.
+- [x] **R-013** `grid.ts`: `snapPoint` — *Cubre:* RF-18. **Hecho cuando:** Test: ambos ejes se acomodan.
+- [x] **R-014** `grid.ts`: `snapBox` acomoda esquina y bordes y respeta el tamaño mínimo — *Cubre:* RF-18, CL-16. **Hecho cuando:** Test: mínimo no múltiplo sube al siguiente múltiplo.
+- [x] **R-015** `grid.ts`: `snapOffset` calcula el desplazamiento que deja un elemento en un punto de la cuadrícula — *Cubre:* RF-18, CL-17. **Hecho cuando:** Test: posición efectiva resultante es múltiplo exacto.
+- [x] **R-016** `view.ts`: alto por defecto, mínimo y máximo, y `clampHeight` — *Cubre:* RF-12. **Hecho cuando:** Test de límites y de valores no numéricos.
+- [x] **R-017** `view.ts`: lectura y escritura tolerantes del `view` del diagrama; sin cambio de bytes si no hay `view` — *Cubre:* RF-12, RF-16. **Hecho cuando:** Test: un diagrama sin editar se serializa idéntico a la golden anterior.
+- [x] **R-018** `history.ts`: utilidad genérica de instantáneas con límite 100 — *Cubre:* RF-15. **Hecho cuando:** Test de deshacer, rehacer, límite y descarte del futuro al editar.
+- [x] **R-019** `DiagramHistory` se apoya en la utilidad genérica sin cambiar su interfaz — *Cubre:* RF-15. **Hecho cuando:** La suite existente de historial pasa sin cambios.
+- [x] **R-020** Exportar las funciones nuevas del núcleo desde el índice del paquete — *Cubre:* RF-18. **Hecho cuando:** Test de importación público pasa.
 
 ### Puntero y foco globales
 
 *Requiere: Núcleo: cuadrícula, vista e historial.*
 
-- [ ] **R-021** Regla global de puntero por rol y estado en tokens (botón, enlace, pestaña, opción, ítem de menú, casilla, interruptor, control deslizante) — *Cubre:* RF-4. **Hecho cuando:** Test sobre el CSS: cada selector de la lista resuelve a `pointer`.
-- [ ] **R-022** Regla de «no permitido» para `:disabled` y `[aria-disabled="true"]` — *Cubre:* RF-4. **Hecho cuando:** Test: deshabilitado resuelve a `not-allowed` y no responde al clic.
-- [ ] **R-023** Clase de utilidad de elementos clicables no nativos y cursores de mover y de redimensionar — *Cubre:* RF-4. **Hecho cuando:** Test: la clase da `pointer`, `grab`/`grabbing` y los cursores de redimensión.
-- [ ] **R-024** Retirar los cursores fijados en línea que contradicen la regla (p. ej. el del globo del mapa) — *Cubre:* RF-4. **Hecho cuando:** Búsqueda sin coincidencias fuera de la clase de utilidad.
-- [ ] **R-025** Detector de modalidad de entrada que fija `data-input` en `pointer` o `keyboard` — *Cubre:* RF-5. **Hecho cuando:** Test: `pointerdown` pone `pointer`; Tab, flechas, Enter o Esc ponen `keyboard`.
-- [ ] **R-026** Regla de foco: anillo doble solo con `data-input="keyboard"`; con `pointer` no hay anillo azul — *Cubre:* RF-5, RNF-3. **Hecho cuando:** Test de ambos estados en claro y oscuro.
-- [ ] **R-027** Borde de control reforzado neutro para campos de texto con foco de ratón — *Cubre:* RF-5. **Hecho cuando:** Test: sin azul de acento y con contraste ≥ 3:1 contra el fondo.
-- [ ] **R-028** Neutralizar las fuentes del azul listadas en R-002 (contorno de selección de bloque y otras) — *Cubre:* RF-5. **Hecho cuando:** Test e2e: tras un clic, ningún contorno calculado usa el color de acento.
-- [ ] **R-029** Halo neutro de selección y borde más grueso, con contraste ≥ 3:1 en ambos temas — *Cubre:* RF-5, RNF-3. **Hecho cuando:** Test de contraste en claro y oscuro.
-- [ ] **R-030** Mantener el anillo del sistema en contraste forzado — *Cubre:* RF-5. **Hecho cuando:** Test de la regla para `forced-colors`.
-- [ ] **R-031** Prueba de contrato de puntero en navegador real sobre botones de la app — *Cubre:* RF-4. **Hecho cuando:** e2e: todo `button` y `role=button` visible resuelve a `pointer` o a `not-allowed` si está deshabilitado.
+- [x] **R-021** Regla global de puntero por rol y estado en tokens (botón, enlace, pestaña, opción, ítem de menú, casilla, interruptor, control deslizante) — *Cubre:* RF-4. **Hecho cuando:** Test sobre el CSS: cada selector de la lista resuelve a `pointer`.
+- [x] **R-022** Regla de «no permitido» para `:disabled` y `[aria-disabled="true"]` — *Cubre:* RF-4. **Hecho cuando:** Test: deshabilitado resuelve a `not-allowed` y no responde al clic.
+- [x] **R-023** Clase de utilidad de elementos clicables no nativos y cursores de mover y de redimensionar — *Cubre:* RF-4. **Hecho cuando:** Test: la clase da `pointer`, `grab`/`grabbing` y los cursores de redimensión.
+- [x] **R-024** Retirar los cursores fijados en línea que contradicen la regla (p. ej. el del globo del mapa) — *Cubre:* RF-4. **Hecho cuando:** Búsqueda sin coincidencias fuera de la clase de utilidad.
+- [x] **R-025** Detector de modalidad de entrada que fija `data-input` en `pointer` o `keyboard` — *Cubre:* RF-5. **Hecho cuando:** Test: `pointerdown` pone `pointer`; Tab, flechas, Enter o Esc ponen `keyboard`.
+- [x] **R-026** Regla de foco: anillo doble solo con `data-input="keyboard"`; con `pointer` no hay anillo azul — *Cubre:* RF-5, RNF-3. **Hecho cuando:** Test de ambos estados en claro y oscuro.
+- [x] **R-027** Borde de control reforzado neutro para campos de texto con foco de ratón — *Cubre:* RF-5. **Hecho cuando:** Test: sin azul de acento y con contraste ≥ 3:1 contra el fondo.
+- [x] **R-028** Neutralizar las fuentes del azul listadas en R-002 (contorno de selección de bloque y otras) — *Cubre:* RF-5. **Hecho cuando:** Test e2e: tras un clic, ningún contorno calculado usa el color de acento.
+- [x] **R-029** Halo neutro de selección y borde más grueso, con contraste ≥ 3:1 en ambos temas — *Cubre:* RF-5, RNF-3. **Hecho cuando:** Test de contraste en claro y oscuro.
+- [x] **R-030** Mantener el anillo del sistema en contraste forzado — *Cubre:* RF-5. **Hecho cuando:** Test de la regla para `forced-colors`.
+- [x] **R-031** Prueba de contrato de puntero en navegador real sobre botones de la app — *Cubre:* RF-4. **Hecho cuando:** e2e: todo `button` y `role=button` visible resuelve a `pointer` o a `not-allowed` si está deshabilitado.
 
 ### Menú emergente
 
 *Requiere: Puntero y foco globales.*
 
-- [ ] **R-032** `FloatingMenu` anclado a un elemento DOM, con colisión y reubicación — *Cubre:* RF-1, CL-1. **Hecho cuando:** Test: cerca de cada borde el menú queda completo y visible.
-- [ ] **R-033** `FloatingMenu` anclado a un punto virtual que sigue desplazamiento y zoom — *Cubre:* RF-1. **Hecho cuando:** Test: el menú se reposiciona al cambiar la ventana de vista.
-- [ ] **R-034** El menú no tapa el elemento y no pasa del 40 % del alto visible, con desplazamiento interno — *Cubre:* RNF-4. **Hecho cuando:** Test de alto máximo y de no solapamiento.
-- [ ] **R-035** Cierre con Esc, clic en vacío y cambio de selección (el menú pasa al nuevo elemento) — *Cubre:* RF-1, CL-2. **Hecho cuando:** Test de los tres cierres y del cambio de elemento.
-- [ ] **R-036** Menú no modal que no roba el foco al abrirse — *Cubre:* RF-1, RF-14. **Hecho cuando:** Test: el foco permanece en el campo de texto al abrir el menú.
-- [ ] **R-037** Grupos con etiqueta e ícono (Apariencia, Estructura, Acciones) en orden estable por tipo de elemento — *Cubre:* RF-2. **Hecho cuando:** Test: mismo orden en dos renders del mismo tipo.
-- [ ] **R-038** Menú operable con teclado y anunciado con rol, nombre y estado — *Cubre:* RF-2, RNF-3. **Hecho cuando:** Test: flechas, Enter y Esc; la auditoría de accesibilidad no reporta errores.
-- [ ] **R-039** Textos del menú en español de México y en inglés — *Cubre:* RNF-6. **Hecho cuando:** La prueba de paridad de idiomas pasa.
+- [x] **R-032** `FloatingMenu` anclado a un elemento DOM, con colisión y reubicación — *Cubre:* RF-1, CL-1. **Hecho cuando:** Test: cerca de cada borde el menú queda completo y visible.
+- [x] **R-033** `FloatingMenu` anclado a un punto virtual que sigue desplazamiento y zoom — *Cubre:* RF-1. **Hecho cuando:** Test: el menú se reposiciona al cambiar la ventana de vista.
+- [x] **R-034** El menú no tapa el elemento y no pasa del 40 % del alto visible, con desplazamiento interno — *Cubre:* RNF-4. **Hecho cuando:** Test de alto máximo y de no solapamiento.
+- [x] **R-035** Cierre con Esc, clic en vacío y cambio de selección (el menú pasa al nuevo elemento) — *Cubre:* RF-1, CL-2. **Hecho cuando:** Test de los tres cierres y del cambio de elemento.
+- [x] **R-036** Menú no modal que no roba el foco al abrirse — *Cubre:* RF-1, RF-14. **Hecho cuando:** Test: el foco permanece en el campo de texto al abrir el menú.
+- [x] **R-037** Grupos con etiqueta e ícono (Apariencia, Estructura, Acciones) en orden estable por tipo de elemento — *Cubre:* RF-2. **Hecho cuando:** Test: mismo orden en dos renders del mismo tipo.
+- [x] **R-038** Menú operable con teclado y anunciado con rol, nombre y estado — *Cubre:* RF-2, RNF-3. **Hecho cuando:** Test: flechas, Enter y Esc; la auditoría de accesibilidad no reporta errores.
+- [x] **R-039** Textos del menú en español de México y en inglés — *Cubre:* RNF-6. **Hecho cuando:** La prueba de paridad de idiomas pasa.
 
 ### Marco del lienzo
 
 *Requiere: Menú emergente.*
 
-- [ ] **R-040** `CanvasFrame`: ancho de la columna y alto desde los datos del bloque — *Cubre:* RF-12. **Hecho cuando:** Test: ocupa el ancho del contenedor y el alto guardado o el de por defecto.
-- [ ] **R-041** Asa de alto ajustable con ratón, dedo y teclado (flechas) — *Cubre:* RF-12, RF-17. **Hecho cuando:** Test: arrastrar y flechas cambian el alto dentro de mínimo y máximo.
-- [ ] **R-042** El gesto de cambiar el alto genera un solo paso de historial al soltar — *Cubre:* RF-12, RF-15. **Hecho cuando:** Test: un arrastre largo = un paso; deshacer devuelve el alto anterior.
-- [ ] **R-043** Barra de zoom con acercar, alejar, restablecer al 100 %, ajustar a la vista y porcentaje — *Cubre:* RF-13. **Hecho cuando:** Test de cada botón y del porcentaje mostrado.
-- [ ] **R-044** Interruptores de mostrar cuadrícula y acomodar a cuadrícula — *Cubre:* RF-18. **Hecho cuando:** Test: cada interruptor cambia su estado y lo anuncia.
-- [ ] **R-045** Preferencias de cuadrícula en el dispositivo con lectura tolerante a fallo — *Cubre:* RF-18. **Hecho cuando:** Test: valores iniciales «sí/sí»; sin almacenamiento sigue funcionando.
-- [ ] **R-046** Vista ampliada: el lienzo cubre la ventana, con `role="dialog"`, `aria-modal` y fondo opaco — *Cubre:* RF-3. **Hecho cuando:** Test: ocupa toda la ventana y el resto de la interfaz queda inerte.
-- [ ] **R-047** Vista ampliada: foco atrapado y devuelto al botón de origen — *Cubre:* RF-3, RNF-3. **Hecho cuando:** Test: Tab no sale del lienzo; al salir el foco vuelve al botón.
-- [ ] **R-048** Vista ampliada: barra con Salir, deshacer, rehacer y controles de zoom y encuadre — *Cubre:* RF-3. **Hecho cuando:** Test de presencia y función de cada control.
-- [ ] **R-049** Vista ampliada: Esc actúa en capas (primero menús o cuadros, luego la vista) — *Cubre:* RF-3. **Hecho cuando:** Test con un menú abierto: el primer Esc lo cierra y el segundo sale.
-- [ ] **R-050** Vista ampliada conserva selección, zoom, posición y texto a medio escribir al entrar y salir — *Cubre:* RF-3, CL-9. **Hecho cuando:** Test: ida y vuelta sin perder nada.
-- [ ] **R-051** Vista ampliada bloquea el desplazamiento de la página y la devuelve al mismo punto al salir — *Cubre:* RF-3. **Hecho cuando:** Test: el desplazamiento de la página no cambia tras salir.
-- [ ] **R-052** El marco se adapta al cambio de ancho de la ventana o de la barra lateral sin desorientar la vista — *Cubre:* CL-11. **Hecho cuando:** Test: ancho nuevo sin perder la posición si la persona ya movió la vista.
+- [x] **R-040** `CanvasFrame`: ancho de la columna y alto desde los datos del bloque — *Cubre:* RF-12. **Hecho cuando:** Test: ocupa el ancho del contenedor y el alto guardado o el de por defecto.
+- [x] **R-041** Asa de alto ajustable con ratón, dedo y teclado (flechas) — *Cubre:* RF-12, RF-17. **Hecho cuando:** Test: arrastrar y flechas cambian el alto dentro de mínimo y máximo.
+- [x] **R-042** El gesto de cambiar el alto genera un solo paso de historial al soltar — *Cubre:* RF-12, RF-15. **Hecho cuando:** Test: un arrastre largo = un paso; deshacer devuelve el alto anterior.
+- [x] **R-043** Barra de zoom con acercar, alejar, restablecer al 100 %, ajustar a la vista y porcentaje — *Cubre:* RF-13. **Hecho cuando:** Test de cada botón y del porcentaje mostrado.
+- [x] **R-044** Interruptores de mostrar cuadrícula y acomodar a cuadrícula — *Cubre:* RF-18. **Hecho cuando:** Test: cada interruptor cambia su estado y lo anuncia.
+- [x] **R-045** Preferencias de cuadrícula en el dispositivo con lectura tolerante a fallo — *Cubre:* RF-18. **Hecho cuando:** Test: valores iniciales «sí/sí»; sin almacenamiento sigue funcionando.
+- [x] **R-046** Vista ampliada: el lienzo cubre la ventana, con `role="dialog"`, `aria-modal` y fondo opaco — *Cubre:* RF-3. **Hecho cuando:** Test: ocupa toda la ventana y el resto de la interfaz queda inerte.
+- [x] **R-047** Vista ampliada: foco atrapado y devuelto al botón de origen — *Cubre:* RF-3, RNF-3. **Hecho cuando:** Test: Tab no sale del lienzo; al salir el foco vuelve al botón.
+- [x] **R-048** Vista ampliada: barra con Salir, deshacer, rehacer y controles de zoom y encuadre — *Cubre:* RF-3. **Hecho cuando:** Test de presencia y función de cada control.
+- [x] **R-049** Vista ampliada: Esc actúa en capas (primero menús o cuadros, luego la vista) — *Cubre:* RF-3. **Hecho cuando:** Test con un menú abierto: el primer Esc lo cierra y el segundo sale.
+- [x] **R-050** Vista ampliada conserva selección, zoom, posición y texto a medio escribir al entrar y salir — *Cubre:* RF-3, CL-9. **Hecho cuando:** Test: ida y vuelta sin perder nada.
+- [x] **R-051** Vista ampliada bloquea el desplazamiento de la página y la devuelve al mismo punto al salir — *Cubre:* RF-3. **Hecho cuando:** Test: el desplazamiento de la página no cambia tras salir.
+- [x] **R-052** El marco se adapta al cambio de ancho de la ventana o de la barra lateral sin desorientar la vista — *Cubre:* CL-11. **Hecho cuando:** Test: ancho nuevo sin perder la posición si la persona ya movió la vista.
 
 ### El diagrama usa el marco, los menús y el acomodo
 
 *Requiere: Marco del lienzo.*
 
-- [ ] **R-053** `DiagramEditor` se monta dentro de `CanvasFrame` — *Cubre:* RF-12, RNF-8. **Hecho cuando:** Test: mismo ancho que otros bloques y alto ajustable guardado.
-- [ ] **R-054** El alto del diagrama se guarda en `view` y los diagramas existentes conservan 420 px — *Cubre:* RF-12, RF-16. **Hecho cuando:** Test: diagrama antiguo se abre con 420 px sin reescribirse.
-- [ ] **R-055** Eliminar la franja inferior de formas y conectores — *Cubre:* RF-1. **Hecho cuando:** Test: no existe la región inferior de paneles.
-- [ ] **R-056** Menú emergente de forma con apariencia (relleno, contorno, texto, forma) y acciones — *Cubre:* RF-1, RF-2. **Hecho cuando:** Test: seleccionar una forma muestra su menú junto a ella.
-- [ ] **R-057** Menú emergente de conector con trazado, extremos, puntas, estilo y etiqueta — *Cubre:* RF-1, RF-2. **Hecho cuando:** Test: seleccionar un conector muestra su menú.
-- [ ] **R-058** Controles generales compactos sobre el lienzo (insertar forma, zoom, ampliar, deshacer, rehacer) cuando no hay selección — *Cubre:* RF-1. **Hecho cuando:** Test: barra delgada arriba y nada debajo del lienzo.
-- [ ] **R-059** El menú sigue al elemento al arrastrar, hacer zoom o desplazar sin tapar lo que se manipula — *Cubre:* RF-1, RNF-4. **Hecho cuando:** Test de seguimiento en los tres gestos.
-- [ ] **R-060** Acomodo a cuadrícula al mover formas, con vista previa durante el arrastre — *Cubre:* RF-18. **Hecho cuando:** Test: las posiciones resultantes son múltiplos de la cuadrícula.
-- [ ] **R-061** Acomodo a cuadrícula al redimensionar formas, también durante el gesto — *Cubre:* RF-18, CL-16. **Hecho cuando:** Test: bordes acomodados y tamaño mínimo respetado.
-- [ ] **R-062** Formas nuevas (insertadas y pegadas) se colocan en un punto de la cuadrícula — *Cubre:* RF-18. **Hecho cuando:** Test de inserción y de pegado.
-- [ ] **R-063** Alt suspende el acomodo mientras se arrastra; el interruptor lo apaga del todo — *Cubre:* RF-18. **Hecho cuando:** Test: con Alt o con el interruptor apagado el movimiento es libre.
-- [ ] **R-064** Los diagramas existentes no se mueven al abrirlos — *Cubre:* RF-18, CL-15. **Hecho cuando:** Test: diagrama con posiciones fuera de cuadrícula se abre sin cambios y sin reescribirse.
-- [ ] **R-065** El diagrama de flujo usa las preferencias de cuadrícula compartidas — *Cubre:* RF-18. **Hecho cuando:** Test: cambiar el interruptor lo recuerda al reabrir.
+- [x] **R-053** `DiagramEditor` se monta dentro de `CanvasFrame` — *Cubre:* RF-12, RNF-8. **Hecho cuando:** Test: mismo ancho que otros bloques y alto ajustable guardado.
+- [x] **R-054** El alto del diagrama se guarda en `view` y los diagramas existentes conservan 420 px — *Cubre:* RF-12, RF-16. **Hecho cuando:** Test: diagrama antiguo se abre con 420 px sin reescribirse.
+- [x] **R-055** Eliminar la franja inferior de formas y conectores — *Cubre:* RF-1. **Hecho cuando:** Test: no existe la región inferior de paneles.
+- [x] **R-056** Menú emergente de forma con apariencia (relleno, contorno, texto, forma) y acciones — *Cubre:* RF-1, RF-2. **Hecho cuando:** Test: seleccionar una forma muestra su menú junto a ella.
+- [x] **R-057** Menú emergente de conector con trazado, extremos, puntas, estilo y etiqueta — *Cubre:* RF-1, RF-2. **Hecho cuando:** Test: seleccionar un conector muestra su menú.
+- [x] **R-058** Controles generales compactos sobre el lienzo (insertar forma, zoom, ampliar, deshacer, rehacer) cuando no hay selección — *Cubre:* RF-1. **Hecho cuando:** Test: barra delgada arriba y nada debajo del lienzo.
+- [x] **R-059** El menú sigue al elemento al arrastrar, hacer zoom o desplazar sin tapar lo que se manipula — *Cubre:* RF-1, RNF-4. **Hecho cuando:** Test de seguimiento en los tres gestos.
+- [x] **R-060** Acomodo a cuadrícula al mover formas, con vista previa durante el arrastre — *Cubre:* RF-18. **Hecho cuando:** Test: las posiciones resultantes son múltiplos de la cuadrícula.
+- [x] **R-061** Acomodo a cuadrícula al redimensionar formas, también durante el gesto — *Cubre:* RF-18, CL-16. **Hecho cuando:** Test: bordes acomodados y tamaño mínimo respetado.
+- [x] **R-062** Formas nuevas (insertadas y pegadas) se colocan en un punto de la cuadrícula — *Cubre:* RF-18. **Hecho cuando:** Test de inserción y de pegado.
+- [x] **R-063** Alt suspende el acomodo mientras se arrastra; el interruptor lo apaga del todo — *Cubre:* RF-18. **Hecho cuando:** Test: con Alt o con el interruptor apagado el movimiento es libre.
+- [x] **R-064** Los diagramas existentes no se mueven al abrirlos — *Cubre:* RF-18, CL-15. **Hecho cuando:** Test: diagrama con posiciones fuera de cuadrícula se abre sin cambios y sin reescribirse.
+- [x] **R-065** El diagrama de flujo usa las preferencias de cuadrícula compartidas — *Cubre:* RF-18. **Hecho cuando:** Test: cambiar el interruptor lo recuerda al reabrir.
 
 ### Cierre del Hito 1
 
 *Requiere: El diagrama usa el marco, los menús y el acomodo.*
 
-- [ ] **R-066** e2e del diagrama: seleccionar → menú junto al elemento; ampliar y salir; acomodo al mover y al redimensionar — *Cubre:* RF-1, RF-3, RF-12, RF-18. **Hecho cuando:** e2e pasa en navegador real.
-- [ ] **R-067** e2e de puntero y de foco: sin anillo azul con clic y anillo con Tab — *Cubre:* RF-4, RF-5. **Hecho cuando:** e2e pasa.
-- [ ] **R-068** Medir fluidez del diagrama con 200 formas y 300 conectores en el marco nuevo — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma no peor que el de R-006 o ≤ 100 ms.
-- [ ] **R-069** Auditoría de accesibilidad del diagrama, menús y vista ampliada en claro y oscuro — *Cubre:* RNF-3. **Hecho cuando:** Sin errores.
-- [ ] **R-070** Actualizar las pruebas e2e y de interfaz que dependían de la franja inferior — *Cubre:* RF-1. **Hecho cuando:** Toda la suite pasa con los selectores nuevos.
-- [ ] **R-071** Cerrar el Hito 1: `bun run typecheck` y `bun run test` pasan — *Cubre:* RNF-8. **Hecho cuando:** Ambos comandos pasan y el estado se anota arriba.
+- [x] **R-066** e2e del diagrama: seleccionar → menú junto al elemento; ampliar y salir; acomodo al mover y al redimensionar — *Cubre:* RF-1, RF-3, RF-12, RF-18. **Hecho cuando:** e2e pasa en navegador real.
+- [x] **R-067** e2e de puntero y de foco: sin anillo azul con clic y anillo con Tab — *Cubre:* RF-4, RF-5. **Hecho cuando:** e2e pasa.
+- [x] **R-068** Medir fluidez del diagrama con 200 formas y 300 conectores en el marco nuevo — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma no peor que el de R-006 o ≤ 100 ms.
+- [x] **R-069** Auditoría de accesibilidad del diagrama, menús y vista ampliada en claro y oscuro — *Cubre:* RNF-3. **Hecho cuando:** Sin errores.
+- [x] **R-070** Actualizar las pruebas e2e y de interfaz que dependían de la franja inferior — *Cubre:* RF-1. **Hecho cuando:** Toda la suite pasa con los selectores nuevos.
+- [x] **R-071** Cerrar el Hito 1: `bun run typecheck` y `bun run test` pasan — *Cubre:* RNF-8. **Hecho cuando:** Ambos comandos pasan y el estado se anota arriba.
 
 ---
 

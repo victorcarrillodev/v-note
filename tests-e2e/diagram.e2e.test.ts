@@ -49,7 +49,9 @@ describe("diagrama de flujo en la aplicación real", () => {
     await p.waitFor("document.querySelectorAll('[data-testid=diagram] .react-flow__node').length === 1", 8000);
     let ns = await nodes(p);
     expect(ns[0]!.shape).toBe("process");
-    expect(Math.abs(ns[0]!.x - 150)).toBeLessThanOrEqual(2); expect(Math.abs(ns[0]!.y - 120)).toBeLessThanOrEqual(2);
+    // La forma soltada se acomoda a la cuadrícula de 20 (spec 004): queda a menos de media celda de donde se soltó.
+    expect(Math.abs(ns[0]!.x - 150)).toBeLessThanOrEqual(10); expect(Math.abs(ns[0]!.y - 120)).toBeLessThanOrEqual(10);
+    expect(ns[0]!.x % 20).toBe(0); expect(ns[0]!.y % 20).toBe(0);
 
     // una segunda forma con un clic en la paleta (accesible sin arrastrar)
     await p.click('[data-shape-button="decision"]');
@@ -70,7 +72,7 @@ describe("diagrama de flujo en la aplicación real", () => {
     // T-329: editar el texto de la forma seleccionada
     await p.click('[data-testid=diagram] .react-flow__node:nth-of-type(1) [role=group]');
     await p.waitFor("document.querySelector('[role=region][aria-label=\"Propiedades de la forma\"]')");
-    await setValue(p, '[role=region][aria-label="Propiedades de la forma"] input', "Revisar");
+    await setValue(p, '[role=region][aria-label="Propiedades de la forma"] input[aria-label="Texto"]', "Revisar");
     await p.waitFor("document.querySelector('[data-testid=diagram] .react-flow__node [role=group]').innerText.includes('Revisar')");
 
     // T-328: redimensionar con el tirador de la esquina de la forma seleccionada
@@ -103,7 +105,7 @@ describe("diagrama de flujo en la aplicación real", () => {
     await p.eval(`document.querySelector('[data-testid=diagram] [data-connector]').focus()`);
     await p.key('Enter', 'Enter', 13);
     await p.waitFor("document.querySelector('[role=region][aria-label=\"Propiedades del conector\"]')", 5000);
-    await setValue(p, '[role=region][aria-label="Propiedades del conector"] input', "sí");
+    await setValue(p, '[role=region][aria-label="Propiedades del conector"] input[aria-label="Texto del conector"]', "sí");
     await p.waitFor("document.querySelector('[data-testid=diagram] [data-connector] text')?.textContent.includes('sí')");
 
     // CL-9 / T-335: centrar en cualquiera de los extremos del conector
@@ -139,7 +141,7 @@ describe("diagrama de flujo en la aplicación real", () => {
     await clickButton(p, "Eliminar forma");
     await p.waitFor("document.querySelectorAll('[data-testid=diagram] .react-flow__node').length === 1", 5000);
     expect(await edgeCount(p)).toBe(1);
-    expect(await p.eval<string>("document.querySelector('[data-testid=diagram] [data-diagram-notice]').innerText")).toMatch(/1 conector/);
+    expect(await p.eval<string>("document.querySelector('[data-diagram-notice]').innerText")).toMatch(/1 conector/);
 
     // T-336: deshacer devuelve la forma y reúne su conector; rehacer vuelve a liberarlo
     await clickButton(p, "Deshacer");

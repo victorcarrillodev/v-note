@@ -210,6 +210,40 @@
   box-shadow: 0 0 0 2px var(--c-canvas);
 }
 
+/* Foco con ratón o dedo: sin anillo azul (el detector de entrada fija data-input). El anillo de arriba se mantiene con teclado y por defecto. */
+:root[data-input="pointer"] :focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+/* Campos de texto con foco de ratón: borde de control reforzado y neutro, para saber dónde se escribe (el editor no lleva ninguno). */
+:root[data-input="pointer"] :is(input, textarea, select):focus-visible {
+  border-color: var(--c-text-muted);
+}
+
+/* Selección discreta: borde de 2 px del color de texto y halo neutro, sin el azul de acento. */
+:root { --selection-halo: 0 0 0 2px var(--c-text), 0 0 0 5px color-mix(in srgb, var(--c-text) 18%, transparent); }
+.vn-selected { box-shadow: var(--selection-halo); }
+
+/* Puntero: todo lo clicable muestra la mano; lo deshabilitado, «no permitido». */
+button, a[href], summary, select, label[for],
+[role="button"], [role="tab"], [role="option"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],
+[role="switch"], [role="checkbox"], [role="radio"], [role="link"],
+input[type="checkbox"], input[type="radio"], input[type="range"], input[type="color"], input[type="file"],
+.vn-clickable {
+  cursor: pointer;
+}
+.vn-grab { cursor: grab; }
+.vn-grab:active { cursor: grabbing; }
+.vn-move { cursor: move; }
+.vn-crosshair { cursor: crosshair; }
+.vn-resize-ns { cursor: ns-resize; }
+.vn-resize-ew { cursor: ew-resize; }
+.vn-resize-nwse { cursor: nwse-resize; }
+.vn-resize-nesw { cursor: nesw-resize; }
+:is(button, input, select, textarea, optgroup):disabled, [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* Cambio de tema: solo color de fondo y texto. */
 body, #root, aside, main, header {
   transition: background-color var(--motion-theme) linear, color var(--motion-theme) linear;
@@ -233,5 +267,9 @@ body, #root, aside, main, header {
   }
   button, input, select, textarea, [role="button"] {
     border: 1px solid CanvasText;
+  }
+  .vn-selected {
+    box-shadow: none;
+    outline: 2px solid Highlight;
   }
 }

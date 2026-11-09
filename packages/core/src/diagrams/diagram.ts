@@ -5,6 +5,8 @@ import { ANCHORS, SHAPES, anchorPosition, isAnchor, type Anchor, type Shape } fr
 import { completeEdgeStyle, completeNodeStyle, CAPS, DASHES, EDGE_WIDTHS, NODE_STROKE_WIDTHS, ROUTES, isColor, isFillColor, type EdgeStyle, type NodeStyle, type Route } from "./style";
 import type { Point } from "./geometry";
 import { migrateV1 } from "./migrate";
+import { readView, writeView, type CanvasView } from "./view";
+import { Snapshots } from "./history";
 
 export { SHAPES, ANCHORS, type Shape, type Anchor };
 /** Versión del formato del diagrama guardado en el bloque. Sin campo de versión = versión 1 (se migra al leer). */
@@ -20,10 +22,12 @@ export type DEdge = {
   id: string; from: Endpoint; to: Endpoint; route: Route; label: string; style: EdgeStyle;
   waypoints?: Point[]; curvature?: number; points?: Point[]; smooth?: boolean;
 };
-export type Diagram = { nodes: DNode[]; edges: DEdge[] };
+export type Diagram = { nodes: DNode[]; edges: DEdge[]; view?: CanvasView };
 
 const SIZE: Record<Shape, { w: number; h: number }> = { terminator: { w: 140, h: 50 }, process: { w: 140, h: 60 }, decision: { w: 140, h: 80 }, io: { w: 140, h: 60 }, note: { w: 160, h: 80 } };
 const MIN_W = 40, MIN_H = 24;
+/** Tamaño mínimo de una forma (también para acomodarla a la cuadrícula). */
+export const MIN_SHAPE = { w: MIN_W, h: MIN_H } as const;
 const finite = (...n: number[]) => n.every((v) => Number.isFinite(v));
 
 /** Trazado de un conector nuevo (los diagramas anteriores conservan el redondeado con que se dibujaban). */
@@ -100,7 +104,7 @@ export function deleteNode(d: Diagram, id: string): { diagram: Diagram; released
     released.push(next);
     return next;
   });
-  return { diagram: { nodes: d.nodes.filter((n) => n.id !== id), edges }, releasedEdges: released };
+  return { diagram: { ...d, nodes: d.nodes.filter((n) => n.id !== id), edges }, releasedEdges: released };
 }
 
 const sameEnd = (a: Endpoint, b: Endpoint) => isAttached(a) && isAttached(b) && a.node === b.node && a.anchor === b.anchor;
@@ -261,7 +265,7 @@ export function centerOnEdgeEnd(d: Diagram, edgeId: string, end: "from" | "to", 
   return ep ? centerOn(ep[end], vp, zoom) : null;
 }
 
-export const serializeDiagram = (d: Diagram): string => stableJson({ version: DIAGRAM_VERSION, nodes: d.nodes, edges: d.edges });
+export const serializeDiagram = (d: Diagram): string => { const view = writeView(d.view); return stableJson({ version: DIAGRAM_VERSION, nodes: d.nodes, edges: d.edges, ...(view ? { view } : {}) }); };
 
 const bad = (message: string) => err(appError("INVALID", message, { reason: "DIAGRAM" }));
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
@@ -318,7 +322,8 @@ function readV2(raw: Record<string, unknown>): Result<Diagram> {
       ...(e.points !== undefined ? { points: e.points as Point[] } : {}), ...(e.smooth !== undefined ? { smooth: e.smooth as boolean } : {}),
     });
   }
-  return ok({ nodes, edges });
+  const view = readView(raw.view);
+  return ok({ nodes, edges, ...(view ? { view } : {}) });
 }
 
 function readV1(raw: Record<string, unknown>): Result<Diagram> {
@@ -356,32 +361,6 @@ export function parseDiagram(text: string): Result<Diagram> {
 export const diagramText = (d: Diagram): string => [...d.nodes.map((n) => n.text), ...d.edges.map((e) => e.label)].filter((t) => t.trim() !== "").join("\n");
 
 /** Historial de deshacer/rehacer del diagrama, acotado. Un cambio idéntico al actual no añade paso. */
-export class DiagramHistory {
-  private past: Diagram[] = [];
-  private future: Diagram[] = [];
-  constructor(private now: Diagram, private limit = 100) {}
-  get current(): Diagram { return this.now; }
-  get canUndo() { return this.past.length > 0; }
-  get canRedo() { return this.future.length > 0; }
-  push(next: Diagram): void {
-    if (serializeDiagram(next) === serializeDiagram(this.now)) return;
-    this.past.push(this.now);
-    if (this.past.length > this.limit) this.past.shift();
-    this.now = next;
-    this.future = [];
-  }
-  undo(): Diagram | null {
-    const prev = this.past.pop();
-    if (!prev) return null;
-    this.future.push(this.now);
-    this.now = prev;
-    return prev;
-  }
-  redo(): Diagram | null {
-    const next = this.future.pop();
-    if (!next) return null;
-    this.past.push(this.now);
-    this.now = next;
-    return next;
-  }
+export class DiagramHistory extends Snapshots<Diagram> {
+  constructor(now: Diagram, limit = 100) { super(now, serializeDiagram, limit); }
 }

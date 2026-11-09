@@ -39,7 +39,7 @@ export function pasteClip(d: Diagram, clip: Clip, times: number): { diagram: Dia
     ...e, id: newId(), from: end(e.from), to: end(e.to),
     ...(e.waypoints ? { waypoints: e.waypoints.map(shift) } : {}), ...(e.points ? { points: e.points.map(shift) } : {}),
   }));
-  return { diagram: { nodes: [...d.nodes, ...nodes], edges: [...d.edges, ...edges] }, nodeIds: nodes.map((n) => n.id), edgeIds: edges.map((e) => e.id) };
+  return { diagram: { ...d, nodes: [...d.nodes, ...nodes], edges: [...d.edges, ...edges] }, nodeIds: nodes.map((n) => n.id), edgeIds: edges.map((e) => e.id) };
 }
 
 export type StyleClip = { kind: "node"; style: NodeStyle } | { kind: "edge"; style: EdgeStyle };

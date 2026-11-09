@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { fireEvent, screen, within, cleanup } from "@testing-library/react";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DiagramEditor } from "./DiagramEditor";
+import { GRID_PREFS_KEY } from "../canvas/gridPrefs";
 import { DiagramDefaultsProvider, type DiagramDefaultsApi } from "./DiagramDefaults";
 import { clearDiagramClipboard } from "./diagramClipboard";
 import { DIAGRAM_SHORTCUTS } from "./shortcuts";
@@ -29,7 +30,8 @@ const selectEdge = () => fireEvent.keyDown(document.querySelector("[data-connect
 const shapePanel = () => screen.getByRole("group", { name: "Estilo de la forma" });
 const edgePanel = () => screen.getByRole("group", { name: "Estilo del conector" });
 
-beforeEach(() => { clearDiagramClipboard(); try { localStorage.clear(); } catch { /* sin almacenamiento */ } });
+// El acomodo a la cuadrícula (spec 004) se prueba en DiagramEditor.frame.test.tsx: aquí los gestos usan coordenadas exactas.
+beforeEach(() => { clearDiagramClipboard(); try { localStorage.clear(); localStorage.setItem(GRID_PREFS_KEY, JSON.stringify({ show: true, snap: false })); } catch { /* sin almacenamiento */ } });
 afterEach(() => { vi.restoreAllMocks(); cleanup(); document.documentElement.removeAttribute("data-theme"); });
 
 describe("estilo de la forma en el panel (G-128, G-134)", () => {

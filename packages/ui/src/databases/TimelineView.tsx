@@ -116,8 +116,8 @@ function Row({ row, date, origin, prop, controller, title, onOpenRow, onSelect }
       <div className="relative h-full flex-1">
         <button
           type="button" aria-label={label} onPointerDown={begin("move")} onClick={(e) => { if (dragged.current) { dragged.current = false; return; } e.currentTarget.focus(); onSelect(); }}
-          className="absolute top-2 flex h-7 items-center overflow-hidden rounded bg-[var(--c-accent)] px-1 text-[length:var(--text-ui-small-size)] text-[var(--c-on-accent)]"
-          style={{ left: liveLeft, width: liveWidth, touchAction: "none", cursor: "grab" }}
+          className="vn-grab absolute top-2 flex h-7 items-center overflow-hidden rounded bg-[var(--c-accent)] px-1 text-[length:var(--text-ui-small-size)] text-[var(--c-on-accent)]"
+          style={{ left: liveLeft, width: liveWidth, touchAction: "none" }}
         >
           <span className="truncate">{title}</span>
           <span data-resize aria-hidden="true" onPointerDown={begin("resize")} className="absolute right-0 top-0 h-full w-2 cursor-ew-resize bg-[var(--c-scrim)]" />

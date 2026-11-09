@@ -113,7 +113,7 @@ describe("estilo y portapapeles en el navegador real", () => {
     await p.waitFor(`document.querySelector('${shapeRegion}')`, 5000);
     await pickColor(p, shapeRegion, "Relleno", "Verde");
     await p.eval(`[...document.querySelectorAll('${shapeRegion} button')].find(b => b.innerText.trim() === 'Usar como predeterminado').click()`);
-    await p.waitFor(`document.querySelector('${Q} [data-diagram-notice]')?.innerText.includes('predeterminado')`, 5000);
+    await p.waitFor(`document.querySelector('[data-diagram-notice]')?.innerText.includes('predeterminado')`, 5000);
     await addShape(p, "process", 2);
     expect((await fill(p, 2)).fill).toBe("palette:green");
     expect((await fill(p, 1)).fill).toBe("palette:green");
@@ -138,7 +138,7 @@ describe("estilo y portapapeles en el navegador real", () => {
     // se deja el espacio como estaba para no afectar a otras pruebas del mismo perfil
     await p.click(nodeSel(1));
     await p.eval(`[...document.querySelectorAll('${shapeRegion} button')].find(b => b.innerText.trim() === 'Restablecer predeterminados').click()`);
-    await p.waitFor(`document.querySelector('${Q} [data-diagram-notice]')?.innerText.includes('Se restablecieron')`, 5000);
+    await p.waitFor(`document.querySelector('[data-diagram-notice]')?.innerText.includes('Se restablecieron')`, 5000);
     await p.close();
   }, 240000);
 

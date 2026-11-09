@@ -476,4 +476,13 @@ export const en: Widen<typeof esMX> = {
     dark: "Dark",
     system: "Follow system",
   },
+  canvas: {
+    menu: { appearance: "Appearance", structure: "Structure", actions: "Actions", shape: "Shape options", connector: "Connector options", point: "Point options", node: "Bubble options" },
+    frame: {
+      tools: "Canvas tools", expand: "Expand", exit: "Exit expanded view", expandedView: "Expanded view",
+      resize: "Canvas height", resizeHint: "Drag or use the up and down arrows to change the height",
+      grid: "Grid", showGrid: "Show grid", snapGrid: "Snap to grid", zoomReset: "Reset to 100%",
+      undo: "Undo", redo: "Redo",
+    },
+  },
 };

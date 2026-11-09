@@ -1,9 +1,14 @@
 // G-051 a G-065, G-067, G-074 a G-076 (prueba primero): conexión por anclajes en el editor de diagramas (jsdom, zoom 1: pantalla = lienzo).
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { fireEvent, screen, within, act } from "@testing-library/react";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DiagramEditor } from "./DiagramEditor";
+import { GRID_PREFS_KEY } from "../canvas/gridPrefs";
 import { addNode, connect, emptyDiagram, parseDiagram, serializeDiagram, connectorPath, pathToSvg, styledPath, isAttached, type Diagram, type Endpoint } from "@vnote/core";
+
+// Estas pruebas comprueban gestos con coordenadas exactas: el acomodo a la cuadrícula (spec 004) se prueba aparte, en DiagramEditor.frame.test.tsx.
+beforeEach(() => { try { localStorage.setItem(GRID_PREFS_KEY, JSON.stringify({ show: true, snap: false })); } catch { /* sin almacenamiento */ } });
+
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 const base = (): Diagram => {

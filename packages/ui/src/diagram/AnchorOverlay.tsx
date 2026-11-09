@@ -26,7 +26,7 @@ export function AnchorOverlay({ diagram, showFor, selected, active, zoom, coarse
             const p = anchorPosition(n, a), on = active?.node === n.id && active.anchor === a;
             return (
               <g key={a} data-anchor-group="" data-node={n.id} data-anchor={a} data-x={p.x} data-y={p.y} data-active={on ? "true" : "false"}>
-                <circle data-anchor-hit="" cx={p.x} cy={p.y} r={hitR} fill="transparent" className="nopan nodrag nowheel" style={{ pointerEvents: "all", cursor: "crosshair" }} onPointerDown={(e) => onAnchorDown(n.id, e)} />
+                <circle data-anchor-hit="" cx={p.x} cy={p.y} r={hitR} fill="transparent" className="nopan nodrag nowheel vn-crosshair" style={{ pointerEvents: "all" }} onPointerDown={(e) => onAnchorDown(n.id, e)} />
                 <circle cx={p.x} cy={p.y} r={on ? r * 1.4 : r} fill={on ? "var(--c-accent)" : "var(--c-card)"} stroke="var(--c-accent)" strokeWidth={2 * k} pointerEvents="none" />
               </g>
             );

@@ -1,9 +1,14 @@
 // G-107 a G-116 (prueba primero): trazados en el editor: selector, tramos arrastrables, curvatura, puntos de control y avisos.
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DiagramEditor } from "./DiagramEditor";
+import { GRID_PREFS_KEY } from "../canvas/gridPrefs";
 import { addNode, connect, curveHandle, connectorPath, styledPath, emptyDiagram, parseDiagram, pathToSvg, serializeDiagram, type DEdge, type Diagram, type Route } from "@vnote/core";
+
+// Estas pruebas comprueban gestos con coordenadas exactas: el acomodo a la cuadrícula (spec 004) se prueba aparte, en DiagramEditor.frame.test.tsx.
+beforeEach(() => { try { localStorage.setItem(GRID_PREFS_KEY, JSON.stringify({ show: true, snap: false })); } catch { /* sin almacenamiento */ } });
+
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 const two = (): Diagram => {

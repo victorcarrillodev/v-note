@@ -188,7 +188,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
       <div ref={wrap} className={!busy && data && data.nodes.length > 0 && data.hasLinks ? "" : "hidden"}>
         <canvas
           ref={canvas} data-testid="graph-canvas" role="img" aria-label={t("graph.canvas", { nodes: data?.nodes.length ?? 0, edges: data?.edges.length ?? 0 })}
-          className="rounded-md border border-[var(--c-border-control)]" style={{ width: size.w, height: size.h, touchAction: "none", cursor: "grab" }}
+          className="vn-grab rounded-md border border-[var(--c-border-control)]" style={{ width: size.w, height: size.h, touchAction: "none" }}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
           onDoubleClick={(e) => { if (!data) return; const r = canvas.current!.getBoundingClientRect(); const hit = hitNode(data, positions, tf, { x: e.clientX - r.left, y: e.clientY - r.top }); if (hit) onOpen(hit); }}
         />
