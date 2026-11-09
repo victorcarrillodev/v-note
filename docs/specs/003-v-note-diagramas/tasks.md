@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Supuesto por confirmar:** el trazado predeterminado de un conector nuevo es el de 90° (plan, sección 16); si en la revisión se prefiere otro, se cambia solo la tarea correspondiente del Hito 2.
 > **Total:** 179 tareas · Hito 0: 41 · Hito 1: 43 · Hito 2: 39 · Hito 3: 56
-> **Estado:** Hitos 0 a 3 implementados (8 de noviembre de 2026) · 3 tareas pendientes de 179: las tres verificaciones manuales firmadas (G-172, G-173, G-178), que necesitan a la persona responsable (`docs/acceptance-diagramas.md`).
+> **Estado:** cerrado el 8 de noviembre de 2026 · Hitos 0 a 3 implementados · 176 de 179 tareas hechas; las tres verificaciones manuales firmadas (G-172, G-173, G-178) quedan diferidas por decisión de la persona responsable, que las hará después (`docs/acceptance-diagramas.md`).
 
 ---
 

@@ -1,6 +1,6 @@
 # Especificación 003 — Diagramas de flujo: conexión precisa, trazados y color
 
-> **Estado:** implementada (Hitos 0 a 3); pendientes las verificaciones manuales firmadas · **Tercera parte de v-note** (la primera es `specs/001-v-note-mvp`, la segunda `specs/002-v-note-ui`).
+> **Estado:** cerrada (8 de noviembre de 2026; Hitos 0 a 3 implementados); las verificaciones manuales firmadas quedan diferidas · **Tercera parte de v-note** (la primera es `specs/001-v-note-mvp`, la segunda `specs/002-v-note-ui`).
 > **Alcance de este documento:** el QUÉ y el POR QUÉ. No define tecnología, arquitectura ni archivos: eso va en el plan.
 > **Relación con otras specs:** amplía y, donde se indica, **sustituye** el RF-9 de la spec 001 (diagramas de flujo). Los organizadores gráficos (RF-10) no se tocan.
 > **Notación:** los criterios usan EARS en español (*Cuando… el sistema deberá…*, *Mientras…*, *Si… entonces…*, *Donde…*). Las dudas se marcan con **[NECESITA ACLARACIÓN]**.
