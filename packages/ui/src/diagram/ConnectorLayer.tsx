@@ -13,12 +13,12 @@ function CapMark({ shape, kind, color }: { shape: CapShape | null; kind: Cap; co
 }
 
 /** Capa de conectores: dibuja el camino del núcleo, su selección y las asas de sus extremos. */
-function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, coarse, name, onSelect, onEndDown, onSegmentDown, onCurveDown, onPointDown, onAddPoint, selectedPoint }: {
+function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, coarse, name, onSelect, onEndDown, onSegmentDown, onCurveDown, onPointDown, onPointDouble, onAddPoint, selectedPoint }: {
   /** `lines`: trazos, flechas y etiquetas, debajo de las formas. `handles`: asas de los extremos del conector seleccionado, encima de todo. */
   part: "lines" | "handles"; diagram: Diagram; selectedEdge: string | null; previewEdge: string | null; zoom: number; coarse: boolean;
   name: (e: DEdge) => string; onSelect: (id: string) => void; onEndDown: (edgeId: string, end: "from" | "to", e: ReactPointerEvent<SVGElement>) => void;
   onSegmentDown: (edgeId: string, index: number, e: ReactPointerEvent<SVGElement>) => void; onCurveDown: (edgeId: string, e: ReactPointerEvent<SVGElement>) => void;
-  onPointDown: (edgeId: string, index: number, e: ReactPointerEvent<SVGElement>) => void; onAddPoint: (edgeId: string, clientX: number, clientY: number) => void;
+  onPointDown: (edgeId: string, index: number, e: ReactPointerEvent<SVGElement>) => void; onPointDouble: (edgeId: string, index: number) => void; onAddPoint: (edgeId: string, clientX: number, clientY: number) => void;
   selectedPoint: { edgeId: string; index: number } | null; /** Idioma actual: los nombres accesibles se recalculan al cambiarlo. */ lang?: string;
 }) {
   const [focused, setFocused] = useState<string | null>(null);
@@ -53,9 +53,10 @@ function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, co
             </g>
           );
         })()}
-        {e.route === "free" && (e.points ?? []).map((q, i) => (
+        {/* Puntos de quiebre editables: de paso en 90°, de control en curvo y libre. Doble clic sobre uno lo elimina (no llega al lienzo). */}
+        {(e.route === "orthogonal" ? e.waypoints ?? [] : e.route === "curved" || e.route === "free" ? e.points ?? [] : []).map((q, i) => (
           <g key={`p${i}`} data-control-point={i} aria-hidden="true">
-            <circle data-control-hit="" cx={q.x} cy={q.y} r={hitR} fill="transparent" className="nopan nodrag nowheel vn-grab" style={{ pointerEvents: "all" }} onPointerDown={(ev) => onPointDown(e.id, i, ev)} />
+            <circle data-control-hit="" cx={q.x} cy={q.y} r={hitR} fill="transparent" className="nopan nodrag nowheel vn-grab" style={{ pointerEvents: "all" }} onPointerDown={(ev) => onPointDown(e.id, i, ev)} onDoubleClick={(ev) => { ev.stopPropagation(); onPointDouble(e.id, i); }} />
             {grip(q.x, q.y, selectedPoint?.edgeId === e.id && selectedPoint.index === i)}
           </g>
         ))}
@@ -79,7 +80,7 @@ function ConnectorLayerImpl({ part, diagram, selectedEdge, previewEdge, zoom, co
         const isPreview = e.id === previewEdge, sel = e.id === selectedEdge, color = strokeFor(e.style.color);
         const onKey = (ev: ReactKeyboardEvent<SVGGElement>) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onSelect(e.id); } };
         return (
-          <g key={e.id} data-connector={e.id} {...(isPreview ? {} : { role: "button", tabIndex: 0, "aria-label": name(e), "aria-pressed": sel })} onKeyDown={onKey} onClick={() => !isPreview && onSelect(e.id)} onDoubleClick={(ev) => { if (!isPreview && sel && e.route === "free") onAddPoint(e.id, ev.clientX, ev.clientY); }} onFocus={() => setFocused(e.id)} onBlur={() => setFocused((cur) => (cur === e.id ? null : cur))} style={{ outline: "none" }}>
+          <g key={e.id} data-connector={e.id} {...(isPreview ? {} : { role: "button", tabIndex: 0, "aria-label": name(e), "aria-pressed": sel })} onKeyDown={onKey} onClick={() => !isPreview && onSelect(e.id)} onDoubleClick={(ev) => { if (!isPreview && sel) { ev.stopPropagation(); onAddPoint(e.id, ev.clientX, ev.clientY); } }} onFocus={() => setFocused(e.id)} onBlur={() => setFocused((cur) => (cur === e.id ? null : cur))} style={{ outline: "none" }}>
             {focused === e.id && (
               <>
                 {/* Foco por teclado: anillo doble siguiendo el trazo (acento + separación), visible sobre cualquier fondo */}

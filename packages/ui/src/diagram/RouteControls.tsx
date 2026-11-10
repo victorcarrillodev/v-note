@@ -21,9 +21,10 @@ export function RouteControls({ edge, onRoute, onReset, onCurvature, onSmooth, o
           <input type="range" aria-label={t("diagram.curvature")} min={CURVATURE_MIN} max={CURVATURE_MAX} step={0.05} value={edge.curvature ?? DEFAULT_CURVATURE} onChange={(e) => onCurvature(Number(e.target.value))} />
         </label>
       )}
-      {edge.route === "free" && (
+      {edge.route === "orthogonal" && <p className="max-w-[28ch] text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("diagram.autoCornersHint")}</p>}
+      {(edge.route === "free" || edge.route === "curved") && (
         <>
-          <label className="flex items-center gap-1"><input type="checkbox" checked={edge.smooth ?? false} onChange={(e) => onSmooth(e.target.checked)} />{t("diagram.smooth")}</label>
+          {edge.route === "free" && <label className="flex items-center gap-1"><input type="checkbox" checked={edge.smooth ?? false} onChange={(e) => onSmooth(e.target.checked)} />{t("diagram.smooth")}</label>}
           <div role="group" aria-label={t("diagram.controlPoints")} className="flex flex-col gap-1">
             {points.map((q, i) => (
               <div key={i} className="flex items-end gap-2">

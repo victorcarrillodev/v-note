@@ -206,7 +206,8 @@ export function setCurvature(d: Diagram, edgeId: string, curvature: number): Res
 }
 
 const freeOnly = (e: DEdge, f: (points: Point[]) => Result<Point[]>): Result<DEdge> => {
-  const bad = onlyRoute(e, "free", "Los puntos de control");
+  // Los puntos de control los usan el trazado libre y el curvo (la curva pasa por ellos).
+  const bad = e.route === "curved" ? null : onlyRoute(e, "free", "Los puntos de control");
   if (bad) return err(bad);
   const r = f(e.points ?? []);
   return r.ok ? ok({ ...e, points: r.value }) : r;

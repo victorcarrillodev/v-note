@@ -3,7 +3,7 @@ import { anchorDirection, anchorPosition } from "./anchors";
 import type { DEdge, Diagram, Endpoint } from "./diagram";
 import { isAttached } from "./diagram";
 import { dist, lerp, type Box, type Point } from "./geometry";
-import { curvedCmds } from "./routing/curved";
+import { curvedCmds, curvedThroughCmds } from "./routing/curved";
 import { freeCmds } from "./routing/free";
 import { orthogonalRoute } from "./routing/orthogonal";
 import type { PathCmd } from "./routing/types";
@@ -78,7 +78,15 @@ export function connectorPath(d: Diagram, e: DEdge): ConnectorPath | null {
   if (!a || !b) return null;
   let cmds: PathCmd[], startDir = outward(e.from, a, b), endDir = outward(e.to, b, a), vertices: Point[] | undefined;
   switch (e.route) {
-    case "curved": cmds = curvedCmds(a, startDir, b, endDir, e.curvature); break;
+    case "curved": {
+      const pts = e.points ?? [];
+      if (pts.length === 0) { cmds = curvedCmds(a, startDir, b, endDir, e.curvature); break; }
+      // Con puntos, la curva pasa por ellos; un extremo libre sale hacia su punto vecino.
+      if (!isAttached(e.from)) startDir = unit(a, pts[0]!);
+      if (!isAttached(e.to)) endDir = unit(b, pts[pts.length - 1]!);
+      cmds = curvedThroughCmds(a, startDir, pts, b, endDir, e.curvature);
+      break;
+    }
     case "orthogonal": {
       const pts = orthogonalRoute({
         start: a, startDir: isAttached(e.from) ? startDir : null, end: b, endDir: isAttached(e.to) ? endDir : null,
@@ -99,6 +107,18 @@ export function connectorPath(d: Diagram, e: DEdge): ConnectorPath | null {
   }
   const m = measure(cmds);
   return { cmds, start: a, end: b, startDir, endDir, length: m.length, midpoint: m.at(0.5), ...(vertices ? { vertices } : {}) };
+}
+
+/** Camino muestreado como poligonal (para proyectar puntos sobre él): cada curva se divide en `perCurve` tramos. */
+export function samplePath(p: ConnectorPath, perCurve = 64): Point[] {
+  const pts: Point[] = [];
+  let cur: Point = { x: 0, y: 0 };
+  for (const c of p.cmds) {
+    if (c.t === "C") for (let i = 1; i <= perCurve; i++) pts.push(sampleCubic(cur, c.c1, c.c2, c.p, i / perCurve));
+    else pts.push(c.p);
+    cur = c.p;
+  }
+  return pts;
 }
 
 /** Punto a una fracción `t` (0–1) de la longitud del camino. */

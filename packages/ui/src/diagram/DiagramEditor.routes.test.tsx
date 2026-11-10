@@ -139,7 +139,7 @@ describe("puntos de control del trazado libre (G-112, G-113, G-114)", () => {
     const hit = document.querySelector("[data-control-point='0'] [data-control-hit]")!;
     down(hit, 200, 100); up(200, 100);
     fireEvent.keyDown(document.querySelector("[data-testid=diagram]")!, { key: "Delete" });
-    expect(last().edges[0]!.points).toEqual([]);
+    expect(last().edges[0]!.points ?? []).toEqual([]);   // sin puntos no se deja una lista vacía (spec 004)
   });
   it("el interruptor «Suavizado» conserva los puntos", async () => {
     const { last } = await mount(free());

@@ -404,7 +404,7 @@ export const esMX = {
     anchorOf: "Punto de unión {{anchor}} de {{shape}}", endHandle: "Extremo de {{which}} del conector", endOrigin: "origen", endDestination: "destino",
     connectorName: "Conector de {{from}} a {{to}}", connectorNameLabel: "Conector de {{from}} a {{to}}: {{label}}", endUnion: "{{shape}} ({{anchor}})", freeEnd: "extremo libre", noText: "(sin texto)",
     route: "Trazado", routes: { straight: "Recto", orthogonal: "Ángulos de 90°", curved: "Redondeado", free: "Libre" }, resetRoute: "Restablecer ruta",
-    curvature: "Curvatura", smooth: "Suavizado", controlPoints: "Puntos de control", addPoint: "Añadir punto", removePoint: "Eliminar punto {{n}}",
+    curvature: "Curvatura", smooth: "Suavizado", controlPoints: "Puntos de control", addPoint: "Añadir punto", removePoint: "Eliminar punto {{n}}", removePointAction: "Eliminar punto", autoCornersHint: "Las esquinas automáticas no se eliminan: agrega un punto de paso o usa «Restablecer ruta».",
     pointX: "Punto {{n}}: X", pointY: "Punto {{n}}: Y", routeDiscarded: "Se descartaron los ajustes del trazado anterior.",
     segmentHandle: "Mover tramo {{n}} del conector", curveHandle: "Ajustar la curvatura del conector", controlPointHandle: "Punto de control {{n}}",
     anchors: { n: "arriba", ne: "arriba a la derecha", e: "derecha", se: "abajo a la derecha", s: "abajo", sw: "abajo a la izquierda", w: "izquierda", nw: "arriba a la izquierda" },

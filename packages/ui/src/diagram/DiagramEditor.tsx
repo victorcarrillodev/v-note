@@ -6,7 +6,7 @@ import {
   DiagramHistory, SHAPES, addEdge, addNode, centerOnEdgeEnd, connect, deleteEdge, deleteNode, emptyDiagram, fitToView, inflate, isAttached, magnetRadius, moveNode,
   nearestAnchor, parseDiagram, reconnectEnd, resizeNode, serializeDiagram, setEdgeLabel, setNodeText,
   applyDefaultsToDiagramParts, copySelection, copyStyle, pasteClip, pasteStyle, setEdgeStyle, setNodeStyle, addControlPoint, connectorPath, curvatureForPoint, insertIndexFor, moveControlPoint, removeControlPoint, resetRoute, routeWithPin, setCurvature, setRoute, setSmooth, setWaypoints,
-  DEFAULT_DIAGRAM_HEIGHT, GRID, MIN_SHAPE, pointAtPath, snapBox, snapPoint,
+  DEFAULT_DIAGRAM_HEIGHT, GRID, MIN_SHAPE, addBendAt, bendsOf, moveBend, pointAtPath, removeBend, snapBox, snapPoint,
   type Attached, type DEdge, type DNode, type Diagram, type DiagramDefaults, type Endpoint, type Point, type Route, type Shape,
 } from "@vnote/core";
 import { AnchorOverlay } from "./AnchorOverlay";
@@ -232,16 +232,15 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     if (e.button !== 0) return;
     e.preventDefault(); e.stopPropagation();
     setSelectedPoint({ edgeId, index });
-    startDrag({ kind: "edit", edgeId, point: toFlow(e), apply: (d, p) => { const r = moveControlPoint(d, edgeId, index, p); return r.ok ? r.value : d; } });
+    startDrag({ kind: "edit", edgeId, point: toFlow(e), apply: (d, p) => { const r = moveBend(d, edgeId, index, p); return r.ok ? r.value : d; } });
   };
   const applyEdit = (r: { ok: true; value: Diagram } | { ok: false; error: { message: string } }) => { if (r.ok) commit(r.value); else setNotice(r.error.message); };
+  // Doble clic sobre un tramo: agrega un punto de quiebre en ese lugar (en recto, el conector pasa a libre); acomoda a la cuadrícula si está activa.
   const addPointAt = (edgeId: string, p: Point) => {
-    const edge = edgeOf(edgeId), path = edge && connectorPath(history.current.current, edge);
-    if (!edge || !path) return;
-    const q = snapPt(p);
-    applyEdit(addControlPoint(history.current.current, edgeId, insertIndexFor(path.start, edge.points ?? [], path.end, q), q));
+    applyEdit(addBendAt(history.current.current, edgeId, p, snapOnRef.current ? { snap: snapPoint } : {}));
     setSelectedPoint(null);
   };
+  const removePointAt = (edgeId: string, index: number) => { applyEdit(removeBend(history.current.current, edgeId, index)); setSelectedPoint(null); };
   const changeRoute = (edgeId: string, route: Route) => {
     const r = setRoute(history.current.current, edgeId, route);
     if (!r.ok) { setNotice(r.error.message); return; }
@@ -321,7 +320,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   };
 
   const layerHandlers = useLatest({
-    name: connectorName, onSelect: selectEdge, onEndDown, onSegmentDown, onCurveDown, onPointDown,
+    name: connectorName, onSelect: selectEdge, onEndDown, onSegmentDown, onCurveDown, onPointDown, onPointDouble: removePointAt,
     onAddPoint: (id: string, x: number, y: number) => addPointAt(id, toFlow({ clientX: x, clientY: y })),
   });
 
@@ -335,7 +334,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     else if (mod && !inField && letter("v")) { e.preventDefault(); if (e.altKey) { if (selectedEdge) pasteFormat([selectedEdge], "edge"); else pasteFormat(selectedNodeIds(), "node"); } else pasteShapes(); }
     else if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); apply(e.shiftKey ? history.current.redo() : history.current.undo()); }
     else if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); apply(history.current.redo()); }
-    else if ((e.key === "Delete" || e.key === "Backspace") && selectedPoint && !inField) { e.preventDefault(); applyEdit(removeControlPoint(history.current.current, selectedPoint.edgeId, selectedPoint.index)); setSelectedPoint(null); }
+    else if ((e.key === "Delete" || e.key === "Backspace") && selectedPoint && !inField) { e.preventDefault(); removePointAt(selectedPoint.edgeId, selectedPoint.index); }
     else if ((e.key === "Delete" || e.key === "Backspace") && selectedEdge && !inField) { e.preventDefault(); removeSelection([], [selectedEdge]); }
   };
 
@@ -418,7 +417,22 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
       ),
     });
   }
-  const menuAnchor = selectedNodes.length > 0 ? { element: nodeElement(selectedNodes[0]!.id) } : edgeAnchor ? { rect: edgeAnchor } : null;
+  // Menú del punto seleccionado (en lugar del del conector): «Eliminar punto» y, en 90°, «Restablecer ruta» (RF-6).
+  const pointMenu = edge && selectedPoint && selectedPoint.edgeId === edge.id ? bendsOf(edge)[selectedPoint.index] : undefined;
+  const pointAnchor = pointMenu ? (() => { const q = rf.flowToScreenPosition(pointMenu); return { x: q.x, y: q.y }; })() : null;
+  if (pointMenu && edge && selectedPoint) {
+    menuGroups.length = 0;
+    menuGroups.push({
+      id: "actions", label: t("canvas.menu.actions"), icon: "more",
+      children: (
+        <>
+          <button type="button" onClick={() => removePointAt(edge.id, selectedPoint.index)}>{t("diagram.removePointAction")}</button>
+          {edge.route === "orthogonal" && <button type="button" onClick={() => { applyEdit(resetRoute(history.current.current, edge.id)); setSelectedPoint(null); }}>{t("diagram.resetRoute")}</button>}
+        </>
+      ),
+    });
+  }
+  const menuAnchor = pointAnchor ? { point: pointAnchor } : selectedNodes.length > 0 ? { element: nodeElement(selectedNodes[0]!.id) } : edgeAnchor ? { rect: edgeAnchor } : null;
   const toolbar = (
     <>
       {SHAPES.map((s) => (
@@ -466,8 +480,8 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
 
       {menuAnchor && menuGroups.length > 0 ? (
         <FloatingMenu
-          open={!drag} anchor={menuAnchor} area={frameArea} label={t(selectedNodes.length > 0 ? "canvas.menu.shape" : "canvas.menu.connector")}
-          regionLabel={t(selectedNodes.length > 0 ? "diagram.shapePanel" : "diagram.connectorPanel")}
+          open={!drag} anchor={menuAnchor} area={frameArea} label={t(pointMenu ? "canvas.menu.point" : selectedNodes.length > 0 ? "canvas.menu.shape" : "canvas.menu.connector")}
+          {...(pointMenu ? {} : { regionLabel: t(selectedNodes.length > 0 ? "diagram.shapePanel" : "diagram.connectorPanel") })}
           groups={menuGroups} onClose={() => { window.setTimeout(deselectAll, 0); }} keepOpenOn={keepOpenOn}
         />
       ) : null}

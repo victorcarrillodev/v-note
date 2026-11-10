@@ -408,7 +408,7 @@ export const en: Widen<typeof esMX> = {
     anchorOf: "Connection point {{anchor}} of {{shape}}", endHandle: "{{which}} end of the connector", endOrigin: "start", endDestination: "end",
     connectorName: "Connector from {{from}} to {{to}}", connectorNameLabel: "Connector from {{from}} to {{to}}: {{label}}", endUnion: "{{shape}} ({{anchor}})", freeEnd: "free end", noText: "(no text)",
     route: "Route", routes: { straight: "Straight", orthogonal: "90° angles", curved: "Rounded", free: "Free" }, resetRoute: "Reset route",
-    curvature: "Curvature", smooth: "Smooth", controlPoints: "Control points", addPoint: "Add point", removePoint: "Remove point {{n}}",
+    curvature: "Curvature", smooth: "Smooth", controlPoints: "Control points", addPoint: "Add point", removePoint: "Remove point {{n}}", removePointAction: "Remove point", autoCornersHint: "Automatic corners are not removed: add a waypoint or use “Reset route”.",
     pointX: "Point {{n}}: X", pointY: "Point {{n}}: Y", routeDiscarded: "The previous route’s adjustments were discarded.",
     segmentHandle: "Move segment {{n}} of the connector", curveHandle: "Adjust the connector’s curvature", controlPointHandle: "Control point {{n}}",
     shapeStyle: "Shape style", edgeStyle: "Connector style", fillColor: "Fill", strokeColor: "Outline", textColor: "Text color",

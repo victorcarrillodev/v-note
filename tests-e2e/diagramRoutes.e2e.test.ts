@@ -95,6 +95,9 @@ describe("trazados en el navegador real", () => {
     const cp = await p.center(`${Q} [data-control-hit]`);
     await p.drag(cp, { x: cp.x + 30, y: cp.y - 40 });
     const d6 = await waitD(p, d5);
+    // arrastrar un punto lo selecciona y su menú sustituye al del conector (R-093): se vuelve a seleccionar el conector
+    await p.eval(`document.querySelector('${Q} [data-connector]').focus()`); await p.key("Enter", "Enter", 13);
+    await p.waitFor(`document.querySelector('${panel}')`, 5000);
     await p.eval(`[...document.querySelectorAll('${panel} label')].find(l => l.innerText.includes('Suavizado')).querySelector('input').click()`);
     const d7 = await waitD(p, d6);
     expect(d7).toMatch(/ C /);

@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Alcance:** diagrama de flujo y mapa mental. El organigrama, la línea de tiempo y la matriz no se tocan (salvo puntero y foco, que son globales).
 > **Total:** 191 tareas · Hito 0: 11 · Hito 1: 60 · Hito 2: 32 · Hito 3: 67 · Hito 4: 21
-> **Estado:** Hito 0 y Hito 1 cerrados (9 de noviembre de 2026; 71 de 191 tareas) · Hito 2 (conectores) pendiente.
+> **Estado:** Hitos 0, 1 y 2 cerrados (10 de noviembre de 2026; 103 de 191 tareas) · Hito 3 (mapa mental) pendiente.
 
 ---
 
@@ -131,53 +131,53 @@
 
 *Requiere: Todos los grupos del Hito 1.*
 
-- [ ] **R-072** `nearestOnPath` en trazado recto: proyección del clic y segmento más cercano — *Cubre:* RF-7. **Hecho cuando:** Test con 5 casos conocidos.
-- [ ] **R-073** `nearestOnPath` en trazado de 90° y libre — *Cubre:* RF-7. **Hecho cuando:** Test con tramos horizontales, verticales y quiebres.
-- [ ] **R-074** `nearestOnPath` en trazado curvo — *Cubre:* RF-7, RF-8. **Hecho cuando:** Test: error de proyección < 1 unidad sobre la curva.
-- [ ] **R-075** `addBendAt`: inserta el punto en la posición correcta de la lista en 90° (`waypoints`) — *Cubre:* RF-7. **Hecho cuando:** Test: el orden de los puntos sigue el recorrido del conector.
-- [ ] **R-076** `addBendAt`: inserta en curvo y libre (`points`) — *Cubre:* RF-7. **Hecho cuando:** Test de orden y de que el conector conserva su trazado.
-- [ ] **R-077** `addBendAt` no coloca el punto encima de los extremos (distancia mínima) y acomoda a cuadrícula si está activa — *Cubre:* RF-7, CL-4, RF-18. **Hecho cuando:** Test: doble clic muy cerca de un anclaje separa el punto del extremo.
-- [ ] **R-078** `removeBend`: quita el punto indicado y rehace el trazado — *Cubre:* RF-6. **Hecho cuando:** Test en los tres trazados.
-- [ ] **R-079** `removeBend` del único punto devuelve el trazado directo de su tipo — *Cubre:* RF-6, CL-3. **Hecho cuando:** Test: sin puntos intermedios el conector queda directo.
-- [ ] **R-080** Las operaciones devuelven error claro con conector o índice inexistente — *Cubre:* RF-6, RF-7. **Hecho cuando:** Test de errores sin lanzar excepciones.
+- [x] **R-072** `nearestOnPath` en trazado recto: proyección del clic y segmento más cercano — *Cubre:* RF-7. **Hecho cuando:** Test con 5 casos conocidos.
+- [x] **R-073** `nearestOnPath` en trazado de 90° y libre — *Cubre:* RF-7. **Hecho cuando:** Test con tramos horizontales, verticales y quiebres.
+- [x] **R-074** `nearestOnPath` en trazado curvo — *Cubre:* RF-7, RF-8. **Hecho cuando:** Test: error de proyección < 1 unidad sobre la curva.
+- [x] **R-075** `addBendAt`: inserta el punto en la posición correcta de la lista en 90° (`waypoints`) — *Cubre:* RF-7. **Hecho cuando:** Test: el orden de los puntos sigue el recorrido del conector.
+- [x] **R-076** `addBendAt`: inserta en curvo y libre (`points`) — *Cubre:* RF-7. **Hecho cuando:** Test de orden y de que el conector conserva su trazado.
+- [x] **R-077** `addBendAt` no coloca el punto encima de los extremos (distancia mínima) y acomoda a cuadrícula si está activa — *Cubre:* RF-7, CL-4, RF-18. **Hecho cuando:** Test: doble clic muy cerca de un anclaje separa el punto del extremo.
+- [x] **R-078** `removeBend`: quita el punto indicado y rehace el trazado — *Cubre:* RF-6. **Hecho cuando:** Test en los tres trazados.
+- [x] **R-079** `removeBend` del único punto devuelve el trazado directo de su tipo — *Cubre:* RF-6, CL-3. **Hecho cuando:** Test: sin puntos intermedios el conector queda directo.
+- [x] **R-080** Las operaciones devuelven error claro con conector o índice inexistente — *Cubre:* RF-6, RF-7. **Hecho cuando:** Test de errores sin lanzar excepciones.
 
 ### Curva continua
 
 *Requiere: Puntos de quiebre en el núcleo.*
 
-- [ ] **R-081** Curva sin puntos intermedios: Bézier que sale de cada anclaje en su dirección, sin tramos rectos — *Cubre:* RF-8. **Hecho cuando:** Test: ningún tramo es recto y las tangentes coinciden con los anclajes.
-- [ ] **R-082** Curva con puntos intermedios: Catmull-Rom centrípeta convertida a Béziers cúbicos — *Cubre:* RF-8. **Hecho cuando:** Test: la curva pasa por cada punto.
-- [ ] **R-083** Continuidad sin esquinas en cada punto (tangente entrante = saliente) — *Cubre:* RF-8. **Hecho cuando:** Test de continuidad en 5 configuraciones.
-- [ ] **R-084** Extremos con la tangente del anclaje — *Cubre:* RF-8. **Hecho cuando:** Test: la curva sale perpendicular al lado del anclaje.
-- [ ] **R-085** Regularización de puntos casi alineados o muy cercanos, sin picos ni bucles — *Cubre:* RF-8, CL-5. **Hecho cuando:** Test con casos patológicos: sin autointersección ni curvatura excesiva.
-- [ ] **R-086** Las puntas se orientan según la tangente final de la curva — *Cubre:* RF-8. **Hecho cuando:** Test: ángulo de la punta = ángulo de la tangente.
-- [ ] **R-087** Los conectores curvos anteriores (con `curvature`) no cambian de aspecto — *Cubre:* RF-8, RF-16. **Hecho cuando:** Test de regresión con el fixture de la spec 003.
-- [ ] **R-088** El trazado libre con segmentos rectos se conserva como trazado aparte — *Cubre:* RF-8. **Hecho cuando:** Test: `smooth` apagado sigue dando polilínea.
-- [ ] **R-089** `pathToSvg` emite la misma curva que el lienzo — *Cubre:* RF-8. **Hecho cuando:** Test: la exportación SVG de un conector curvo coincide con la del lienzo.
+- [x] **R-081** Curva sin puntos intermedios: Bézier que sale de cada anclaje en su dirección, sin tramos rectos — *Cubre:* RF-8. **Hecho cuando:** Test: ningún tramo es recto y las tangentes coinciden con los anclajes.
+- [x] **R-082** Curva con puntos intermedios: Catmull-Rom centrípeta convertida a Béziers cúbicos — *Cubre:* RF-8. **Hecho cuando:** Test: la curva pasa por cada punto.
+- [x] **R-083** Continuidad sin esquinas en cada punto (tangente entrante = saliente) — *Cubre:* RF-8. **Hecho cuando:** Test de continuidad en 5 configuraciones.
+- [x] **R-084** Extremos con la tangente del anclaje — *Cubre:* RF-8. **Hecho cuando:** Test: la curva sale perpendicular al lado del anclaje.
+- [x] **R-085** Regularización de puntos casi alineados o muy cercanos, sin picos ni bucles — *Cubre:* RF-8, CL-5. **Hecho cuando:** Test con casos patológicos: sin autointersección ni curvatura excesiva.
+- [x] **R-086** Las puntas se orientan según la tangente final de la curva — *Cubre:* RF-8. **Hecho cuando:** Test: ángulo de la punta = ángulo de la tangente.
+- [x] **R-087** Los conectores curvos anteriores (con `curvature`) no cambian de aspecto — *Cubre:* RF-8, RF-16. **Hecho cuando:** Test de regresión con el fixture de la spec 003.
+- [x] **R-088** El trazado libre con segmentos rectos se conserva como trazado aparte — *Cubre:* RF-8. **Hecho cuando:** Test: `smooth` apagado sigue dando polilínea.
+- [x] **R-089** `pathToSvg` emite la misma curva que el lienzo — *Cubre:* RF-8. **Hecho cuando:** Test: la exportación SVG de un conector curvo coincide con la del lienzo.
 
 ### Interfaz de conectores
 
 *Requiere: Curva continua.*
 
-- [ ] **R-090** Doble clic sobre un punto de quiebre lo elimina — *Cubre:* RF-6. **Hecho cuando:** Test de interfaz en los tres trazados.
-- [ ] **R-091** Doble clic sobre un tramo agrega un punto en ese lugar — *Cubre:* RF-7. **Hecho cuando:** Test de interfaz; el punto queda sobre el tramo.
-- [ ] **R-092** El doble clic sobre un punto gana al doble clic del lienzo — *Cubre:* RF-6. **Hecho cuando:** Test: no se abre ni se hace zoom al hacer doble clic en un punto.
-- [ ] **R-093** Menú emergente del punto seleccionado con «Eliminar punto» — *Cubre:* RF-6, RF-2. **Hecho cuando:** Test: seleccionar un punto muestra el menú y la acción lo elimina.
-- [ ] **R-094** Arrastrar un punto con vista previa y un solo paso de historial al soltar — *Cubre:* RF-7, RF-15. **Hecho cuando:** Test: un arrastre = un paso; deshacer lo revierte.
-- [ ] **R-095** Los puntos se acomodan a la cuadrícula al arrastrarlos y al crearlos — *Cubre:* RF-18. **Hecho cuando:** Test con acomodo activo e inactivo y con Alt.
-- [ ] **R-096** Área sensible de puntos de 32 px (44 px con puntero grueso) — *Cubre:* RF-17. **Hecho cuando:** Test de tamaños en ambos modos.
-- [ ] **R-097** Sin límite de puntos más que el de rendimiento — *Cubre:* RF-7, RNF-1. **Hecho cuando:** Test: 50 puntos en un conector siguen fluidos.
-- [ ] **R-098** En el trazado de 90° los quiebres automáticos no son eliminables; se explica y se ofrece «Restablecer ruta» — *Cubre:* RF-6. **Hecho cuando:** Test: el menú ofrece la acción correcta según el tipo de punto.
-- [ ] **R-099** Textos nuevos de conectores en español de México y en inglés — *Cubre:* RNF-6. **Hecho cuando:** La prueba de paridad de idiomas pasa.
+- [x] **R-090** Doble clic sobre un punto de quiebre lo elimina — *Cubre:* RF-6. **Hecho cuando:** Test de interfaz en los tres trazados.
+- [x] **R-091** Doble clic sobre un tramo agrega un punto en ese lugar — *Cubre:* RF-7. **Hecho cuando:** Test de interfaz; el punto queda sobre el tramo.
+- [x] **R-092** El doble clic sobre un punto gana al doble clic del lienzo — *Cubre:* RF-6. **Hecho cuando:** Test: no se abre ni se hace zoom al hacer doble clic en un punto.
+- [x] **R-093** Menú emergente del punto seleccionado con «Eliminar punto» — *Cubre:* RF-6, RF-2. **Hecho cuando:** Test: seleccionar un punto muestra el menú y la acción lo elimina.
+- [x] **R-094** Arrastrar un punto con vista previa y un solo paso de historial al soltar — *Cubre:* RF-7, RF-15. **Hecho cuando:** Test: un arrastre = un paso; deshacer lo revierte.
+- [x] **R-095** Los puntos se acomodan a la cuadrícula al arrastrarlos y al crearlos — *Cubre:* RF-18. **Hecho cuando:** Test con acomodo activo e inactivo y con Alt.
+- [x] **R-096** Área sensible de puntos de 32 px (44 px con puntero grueso) — *Cubre:* RF-17. **Hecho cuando:** Test de tamaños en ambos modos.
+- [x] **R-097** Sin límite de puntos más que el de rendimiento — *Cubre:* RF-7, RNF-1. **Hecho cuando:** Test: 50 puntos en un conector siguen fluidos.
+- [x] **R-098** En el trazado de 90° los quiebres automáticos no son eliminables; se explica y se ofrece «Restablecer ruta» — *Cubre:* RF-6. **Hecho cuando:** Test: el menú ofrece la acción correcta según el tipo de punto.
+- [x] **R-099** Textos nuevos de conectores en español de México y en inglés — *Cubre:* RNF-6. **Hecho cuando:** La prueba de paridad de idiomas pasa.
 
 ### Cierre del Hito 2
 
 *Requiere: Interfaz de conectores.*
 
-- [ ] **R-100** e2e: agregar y quitar puntos con doble clic y curva continua en el diagrama — *Cubre:* RF-6, RF-7, RF-8. **Hecho cuando:** e2e pasa en navegador real.
-- [ ] **R-101** La exportación SVG de conectores con puntos y curva es idéntica a la del lienzo — *Cubre:* RF-8. **Hecho cuando:** Test de golden pasa.
-- [ ] **R-102** Medir fluidez con 300 conectores con puntos — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma ≤ 100 ms o igual al de R-068.
-- [ ] **R-103** Cerrar el Hito 2: `bun run typecheck` y `bun run test` pasan — *Cubre:* RNF-8. **Hecho cuando:** Ambos comandos pasan y el estado se anota arriba.
+- [x] **R-100** e2e: agregar y quitar puntos con doble clic y curva continua en el diagrama — *Cubre:* RF-6, RF-7, RF-8. **Hecho cuando:** e2e pasa en navegador real.
+- [x] **R-101** La exportación SVG de conectores con puntos y curva es idéntica a la del lienzo — *Cubre:* RF-8. **Hecho cuando:** Test de golden pasa.
+- [x] **R-102** Medir fluidez con 300 conectores con puntos — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma ≤ 100 ms o igual al de R-068.
+- [x] **R-103** Cerrar el Hito 2: `bun run typecheck` y `bun run test` pasan — *Cubre:* RNF-8. **Hecho cuando:** Ambos comandos pasan y el estado se anota arriba.
 
 ---
 

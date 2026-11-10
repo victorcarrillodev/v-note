@@ -92,6 +92,20 @@ describe("diagramToSvg (T-403, G-078)", () => {
     const svg = diagramToSvg(d);
     for (const e of d.edges) { const p = connectorPath(d, e)!; expect(svg, e.route).toContain(`d="${pathToSvg({ ...p, cmds: styledPath(p, e.style).cmds })}"`); }
   });
+  it("un conector curvo con puntos se exporta con la misma curva continua que el lienzo, sin tramos rectos (R-089, RF-8)", () => {
+    let d = emptyDiagram();
+    d = addNode(d, { id: "a", shape: "process", x: 0, y: 0 }).diagram;
+    d = addNode(d, { id: "b", shape: "process", x: 400, y: 220 }).diagram;
+    d = must(connect(d, { node: "a", anchor: "e" }, { node: "b", anchor: "w" }, { route: "curved" })).diagram;
+    d = { ...d, edges: d.edges.map((e) => ({ ...e, points: [{ x: 230, y: 20 }, { x: 330, y: 300 }] })) };
+    const e = d.edges[0]!, p = connectorPath(d, e)!;
+    const expected = pathToSvg({ ...p, cmds: styledPath(p, e.style).cmds });
+    const svg = diagramToSvg(d);
+    expect(svg).toContain(`d="${expected}"`);
+    const dAttr = /data-connector="" d="([^"]+)"/.exec(svg)![1]!;
+    expect(dAttr).toMatch(/^M [\d. -]+( C [\d. -]+)+/);
+    expect(dAttr).not.toMatch(/ L /);
+  });
   it("el estilo de la forma se exporta: relleno, opacidad, contorno, grosor, línea y color del texto (G-141)", () => {
     let d = emptyDiagram();
     d = addNode(d, { id: "a", shape: "process", x: 0, y: 0, text: "Hola" }).diagram;

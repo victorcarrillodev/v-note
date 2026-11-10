@@ -1,6 +1,6 @@
 # Plan 004 — Pulido de diagramas de flujo y mapas mentales
 
-> **Estado:** Hitos 0 y 1 cerrados (resultados del Hito 0 en `spikes/RESULTS-pulido.md`); Hito 2 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
+> **Estado:** Hitos 0, 1 y 2 cerrados (resultados del Hito 0 en `spikes/RESULTS-pulido.md`); Hito 3 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
 > **Marco:** `docs/constitution.md`. Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, decisiones con su alternativa descartada, hitos y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes los requisitos que cubre, por ejemplo **[RF-3]**. La sección 15 es una matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**
@@ -419,6 +419,14 @@ Auditoría de accesibilidad (axe, ya en el proyecto) sobre diagrama, mapa, menú
 - **Aviso de la interfaz:** el aviso (`[data-diagram-notice]`) queda fuera del marco, debajo.
 - **Pruebas e2e:** se construyen desde `dist`; hay que ejecutar `bun run typecheck` antes de un e2e para que incluya los cambios.
 - **Fluidez (R-068):** 200 formas y 300 conectores: peor fotograma 183 ms, igual que el de partida (R-006); el p95 sigue bajo 100 ms.
+
+---
+
+## 17c. Notas de implementación del Hito 2
+
+- **Puntos y trazados:** el trazado curvo guarda sus puntos de paso en `points` (como el libre); con ellos se dibuja una curva continua (Catmull-Rom centrípeta con las tangentes de los anclajes en los extremos). Doble clic sobre un tramo del trazado recto lo convierte en libre al agregar el punto. En 90° los quiebres automáticos no se eliminan: se ofrece «Restablecer ruta».
+- **Menú del punto:** seleccionar o arrastrar un punto sustituye el menú del conector por el del punto («Eliminar punto» / «Restablecer ruta»); para volver a las opciones del conector hay que reseleccionarlo (el e2e G-119/G-120 se ajustó a esto).
+- **Fluidez (R-102):** 200 formas y 300 conectores curvos con puntos: peor fotograma 200 ms, p95 33 ms. Queda por encima del objetivo de 100 ms (RNF-1) y ligeramente sobre el de partida (183 ms); se revisa en R-182.
 
 ---
 
