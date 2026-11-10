@@ -1,6 +1,6 @@
 # Plan 004 — Pulido de diagramas de flujo y mapas mentales
 
-> **Estado:** Hitos 0 a 3 cerrados (resultados del Hito 0 en `spikes/RESULTS-pulido.md`); Hito 4 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
+> **Estado:** Implementación cerrada; verificaciones manuales R-188 a R-190 pendientes de firma · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
 > **Marco:** `docs/constitution.md`. Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, decisiones con su alternativa descartada, hitos y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes los requisitos que cubre, por ejemplo **[RF-3]**. La sección 15 es una matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**
