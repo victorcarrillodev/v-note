@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Alcance:** diagrama de flujo y mapa mental. El organigrama, la línea de tiempo y la matriz no se tocan (salvo puntero y foco, que son globales).
 > **Total:** 191 tareas · Hito 0: 11 · Hito 1: 60 · Hito 2: 32 · Hito 3: 67 · Hito 4: 21
-> **Estado:** Implementación cerrada (10 de noviembre de 2026; 188 de 191 tareas; `bun run typecheck` y `bun run test` pasan). Quedan por firmar R-188, R-189 y R-190 (verificaciones manuales, ver `docs/manual-checks-pulido.md`).
+> **Estado:** Spec cerrada con tres verificaciones manuales diferidas por decisión de la persona (10 de noviembre de 2026; 188 de 191 tareas; `bun run typecheck` y `bun run test` pasan). Quedan por firmar R-188, R-189 y R-190 (verificaciones manuales, ver `docs/manual-checks-pulido.md`).
 
 ---
 
