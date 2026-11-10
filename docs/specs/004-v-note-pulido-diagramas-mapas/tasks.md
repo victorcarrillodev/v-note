@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Alcance:** diagrama de flujo y mapa mental. El organigrama, la línea de tiempo y la matriz no se tocan (salvo puntero y foco, que son globales).
 > **Total:** 191 tareas · Hito 0: 11 · Hito 1: 60 · Hito 2: 32 · Hito 3: 67 · Hito 4: 21
-> **Estado:** Hitos 0 a 3 cerrados (10 de noviembre de 2026; 170 de 191 tareas) · Hito 4 (cierre) pendiente.
+> **Estado:** Hitos 0 a 3 cerrados; Hito 4 en curso (10 de noviembre de 2026; 187 de 191 tareas): quedan R-188 a R-190 (verificaciones manuales firmadas por la persona) y R-191 (cierre).
 
 ---
 
@@ -293,33 +293,33 @@
 
 *Requiere: Todos los grupos del Hito 3.*
 
-- [ ] **R-171** El respaldo conserva `off`, `style` y `view` del mapa y `view` del diagrama — *Cubre:* RF-16. **Hecho cuando:** Test: respaldar y restaurar devuelve los mismos datos.
-- [ ] **R-172** Un respaldo anterior sin campos nuevos se restaura sin cambios — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Test con la golden anterior.
-- [ ] **R-173** Un respaldo nuevo es determinista y sin commit si no hubo cambios — *Cubre:* RF-16. **Hecho cuando:** Test: dos respaldos seguidos son idénticos.
-- [ ] **R-174** La exportación a SVG del mapa aplica `off` y colores con `resolveTreeLayout` y la paleta compartida — *Cubre:* RF-16, RF-9. **Hecho cuando:** Test de golden: el SVG coincide con lo que se ve.
-- [ ] **R-175** Las exportaciones a HTML y PDF usan la misma función — *Cubre:* RF-16. **Hecho cuando:** Test: mismo resultado que el SVG.
-- [ ] **R-176** El texto del mapa para búsqueda y Markdown no cambia — *Cubre:* RF-16. **Hecho cuando:** Test: `treeText` igual con y sin campos nuevos.
-- [ ] **R-177** El organigrama se exporta y respalda como antes — *Cubre:* RF-16. **Hecho cuando:** Test de regresión con la golden del organigrama.
+- [x] **R-171** El respaldo conserva `off`, `style` y `view` del mapa y `view` del diagrama — *Cubre:* RF-16. **Hecho cuando:** Test: respaldar y restaurar devuelve los mismos datos.
+- [x] **R-172** Un respaldo anterior sin campos nuevos se restaura sin cambios — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Test con la golden anterior.
+- [x] **R-173** Un respaldo nuevo es determinista y sin commit si no hubo cambios — *Cubre:* RF-16. **Hecho cuando:** Test: dos respaldos seguidos son idénticos.
+- [x] **R-174** La exportación a SVG del mapa aplica `off` y colores con `resolveTreeLayout` y la paleta compartida — *Cubre:* RF-16, RF-9. **Hecho cuando:** Test de golden: el SVG coincide con lo que se ve.
+- [x] **R-175** Las exportaciones a HTML y PDF usan la misma función — *Cubre:* RF-16. **Hecho cuando:** Test: mismo resultado que el SVG.
+- [x] **R-176** El texto del mapa para búsqueda y Markdown no cambia — *Cubre:* RF-16. **Hecho cuando:** Test: `treeText` igual con y sin campos nuevos.
+- [x] **R-177** El organigrama se exporta y respalda como antes — *Cubre:* RF-16. **Hecho cuando:** Test de regresión con la golden del organigrama.
 
 ### Calidad y casos límite
 
 *Requiere: Respaldo, exportación y búsqueda.*
 
-- [ ] **R-178** Prueba dedicada a cada caso límite CL-1 a CL-17 (una por caso, con su identificador en el nombre) — *Cubre:* CL-1, CL-2, CL-3, CL-4, CL-5, CL-6, CL-7, CL-8, CL-9, CL-10, CL-11, CL-12, CL-13, CL-14, CL-15, CL-16, CL-17. **Hecho cuando:** Existe y pasa una prueba por cada caso.
-- [ ] **R-179** Auditoría de accesibilidad de diagrama, mapa, menús y vista ampliada en claro y oscuro — *Cubre:* RNF-3. **Hecho cuando:** Sin errores.
-- [ ] **R-180** Comprobar la ausencia de peticiones de red a destinos externos en todo el flujo — *Cubre:* RNF-5. **Hecho cuando:** e2e: cero peticiones externas.
-- [ ] **R-181** Comprobar que no se añadieron dependencias — *Cubre:* RNF-2. **Hecho cuando:** El diff de `package.json` no muestra dependencias nuevas.
-- [ ] **R-182** Presupuesto de fluidez final con 200 elementos en diagrama y en mapa — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma ≤ 100 ms en ambos, o excepción documentada.
-- [ ] **R-183** Pruebas compartidas del marco (diagrama y mapa) para la coherencia — *Cubre:* RNF-8. **Hecho cuando:** Una sola suite de pruebas del marco se ejecuta con los dos bloques.
-- [ ] **R-184** Matrices de aceptación de CL y RNF de esta spec — *Cubre:* RNF-7, RNF-8. **Hecho cuando:** `docs/acceptance-pulido.md` enlaza cada requisito con su prueba.
+- [x] **R-178** Prueba dedicada a cada caso límite CL-1 a CL-17 (una por caso, con su identificador en el nombre) — *Cubre:* CL-1, CL-2, CL-3, CL-4, CL-5, CL-6, CL-7, CL-8, CL-9, CL-10, CL-11, CL-12, CL-13, CL-14, CL-15, CL-16, CL-17. **Hecho cuando:** Existe y pasa una prueba por cada caso.
+- [x] **R-179** Auditoría de accesibilidad de diagrama, mapa, menús y vista ampliada en claro y oscuro — *Cubre:* RNF-3. **Hecho cuando:** Sin errores.
+- [x] **R-180** Comprobar la ausencia de peticiones de red a destinos externos en todo el flujo — *Cubre:* RNF-5. **Hecho cuando:** e2e: cero peticiones externas.
+- [x] **R-181** Comprobar que no se añadieron dependencias — *Cubre:* RNF-2. **Hecho cuando:** El diff de `package.json` no muestra dependencias nuevas.
+- [x] **R-182** Presupuesto de fluidez final con 200 elementos en diagrama y en mapa — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma ≤ 100 ms en ambos, o excepción documentada.
+- [x] **R-183** Pruebas compartidas del marco (diagrama y mapa) para la coherencia — *Cubre:* RNF-8. **Hecho cuando:** Una sola suite de pruebas del marco se ejecuta con los dos bloques.
+- [x] **R-184** Matrices de aceptación de CL y RNF de esta spec — *Cubre:* RNF-7, RNF-8. **Hecho cuando:** `docs/acceptance-pulido.md` enlaza cada requisito con su prueba.
 
 ### Documentación
 
 *Requiere: Calidad y casos límite.*
 
-- [ ] **R-185** Actualizar el manual (`docs/manual`) con menús, ampliar, cuadrícula, puntos de quiebre, curva y mapa mental nuevo — *Cubre:* RF-1, RF-3, RF-6, RF-9, RF-11, RF-18. **Hecho cuando:** Secciones nuevas con capturas actualizadas.
-- [ ] **R-186** Actualizar `docs/backup-format.md` con la versión final de los campos — *Cubre:* RF-16. **Hecho cuando:** Documento coherente con el código.
-- [ ] **R-187** Anotar en la spec y el plan los valores finales (alto, cuadrícula, distancias) — *Cubre:* RNF-8. **Hecho cuando:** Spec y plan sin diferencias con el código.
+- [x] **R-185** Actualizar el manual (`docs/manual`) con menús, ampliar, cuadrícula, puntos de quiebre, curva y mapa mental nuevo — *Cubre:* RF-1, RF-3, RF-6, RF-9, RF-11, RF-18. **Hecho cuando:** Secciones nuevas con capturas actualizadas.
+- [x] **R-186** Actualizar `docs/backup-format.md` con la versión final de los campos — *Cubre:* RF-16. **Hecho cuando:** Documento coherente con el código.
+- [x] **R-187** Anotar en la spec y el plan los valores finales (alto, cuadrícula, distancias) — *Cubre:* RNF-8. **Hecho cuando:** Spec y plan sin diferencias con el código.
 
 ### Verificación final
 

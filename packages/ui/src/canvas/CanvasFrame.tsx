@@ -128,6 +128,8 @@ export function CanvasFrame({ testId, label, height, defaultHeight, onHeightChan
     };
   }, [expanded]);
   const trap = (e: KeyboardEvent<HTMLDivElement>) => {
+    // Ctrl/Cmd + Mayús + F amplía o sale (con el foco dentro del lienzo; no choca con los atajos del editor de bloques).
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "f") { e.preventDefault(); setExpanded((v) => !v); return; }
     // Esc con el foco dentro: un contenedor puede detener el evento antes de que llegue al documento, así que también se atiende aquí.
     if (expanded && e.key === "Escape" && !e.nativeEvent.defaultPrevented) { setExpanded(false); return; }
     if (!expanded || e.key !== "Tab") return;

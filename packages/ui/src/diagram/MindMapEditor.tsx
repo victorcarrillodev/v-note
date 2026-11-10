@@ -32,7 +32,7 @@ const MindNode = memo(function MindNode({ data }: NodeProps<Node<MindData>>) {
   const border = strokeFor(d.style?.stroke ?? "palette:ink");
   return (
     <div
-      role="button" tabIndex={0} aria-label={d.label} aria-pressed={d.selected} aria-expanded={d.hasChildren ? !d.collapsed : undefined} data-mind-id={d.id} data-depth="" data-mind-fill={d.style?.fill ?? ""}
+      role={d.editing ? "group" : "button"} tabIndex={0} aria-label={d.label} data-selected={d.selected ? "true" : "false"} {...(d.editing ? { "aria-current": true } : { "aria-pressed": d.selected })} aria-expanded={d.hasChildren && !d.editing ? !d.collapsed : undefined} data-mind-id={d.id} data-depth="" data-mind-fill={d.style?.fill ?? ""}
       onPointerDown={(e) => d.onDown(e, d.id)} onMouseDown={(e) => e.stopPropagation()} onFocus={() => d.onFocusNode(d.id)}
       style={{ width: NODE_W, height: NODE_H, background: fill, border: `2px solid ${border}`, color: strokeFor(d.style?.text ?? "palette:ink"), touchAction: "none", boxSizing: "border-box", pointerEvents: "all" }}
       className={cx("nopan relative flex items-center justify-center rounded-full px-2 text-center text-[length:var(--text-ui-small-size)] leading-4 [@media(pointer:coarse)]:before:absolute [@media(pointer:coarse)]:before:-inset-0.5 [@media(pointer:coarse)]:before:content-['']", d.selected && "vn-selected", d.editing ? "cursor-text" : "vn-grab")}

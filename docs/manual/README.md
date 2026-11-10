@@ -242,6 +242,25 @@ Desde `/` puedes insertar lienzos visuales dentro de una página:
 
 Un diagrama grande (200 formas y 300 conectores) se mueve y amplía con fluidez. Todos se pueden exportar como imagen vectorial dentro de HTML/PDF (sección 13), con los mismos colores, trazados y puntas que ves en el lienzo. Los diagramas guardados con una versión anterior se abren sin cambios de aspecto.
 
+### Menú, vista ampliada y cuadrícula (diagrama y mapa mental)
+
+- **Menú junto al elemento:** al seleccionar una forma, un conector, un punto o un globo aparece un **menú emergente pegado a él** (Apariencia, Estructura, Acciones). Se cierra con **Esc** o con un clic fuera.
+- **Alto ajustable:** arrastra la franja inferior del lienzo (o enfócala y usa las flechas arriba y abajo; Mayús = 5 celdas). El alto se guarda con la página.
+- **Vista ampliada:** el botón **Ampliar** (o Ctrl+Mayús+F con el foco en el lienzo) cubre la ventana; **Esc** o **Salir de la vista ampliada** vuelve a donde estabas, con tu selección y tu texto a medias.
+- **Cuadrícula:** botones **Mostrar cuadrícula** y **Acomodar a la cuadrícula** (valen para el diagrama y el mapa y se recuerdan en este dispositivo). Con el acomodo activo, formas, puntos y globos quedan en puntos de la cuadrícula; mantén **Alt** para moverlos libremente.
+- **Cursor de mano:** todo lo que se puede pulsar lo muestra; el anillo azul de foco solo aparece al navegar con el teclado.
+
+### Puntos de quiebre y curvas (diagrama)
+
+- **Doble clic sobre un conector seleccionado** agrega un punto de quiebre donde hiciste clic; **doble clic sobre un punto** (o «Eliminar punto» en su menú, o Supr) lo quita. No hay límite de puntos.
+- En el trazado **curvo** los puntos forman una **curva continua** sin picos; en **90°** solo los puntos de paso son eliminables («Restablecer ruta» devuelve el trazado automático); en **libre** unen tramos rectos o suaves.
+
+### Mapa mental
+
+- **Un clic** en un globo lo selecciona, abre su menú y deja escribir de inmediato; Enter confirma el texto. **Arrastrar** (más de 5 px) lo mueve **junto con su rama**; «Reordenar automáticamente» (barra) deshace las posiciones manuales. Las posiciones se guardan.
+- **Menú del globo:** agregar hijo, agregar hermano, colapsar o expandir, eliminar (avisa cuántos globos se eliminan y permite deshacer) y **color** de relleno, borde, texto y línea, con aviso de poco contraste y **Aplicar a la rama**.
+- **Vista:** acercar, alejar, 100 %, ajustar a pantalla, Ctrl + rueda o pellizco para zoom y arrastrar el fondo para desplazar. Atajos con el foco en el lienzo: flechas (mover), Supr (eliminar), Ctrl+C / Ctrl+V (copiar y pegar una rama), + − 0 (zoom) y F (ajustar).
+
 ## 11. Captura rápida
 
 Sirve para anotar una idea al instante sin abrir el espacio. Lo escrito se guarda en la **Bandeja de entrada** del **espacio predeterminado** (si la bandeja no existe, se crea sola). Después puedes **mover** la nota a una página o **convertirla en tarjeta**.

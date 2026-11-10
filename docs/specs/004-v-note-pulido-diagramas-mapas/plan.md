@@ -394,7 +394,8 @@ Auditoría de accesibilidad (axe, ya en el proyecto) sobre diagrama, mapa, menú
 - En el trazado de 90° los **quiebres automáticos** no son eliminables; se quitan los puntos de paso o se restablece la ruta (sección 8.2).
 - Distancia mínima entre puntos de curva y a los anclajes: **12 px** (se confirma en pruebas).
 - Preferencia de cuadrícula por **dispositivo**, no por espacio de trabajo.
-- Atajo de ampliar **Ctrl+Mayús+F**, sin chocar con los del editor de bloques (se verifica en el Hito 1).
+- Atajo de ampliar **Ctrl+Mayús+F**, sin chocar con los del editor de bloques (implementado en el marco en el Hito 4: solo con el foco dentro del lienzo).
+- **Valores finales (R-187):** cuadrícula 20 px; alto 240–1600 px (diagrama 420 px; mapa 320–560 px calculado, guardado solo si se cambia); separación mínima entre puntos de curva 12 px; umbral de clic frente a arrastre 5 px; globo 160 × 40 px con texto recortado a dos líneas; zoom de 2 % a 400 %; menú hasta el 40 % del alto visible.
 
 ---
 

@@ -1,9 +1,12 @@
 // R-148, R-167 a R-169 (e2e real en Chrome, spec 004): mapa mental — clic escribe y abre menú, mover con rama y reabrir, color de rama,
 // zoom, alto persistido, mismo ancho que otros bloques y fluidez con 200 globos.
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { Page } from "./cdp";
 import { clickButton, ensureSpace, startWeb, type Web } from "./webHarness";
 
+const AXE = readFileSync(resolve(__dirname, "../node_modules/axe-core/axe.min.js"), "utf8");
 let web: Web;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 beforeAll(async () => { web = await startWeb(4196, 9355); }, 120000);
@@ -147,4 +150,30 @@ describe("mapa mental en el navegador real", () => {
     expect(sorted[Math.floor(sorted.length * 0.95)]!).toBeLessThan(100);
     expect((await saved(p)).root.children[0]!.off).toBeDefined();
   }, 180000);
+
+  for (const theme of ["light", "dark"] as const) {
+    it(`R-179: axe sin infracciones graves con el menú abierto y en vista ampliada (${theme})`, async () => {
+      const p = await web.open();
+      await openMap(p, "Accesible"); await resetPrefs(p);
+      await p.eval(`document.documentElement.setAttribute('data-theme', '${theme}')`);
+      await p.eval(AXE);
+      const run = () => p.eval<{ id: string; nodes: string[] }[]>(`axe.run({ include: [['${Q}'], ['[data-floating-menu]']] }, { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa'] } }).then(r => r.violations.filter(v => v.impact === 'serious' || v.impact === 'critical').map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target.join(' ')).slice(0, 3) })))`);
+      const r = await rect(p, bubble("root")); await click(p, r.cx, r.cy); await sleep(600);
+      expect(await p.eval("!!document.querySelector('[data-floating-menu]')")).toBe(true);
+      const v1 = await run(); if (v1.length) console.log("AXE menú:", JSON.stringify(v1));
+      expect(v1, "con el menú abierto").toEqual([]);
+      await p.eval(`[...document.querySelectorAll('${Q} button')].find((b) => b.getAttribute('aria-label') === 'Ampliar').click()`); await sleep(600);
+      const v2 = await run(); if (v2.length) console.log("AXE ampliada:", JSON.stringify(v2));
+      expect(v2, "en vista ampliada").toEqual([]);
+    }, 150000);
+  }
+
+  it("R-180: ninguna petición a destinos externos en el flujo del mapa", async () => {
+    const p = await web.open();
+    await openMap(p, "Red");
+    const r = await rect(p, bubble("root")); await click(p, r.cx, r.cy); await sleep(400);
+    await addChildTo(p, "root", "Rama"); await sleep(400);
+    const hosts = await p.eval<string[]>(`[...new Set(performance.getEntriesByType('resource').map((e) => new URL(e.name).origin).filter((o) => o !== location.origin && !o.startsWith('blob:') && !o.startsWith('data:')))]`);
+    expect(hosts).toEqual([]);
+  }, 120000);
 });

@@ -4,6 +4,7 @@ import { connectorPath, pathToSvg, type ConnectorPath } from "../diagrams/path";
 import { EDGE_WIDTH_PX, dashArray, fillHexLight, isColor, strongHexLight } from "../diagrams/style";
 import { styledPath, type CapShape } from "../diagrams/caps";
 import { layoutTree, NODE_H, NODE_W, type TNode, type Tree } from "../diagrams/tree";
+import { resolveTreeLayout } from "../diagrams/mindmap";
 import { EVENT_H, EVENT_W, placeEvents, sortedEvents, type Timeline } from "../diagrams/timeline";
 import type { Matrix } from "../diagrams/matrix";
 
@@ -107,17 +108,18 @@ export function diagramToSvg(d: Diagram): string {
 
 /** Organigrama o mapa mental (solo las ideas visibles; lo plegado no se dibuja). */
 export function treeToSvg(t: Tree, kind: "orgchart" | "mindmap"): string {
-  const pos = layoutTree(t, kind);
+  const pos = resolveTreeLayout(t, kind); // el mapa aplica los desplazamientos; el organigrama los ignora
   if (pos.size === 0) return EMPTY;
+  const styled = kind === "mindmap"; // los colores por globo son del mapa mental
   const lines: string[] = [], boxes: string[] = [];
   const walk = (node: TNode, parent: TNode | null) => {
     const p = pos.get(node.id);
     if (!p) return;
     if (parent) {
       const q = pos.get(parent.id);
-      if (q) lines.push(`<line x1="${n(q.x)}" y1="${n(q.y)}" x2="${n(p.x)}" y2="${n(p.y)}" stroke="#64748b" stroke-width="1.5"/>`);
+      if (q) lines.push(`<line x1="${n(q.x)}" y1="${n(q.y)}" x2="${n(p.x)}" y2="${n(p.y)}" stroke="${styled && node.style?.line ? exportStroke(node.style.line, "#64748b") : "#64748b"}" stroke-width="1.5"/>`);
     }
-    boxes.push(`<rect x="${n(p.x - NODE_W / 2)}" y="${n(p.y - NODE_H / 2)}" width="${NODE_W}" height="${NODE_H}" rx="6" fill="${node.id === t.root.id ? "#bfdbfe" : "#f1f5f9"}" stroke="#334155" stroke-width="1.5"/>${label(p.x, p.y, NODE_W - 12, NODE_H, node.text)}`);
+    boxes.push(`<rect x="${n(p.x - NODE_W / 2)}" y="${n(p.y - NODE_H / 2)}" width="${NODE_W}" height="${NODE_H}" rx="6" fill="${styled && node.style?.fill ? exportFill(node.style.fill) : node.id === t.root.id ? "#bfdbfe" : "#f1f5f9"}" stroke="${styled && node.style?.stroke ? (node.style.stroke === "none" ? "none" : exportStroke(node.style.stroke, "#334155")) : "#334155"}" stroke-width="1.5"/>${label(p.x, p.y, NODE_W - 12, NODE_H, node.text, "middle", styled && node.style?.text ? exportStroke(node.style.text, "#0f172a") : "#0f172a")}`);
     if (!node.collapsed) node.children.forEach((c) => walk(c, node));
   };
   walk(t.root, null);

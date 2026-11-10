@@ -71,7 +71,7 @@ describe("clic único (R-134 a R-137, R-140)", () => {
   it("un clic sin movimiento selecciona, abre el menú y pone el texto en edición", async () => {
     await mount(sample());
     click("a");
-    expect(bubble("a")).toHaveAttribute("aria-pressed", "true");
+    expect(bubble("a")).toHaveAttribute("data-selected", "true");
     await waitFor(() => expect(menu()).not.toBeNull());
     expect(within(bubble("a")).getByRole("textbox")).toHaveValue("A");
   });
@@ -297,7 +297,7 @@ describe("alto y vista ampliada (R-158, R-159)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ampliar" }));
     expect(frame()).toHaveAttribute("data-expanded");
     fireEvent.click(screen.getByRole("button", { name: "Salir de la vista ampliada" }));
-    expect(bubble("a")).toHaveAttribute("aria-pressed", "true");
+    expect(bubble("a")).toHaveAttribute("data-selected", "true");
     expect(within(bubble("a")).getByRole("textbox")).toHaveValue("Escribiendo");
   });
 });

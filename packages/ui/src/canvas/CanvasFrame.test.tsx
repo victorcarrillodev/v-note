@@ -247,3 +247,14 @@ describe("cambios de ancho (R-052, CL-11)", () => {
     expect(onWidthChange.mock.calls.map((c) => c[0])).toEqual([800, 640]);
   });
 });
+
+describe("atajo de ampliar (plan §16)", () => {
+  it("Ctrl+Mayús+F con el foco dentro amplía y vuelve a salir", async () => {
+    await renderWithI18n(<CanvasFrame testId="f" label="Lienzo" height={undefined} defaultHeight={300} onHeightChange={() => undefined} zoom={{ level: 1, min: 0.1, max: 4, onIn: () => undefined, onOut: () => undefined, onFit: () => undefined, onReset: () => undefined }} history={{ canUndo: false, canRedo: false, onUndo: () => undefined, onRedo: () => undefined }}><button type="button">dentro</button></CanvasFrame>);
+    const f = screen.getByTestId("f");
+    fireEvent.keyDown(screen.getByRole("button", { name: "dentro" }), { key: "F", ctrlKey: true, shiftKey: true });
+    expect(f).toHaveAttribute("data-expanded");
+    fireEvent.keyDown(screen.getByRole("button", { name: "dentro" }), { key: "F", ctrlKey: true, shiftKey: true });
+    expect(f).not.toHaveAttribute("data-expanded");
+  });
+});
