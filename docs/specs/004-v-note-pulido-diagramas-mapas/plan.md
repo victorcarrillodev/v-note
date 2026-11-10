@@ -1,6 +1,6 @@
 # Plan 004 — Pulido de diagramas de flujo y mapas mentales
 
-> **Estado:** Hitos 0, 1 y 2 cerrados (resultados del Hito 0 en `spikes/RESULTS-pulido.md`); Hito 3 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
+> **Estado:** Hitos 0 a 3 cerrados (resultados del Hito 0 en `spikes/RESULTS-pulido.md`); Hito 4 pendiente · **Implementa:** `docs/specs/004-v-note-pulido-diagramas-mapas/spec.md` (RF-1 a RF-18, RNF-1 a RNF-8, CL-1 a CL-17).
 > **Marco:** `docs/constitution.md`. Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, decisiones con su alternativa descartada, hitos y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes los requisitos que cubre, por ejemplo **[RF-3]**. La sección 15 es una matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**
@@ -427,6 +427,18 @@ Auditoría de accesibilidad (axe, ya en el proyecto) sobre diagrama, mapa, menú
 - **Puntos y trazados:** el trazado curvo guarda sus puntos de paso en `points` (como el libre); con ellos se dibuja una curva continua (Catmull-Rom centrípeta con las tangentes de los anclajes en los extremos). Doble clic sobre un tramo del trazado recto lo convierte en libre al agregar el punto. En 90° los quiebres automáticos no se eliminan: se ofrece «Restablecer ruta».
 - **Menú del punto:** seleccionar o arrastrar un punto sustituye el menú del conector por el del punto («Eliminar punto» / «Restablecer ruta»); para volver a las opciones del conector hay que reseleccionarlo (el e2e G-119/G-120 se ajustó a esto).
 - **Fluidez (R-102):** 200 formas y 300 conectores curvos con puntos: peor fotograma 200 ms, p95 33 ms. Queda por encima del objetivo de 100 ms (RNF-1) y ligeramente sobre el de partida (183 ms); se revisa en R-182.
+
+---
+
+## 17d. Notas de implementación del Hito 3
+
+- **Modelo:** `Tree.view`, `TNode.off` y `TNode.style` son opcionales; `parseTree` los sanea (nunca lanza) y `serializeTree` no emite campos vacíos (golden `fixtures/trees/plain.json` idéntica byte a byte). Para no chocar con el diagrama, las funciones del mapa se llaman `setTreeNodeStyle` y `setTreeNodeOffset`. Se añadieron `branchClip` y `pasteBranch` (portapapeles interno, R-162).
+- **Mapa:** `MindMapEditor` usa `CanvasFrame` y `FloatingMenu`; el organigrama sigue con `TreeEditor`. El alto por defecto se calcula (320 a 560 px) y solo se guarda en `view` cuando el usuario lo cambia (así un mapa sin editar no se reescribe).
+- **Arrastre (plan B):** el gesto mueve la rama con transformaciones directas del DOM y redibuja solo las líneas; al soltar se confirma un único `moveBranch` (un paso de historial). El globo lleva `pointer-events: all` porque la librería los desactiva en nodos no arrastrables, y detiene `mousedown` para que el editor de bloques no le robe el foco.
+- **Encuadre inicial:** se hace en cuanto el marco tiene ancho medido; el ancho del bloque se arregló con `w-full` en el contenedor del mapa y del diagrama (dentro del bloque flex quedaban al ancho de su contenido).
+- **Texto largo (CL-13):** el globo mantiene su tamaño y recorta a dos líneas (el texto completo va en el título y en el campo de edición), en vez de crecer.
+- **Fluidez (R-169):** 200 globos, peor fotograma 133 a 167 ms y p95 33 ms con el plan B; sobre el objetivo de 100 ms del peor fotograma (se revisa en R-182).
+- **e2e:** el flujo de mapa mental de `organizers.e2e` pasó a `mindmap.e2e`; `pointerFocus.e2e` ignora las muestras de color seleccionadas (estado, no foco) y los botones de forma usan el cursor de mano.
 
 ---
 

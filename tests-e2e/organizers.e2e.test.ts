@@ -82,7 +82,7 @@ async function treeFlow(p: Page, kind: "mindmap" | "orgchart", query: string, ce
 }
 
 describe("organizadores gráficos en la aplicación real", () => {
-  it("T-341…T-343: mapa mental — rama, hijo, colapsar y reubicar", async () => { await treeFlow(await web.open(), "mindmap", "mapa mental", "Idea central"); }, 180000);
+  // El mapa mental (spec 004) se prueba en mindmap.e2e.test.ts; aquí queda el organigrama, que sigue con el editor anterior.
   it("T-344, T-345: organigrama — niveles, colapsar y reubicar", async () => { await treeFlow(await web.open(), "orgchart", "organigrama", "Cargo principal"); }, 180000);
 
   it("T-346, T-349: línea de tiempo — eventos en orden y arrastre cambia la fecha", async () => {

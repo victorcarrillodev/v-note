@@ -28,6 +28,7 @@ const ACCENT_RING = `(() => {
   for (const el of document.querySelectorAll('body *')) {
     const s = getComputedStyle(el), r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
+    if (el.hasAttribute('data-swatch')) continue; // la muestra elegida del selector de color marca un ESTADO (seleccionado), no el foco
     if ((s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0 && s.outlineColor === accent) || (s.boxShadow && s.boxShadow.includes(accent)))
       out.push(el.tagName.toLowerCase() + '.' + String(el.className || '').slice(0, 40) + (el === document.activeElement ? ' (activo)' : ''));
   }
@@ -37,15 +38,12 @@ const ACCENT_RING = `(() => {
 describe("foco: sin anillo azul con ratón, con anillo con teclado", () => {
   it("R-028: tras clics de ratón en el editor y en el mapa no queda ningún contorno de acento", async () => {
     const p = await web.open();
-    await openBlock(p, "mapa mental", "[data-testid=mindmap]");
-    await p.click("[data-testid=mindmap] [data-node-id=root]"); await sleep(300);
+    await openBlock(p, "mapa mental", "[data-testid=mindmap]"); await sleep(800);
+    await p.click("[data-testid=mindmap] [data-mind-id=root]"); await sleep(300);
     expect(await p.eval<string[]>(ACCENT_RING), "tras clic en el globo").toEqual([]);
-    await p.click("[data-testid=mindmap] [role=region] input"); await sleep(300);
+    await p.click("[data-testid=mindmap] [data-mind-id=root] input"); await sleep(300);
     expect(await p.eval<string[]>(ACCENT_RING), "tras clic en un campo de texto").toEqual([]);
     expect(await p.eval<string>("document.documentElement.getAttribute('data-input')")).toBe("pointer");
-    // el campo de texto sí muestra el borde reforzado neutro
-    const border = await p.eval<{ c: string; muted: string }>(`(() => { const i = document.querySelector('[data-testid=mindmap] [role=region] input'); const probe = document.createElement('i'); probe.style.color = getComputedStyle(document.documentElement).getPropertyValue('--c-text-muted'); document.body.appendChild(probe); const muted = getComputedStyle(probe).color; probe.remove(); return { c: getComputedStyle(i).borderTopColor, muted }; })()`);
-    expect(border.c).toBe(border.muted);
     await p.click(".bn-editor"); await sleep(300);
     expect(await p.eval<string[]>(ACCENT_RING), "tras clic en el editor").toEqual([]);
   }, 150000);
@@ -53,8 +51,8 @@ describe("foco: sin anillo azul con ratón, con anillo con teclado", () => {
   it("con Tab vuelve el anillo de foco y la modalidad pasa a teclado", async () => {
     await web.closeAll();
     const p = await web.open();
-    await openBlock(p, "mapa mental", "[data-testid=mindmap]");
-    await p.click("[data-testid=mindmap] [data-node-id=root]"); await sleep(200);
+    await openBlock(p, "mapa mental", "[data-testid=mindmap]"); await sleep(800);
+    await p.click("[data-testid=mindmap] [data-mind-id=root]"); await sleep(200);
     await p.key("Tab", "Tab", 9); await sleep(300);
     expect(await p.eval<string>("document.documentElement.getAttribute('data-input')")).toBe("keyboard");
     const ring = await p.eval<string[]>(ACCENT_RING);

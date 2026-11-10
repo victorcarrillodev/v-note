@@ -2,9 +2,13 @@ import { hierarchy, tree as d3tree } from "d3-hierarchy";
 import { appError, err, ok, type Result } from "../result";
 import { newId } from "../ids";
 import { stableJson } from "../backup/stableJson";
+import { isColor, isFillColor } from "./style";
+import { readView, writeView, type CanvasView } from "./view";
 
-export type TNode = { id: string; text: string; children: TNode[]; collapsed?: boolean };
-export type Tree = { root: TNode };
+/** Colores de un globo: relleno, borde, texto y la línea que lo une a su padre (cada uno `palette:<id>`, hex o `none` en relleno y borde). */
+export type TStyle = { fill?: string; stroke?: string; text?: string; line?: string };
+export type TNode = { id: string; text: string; children: TNode[]; collapsed?: boolean; off?: { x: number; y: number }; style?: TStyle };
+export type Tree = { root: TNode; view?: CanvasView };
 export const NODE_W = 160;
 export const NODE_H = 40;
 const SIBLING_GAP = 20, LEVEL_GAP = 40, MAP_LEVEL_GAP = 60;
@@ -26,7 +30,7 @@ const notFound = (id: string) => err(appError("NOT_FOUND", "El nodo no existe", 
 export function addChild(t: Tree, parentId: string, text: string, id?: string): Result<{ tree: Tree; node: TNode }> {
   if (!findNode(t, parentId)) return notFound(parentId);
   const node: TNode = { id: id ?? newId(), text, children: [] };
-  return ok({ tree: { root: mapNode(t.root, parentId, (p) => ({ ...p, children: [...p.children, node], collapsed: false })) }, node });
+  return ok({ tree: { ...t, root: mapNode(t.root, parentId, (p) => ({ ...p, children: [...p.children, node], collapsed: false })) }, node });
 }
 export function addSibling(t: Tree, nodeId: string, text: string, id?: string): Result<{ tree: Tree; node: TNode }> {
   if (!findNode(t, nodeId)) return notFound(nodeId);
@@ -34,18 +38,18 @@ export function addSibling(t: Tree, nodeId: string, text: string, id?: string): 
   if (!parent) return err(appError("INVALID", "La idea central no tiene hermanos", { reason: "ROOT" }));
   const node: TNode = { id: id ?? newId(), text, children: [] };
   const i = parent.children.findIndex((c) => c.id === nodeId);
-  return ok({ tree: { root: mapNode(t.root, parent.id, (p) => ({ ...p, children: [...p.children.slice(0, i + 1), node, ...p.children.slice(i + 1)] })) }, node });
+  return ok({ tree: { ...t, root: mapNode(t.root, parent.id, (p) => ({ ...p, children: [...p.children.slice(0, i + 1), node, ...p.children.slice(i + 1)] })) }, node });
 }
-export const renameNode = (t: Tree, id: string, text: string): Tree => ({ root: mapNode(t.root, id, (n) => ({ ...n, text })) });
+export const renameNode = (t: Tree, id: string, text: string): Tree => ({ ...t, root: mapNode(t.root, id, (n) => ({ ...n, text })) });
 export function deleteTreeNode(t: Tree, id: string): Result<{ tree: Tree; removed: number }> {
   const node = findNode(t, id);
   if (!node) return notFound(id);
   const parent = parentOf(t, id);
   if (!parent) return err(appError("INVALID", "La idea central no se puede eliminar", { reason: "ROOT" }));
-  return ok({ tree: { root: mapNode(t.root, parent.id, (p) => ({ ...p, children: p.children.filter((c) => c.id !== id) })) }, removed: count(node) });
+  return ok({ tree: { ...t, root: mapNode(t.root, parent.id, (p) => ({ ...p, children: p.children.filter((c) => c.id !== id) })) }, removed: count(node) });
 }
 export const toggleCollapsed = (t: Tree, id: string): Tree =>
-  ({ root: mapNode(t.root, id, (n) => (n.children.length === 0 ? n : { ...n, collapsed: n.collapsed ? false : true })) });
+  ({ ...t, root: mapNode(t.root, id, (n) => (n.children.length === 0 ? n : { ...n, collapsed: n.collapsed ? false : true })) });
 
 /** Reubica un nodo (con su subárbol) bajo otro padre en una posición; nunca dentro de sí mismo ni de sus descendientes. */
 export function moveTreeNode(t: Tree, id: string, newParentId: string, index: number): Result<Tree> {
@@ -54,8 +58,8 @@ export function moveTreeNode(t: Tree, id: string, newParentId: string, index: nu
   const oldParent = parentOf(t, id);
   if (!oldParent) return err(appError("INVALID", "La idea central no se puede mover", { reason: "ROOT" }));
   if (findNode({ root: node }, newParentId)) return err(appError("CYCLE", "No se puede mover un nodo dentro de sí mismo ni de sus descendientes", { id, newParentId }));
-  const without = { root: mapNode(t.root, oldParent.id, (p) => ({ ...p, children: p.children.filter((c) => c.id !== id) })) };
-  return ok({ root: mapNode(without.root, newParentId, (p) => { const i = Math.max(0, Math.min(index, p.children.length)); return { ...p, collapsed: false, children: [...p.children.slice(0, i), node, ...p.children.slice(i)] }; }) });
+  const without = { ...t, root: mapNode(t.root, oldParent.id, (p) => ({ ...p, children: p.children.filter((c) => c.id !== id) })) };
+  return ok({ ...t, root: mapNode(without.root, newParentId, (p) => { const i = Math.max(0, Math.min(index, p.children.length)); return { ...p, collapsed: false, children: [...p.children.slice(0, i), node, ...p.children.slice(i)] }; }) });
 }
 
 export type VisibleNode = { id: string; text: string; depth: number; hasChildren: boolean; collapsed: boolean };
@@ -69,7 +73,27 @@ export function visibleNodes(t: Tree): VisibleNode[] {
   return out;
 }
 
-export const serializeTree = (t: Tree): string => stableJson(t);
+const STYLE_KEYS: { key: keyof TStyle; ok: (v: unknown) => boolean }[] = [{ key: "fill", ok: isFillColor }, { key: "stroke", ok: isFillColor }, { key: "text", ok: isColor }, { key: "line", ok: isColor }];
+const cleanStyle = (s: unknown): TStyle | undefined => {
+  if (typeof s !== "object" || s === null) return undefined;
+  const out: TStyle = {};
+  for (const { key, ok: valid } of STYLE_KEYS) { const v = (s as Record<string, unknown>)[key]; if (valid(v)) out[key] = v as string; }
+  return Object.keys(out).length > 0 ? out : undefined;
+};
+const cleanOff = (o: unknown): { x: number; y: number } | undefined => {
+  if (typeof o !== "object" || o === null) return undefined;
+  const { x, y } = o as { x?: unknown; y?: unknown };
+  return typeof x === "number" && typeof y === "number" && Number.isFinite(x) && Number.isFinite(y) && (x !== 0 || y !== 0) ? { x, y } : undefined;
+};
+/** Deja el globo sin campos vacíos o inválidos, para que un árbol sin editar se serialice igual que siempre. */
+const cleanNode = (n: TNode): TNode => {
+  const { off, style, children, ...rest } = n;
+  const o = cleanOff(off), st = cleanStyle(style);
+  return { ...rest, ...(o ? { off: o } : {}), ...(st ? { style: st } : {}), children: children.map(cleanNode) };
+};
+const cleanTree = (t: Tree): Tree => { const v = writeView(t.view); return { root: cleanNode(t.root), ...(v ? { view: v } : {}) }; };
+
+export const serializeTree = (t: Tree): string => stableJson(cleanTree(t));
 const invalid = (m: string) => err(appError("INVALID", m, { reason: "TREE" }));
 export function parseTree(text: string): Result<Tree> {
   if (text.trim() === "") return ok(newTree(""));
@@ -83,7 +107,9 @@ export function parseTree(text: string): Result<Tree> {
     return x.children.every(check);
   };
   const root = (raw as { root?: unknown } | null)?.root;
-  return check(root) ? ok({ root }) : invalid("El organizador no tiene el formato esperado");
+  if (!check(root)) return invalid("El organizador no tiene el formato esperado");
+  const view = readView((raw as { view?: unknown }).view);
+  return ok({ root: cleanNode(root), ...(view ? { view } : {}) });
 }
 export const treeText = (t: Tree): string => { const out: string[] = []; const walk = (n: TNode) => { if (n.text.trim() !== "") out.push(n.text); n.children.forEach(walk); }; walk(t.root); return out.join("\n"); };
 

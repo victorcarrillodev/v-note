@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Alcance:** diagrama de flujo y mapa mental. El organigrama, la línea de tiempo y la matriz no se tocan (salvo puntero y foco, que son globales).
 > **Total:** 191 tareas · Hito 0: 11 · Hito 1: 60 · Hito 2: 32 · Hito 3: 67 · Hito 4: 21
-> **Estado:** Hitos 0, 1 y 2 cerrados (10 de noviembre de 2026; 103 de 191 tareas) · Hito 3 (mapa mental) pendiente.
+> **Estado:** Hitos 0 a 3 cerrados (10 de noviembre de 2026; 170 de 191 tareas) · Hito 4 (cierre) pendiente.
 
 ---
 
@@ -187,103 +187,103 @@
 
 *Requiere: Todos los grupos del Hito 2.*
 
-- [ ] **R-104** Tipos del árbol: `off` y `style` por globo y `view` del árbol — *Cubre:* RF-9, RF-11, RF-12. **Hecho cuando:** Test de tipos: los campos nuevos son opcionales.
-- [ ] **R-105** `parseTree` conserva `view`, `off` y `style` válidos — *Cubre:* RF-16. **Hecho cuando:** Test de ida y vuelta.
-- [ ] **R-106** `parseTree` descarta `off` no numérico y colores inválidos sin lanzar — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Test: el globo se lee con valores por defecto.
-- [ ] **R-107** `parseTree` acota `view.height` al rango permitido — *Cubre:* RF-12, RF-16. **Hecho cuando:** Test de valores fuera de rango.
-- [ ] **R-108** `serializeTree` no emite campos vacíos — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Test: un árbol sin editar produce exactamente los mismos bytes que la golden anterior.
-- [ ] **R-109** Un lector anterior lee un árbol nuevo sin error — *Cubre:* RNF-7. **Hecho cuando:** Test con el lector anterior fijado en un fixture.
-- [ ] **R-110** Fixtures de mapas anteriores y nuevos — *Cubre:* RF-16, CL-12. **Hecho cuando:** Existen un mapa sin campos nuevos y uno con todos, usados en las pruebas.
+- [x] **R-104** Tipos del árbol: `off` y `style` por globo y `view` del árbol — *Cubre:* RF-9, RF-11, RF-12. **Hecho cuando:** Test de tipos: los campos nuevos son opcionales.
+- [x] **R-105** `parseTree` conserva `view`, `off` y `style` válidos — *Cubre:* RF-16. **Hecho cuando:** Test de ida y vuelta.
+- [x] **R-106** `parseTree` descarta `off` no numérico y colores inválidos sin lanzar — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Test: el globo se lee con valores por defecto.
+- [x] **R-107** `parseTree` acota `view.height` al rango permitido — *Cubre:* RF-12, RF-16. **Hecho cuando:** Test de valores fuera de rango.
+- [x] **R-108** `serializeTree` no emite campos vacíos — *Cubre:* RF-16, RNF-7. **Hecho cuando:** Test: un árbol sin editar produce exactamente los mismos bytes que la golden anterior.
+- [x] **R-109** Un lector anterior lee un árbol nuevo sin error — *Cubre:* RNF-7. **Hecho cuando:** Test con el lector anterior fijado en un fixture.
+- [x] **R-110** Fixtures de mapas anteriores y nuevos — *Cubre:* RF-16, CL-12. **Hecho cuando:** Existen un mapa sin campos nuevos y uno con todos, usados en las pruebas.
 
 ### Núcleo del mapa
 
 *Requiere: Modelo del árbol.*
 
-- [ ] **R-111** `resolveTreeLayout`: posición efectiva = automática + `off` del globo y de sus ancestros — *Cubre:* RF-11. **Hecho cuando:** Test con 3 niveles y desplazamientos mezclados.
-- [ ] **R-112** `resolveTreeLayout` sin ningún `off` da la distribución automática de siempre — *Cubre:* RF-16, CL-12. **Hecho cuando:** Test: idéntica a `layoutTree`.
-- [ ] **R-113** Mover la raíz desplaza todo el mapa sin cambiar los demás `off` — *Cubre:* RF-11, CL-7. **Hecho cuando:** Test de posiciones relativas intactas.
-- [ ] **R-114** Colapsar y expandir un globo movido conserva la posición de sus hijos — *Cubre:* RF-11, CL-8. **Hecho cuando:** Test: los hijos reaparecen en su lugar.
-- [ ] **R-115** `moveBranch`: mover un globo cambia solo su `off` y calcula el acomodo a cuadrícula — *Cubre:* RF-11, RF-18. **Hecho cuando:** Test: la posición efectiva del globo es múltiplo de la cuadrícula.
-- [ ] **R-116** Al acomodar un globo, sus descendientes conservan su distancia relativa — *Cubre:* RF-18, CL-17. **Hecho cuando:** Test: distancias relativas iguales antes y después.
-- [ ] **R-117** `reflowAuto` borra todos los `off` del árbol — *Cubre:* RF-11. **Hecho cuando:** Test: el resultado equivale a la distribución automática.
-- [ ] **R-118** `placeNewNode` evita colisión con otros globos visibles — *Cubre:* RF-11. **Hecho cuando:** Test: el globo nuevo no se superpone.
-- [ ] **R-119** `placeNewNode` deja el globo en un punto de la cuadrícula si hizo falta moverlo — *Cubre:* RF-18. **Hecho cuando:** Test: posición efectiva múltiplo de la cuadrícula.
-- [ ] **R-120** `setNodeStyle` cambia relleno, borde, texto o línea de un globo — *Cubre:* RF-9. **Hecho cuando:** Test de cada campo y de colores inválidos rechazados.
-- [ ] **R-121** `applyStyleToBranch` copia el estilo a todos los descendientes actuales — *Cubre:* RF-10. **Hecho cuando:** Test: descendientes cambian; ancestros y hermanos no.
-- [ ] **R-122** Un hijo creado después de aplicar a la rama nace sin estilo propio — *Cubre:* RF-10. **Hecho cuando:** Test: apariencia por defecto.
-- [ ] **R-123** Reglas de borrar un globo con hijos: conteo de globos eliminados — *Cubre:* RF-14. **Hecho cuando:** Test: el conteo incluye todos los descendientes.
-- [ ] **R-124** Texto vacío al salir del globo: el globo se conserva — *Cubre:* RF-14. **Hecho cuando:** Test: el modelo no elimina globos de texto vacío.
-- [ ] **R-125** Exportar el núcleo del mapa desde el índice del paquete — *Cubre:* RF-11. **Hecho cuando:** Test de importación público pasa.
+- [x] **R-111** `resolveTreeLayout`: posición efectiva = automática + `off` del globo y de sus ancestros — *Cubre:* RF-11. **Hecho cuando:** Test con 3 niveles y desplazamientos mezclados.
+- [x] **R-112** `resolveTreeLayout` sin ningún `off` da la distribución automática de siempre — *Cubre:* RF-16, CL-12. **Hecho cuando:** Test: idéntica a `layoutTree`.
+- [x] **R-113** Mover la raíz desplaza todo el mapa sin cambiar los demás `off` — *Cubre:* RF-11, CL-7. **Hecho cuando:** Test de posiciones relativas intactas.
+- [x] **R-114** Colapsar y expandir un globo movido conserva la posición de sus hijos — *Cubre:* RF-11, CL-8. **Hecho cuando:** Test: los hijos reaparecen en su lugar.
+- [x] **R-115** `moveBranch`: mover un globo cambia solo su `off` y calcula el acomodo a cuadrícula — *Cubre:* RF-11, RF-18. **Hecho cuando:** Test: la posición efectiva del globo es múltiplo de la cuadrícula.
+- [x] **R-116** Al acomodar un globo, sus descendientes conservan su distancia relativa — *Cubre:* RF-18, CL-17. **Hecho cuando:** Test: distancias relativas iguales antes y después.
+- [x] **R-117** `reflowAuto` borra todos los `off` del árbol — *Cubre:* RF-11. **Hecho cuando:** Test: el resultado equivale a la distribución automática.
+- [x] **R-118** `placeNewNode` evita colisión con otros globos visibles — *Cubre:* RF-11. **Hecho cuando:** Test: el globo nuevo no se superpone.
+- [x] **R-119** `placeNewNode` deja el globo en un punto de la cuadrícula si hizo falta moverlo — *Cubre:* RF-18. **Hecho cuando:** Test: posición efectiva múltiplo de la cuadrícula.
+- [x] **R-120** `setNodeStyle` cambia relleno, borde, texto o línea de un globo — *Cubre:* RF-9. **Hecho cuando:** Test de cada campo y de colores inválidos rechazados.
+- [x] **R-121** `applyStyleToBranch` copia el estilo a todos los descendientes actuales — *Cubre:* RF-10. **Hecho cuando:** Test: descendientes cambian; ancestros y hermanos no.
+- [x] **R-122** Un hijo creado después de aplicar a la rama nace sin estilo propio — *Cubre:* RF-10. **Hecho cuando:** Test: apariencia por defecto.
+- [x] **R-123** Reglas de borrar un globo con hijos: conteo de globos eliminados — *Cubre:* RF-14. **Hecho cuando:** Test: el conteo incluye todos los descendientes.
+- [x] **R-124** Texto vacío al salir del globo: el globo se conserva — *Cubre:* RF-14. **Hecho cuando:** Test: el modelo no elimina globos de texto vacío.
+- [x] **R-125** Exportar el núcleo del mapa desde el índice del paquete — *Cubre:* RF-11. **Hecho cuando:** Test de importación público pasa.
 
 ### Lienzo del mapa
 
 *Requiere: Núcleo del mapa.*
 
-- [ ] **R-126** `MindMapEditor` dentro de `CanvasFrame` con globos como nodos — *Cubre:* RF-12, RF-13, RNF-8. **Hecho cuando:** Test: un mapa se muestra con el ancho de la columna y el alto guardado.
-- [ ] **R-127** Líneas al padre en una capa SVG propia, con el color `line` del hijo — *Cubre:* RF-9. **Hecho cuando:** Test: la línea toma el color y sigue al globo.
-- [ ] **R-128** Globos colapsados ocultan sus descendientes y muestran el indicador — *Cubre:* RF-14. **Hecho cuando:** Test de colapsar y expandir.
-- [ ] **R-129** Texto largo: el globo crece hasta un ancho máximo y luego se ajusta en líneas — *Cubre:* CL-13. **Hecho cuando:** Test: no se superponen globos con texto largo.
-- [ ] **R-130** Historial del mapa con la utilidad genérica y deshacer/rehacer en barra y atajos — *Cubre:* RF-15. **Hecho cuando:** Test: cada acción nueva se deshace y se rehace.
-- [ ] **R-131** `onlyRenderVisibleElements` y medición de globos visibles — *Cubre:* RNF-1. **Hecho cuando:** Test: solo se montan los globos visibles.
-- [ ] **R-132** El bloque `mindmap` usa `MindMapEditor` y `orgchart` sigue con `TreeEditor` — *Cubre:* RF-16. **Hecho cuando:** Test: un organigrama se ve y se comporta igual que antes.
-- [ ] **R-133** El alto del mapa por defecto muestra el mapa inicial completo y se guarda en `view` — *Cubre:* RF-12. **Hecho cuando:** Test: mapa nuevo con alto entre 320 y 560 px.
+- [x] **R-126** `MindMapEditor` dentro de `CanvasFrame` con globos como nodos — *Cubre:* RF-12, RF-13, RNF-8. **Hecho cuando:** Test: un mapa se muestra con el ancho de la columna y el alto guardado.
+- [x] **R-127** Líneas al padre en una capa SVG propia, con el color `line` del hijo — *Cubre:* RF-9. **Hecho cuando:** Test: la línea toma el color y sigue al globo.
+- [x] **R-128** Globos colapsados ocultan sus descendientes y muestran el indicador — *Cubre:* RF-14. **Hecho cuando:** Test de colapsar y expandir.
+- [x] **R-129** Texto largo: el globo crece hasta un ancho máximo y luego se ajusta en líneas — *Cubre:* CL-13. **Hecho cuando:** Test: no se superponen globos con texto largo.
+- [x] **R-130** Historial del mapa con la utilidad genérica y deshacer/rehacer en barra y atajos — *Cubre:* RF-15. **Hecho cuando:** Test: cada acción nueva se deshace y se rehace.
+- [x] **R-131** `onlyRenderVisibleElements` y medición de globos visibles — *Cubre:* RNF-1. **Hecho cuando:** Test: solo se montan los globos visibles.
+- [x] **R-132** El bloque `mindmap` usa `MindMapEditor` y `orgchart` sigue con `TreeEditor` — *Cubre:* RF-16. **Hecho cuando:** Test: un organigrama se ve y se comporta igual que antes.
+- [x] **R-133** El alto del mapa por defecto muestra el mapa inicial completo y se guarda en `view` — *Cubre:* RF-12. **Hecho cuando:** Test: mapa nuevo con alto entre 320 y 560 px.
 
 ### Clic único, menú y color
 
 *Requiere: Lienzo del mapa.*
 
-- [ ] **R-134** Un clic sin movimiento selecciona, abre el menú y pone el texto en edición — *Cubre:* RF-14. **Hecho cuando:** Test: un solo clic produce los tres efectos.
-- [ ] **R-135** Un arrastre de más de 5 px mueve el globo y no abre el campo de texto — *Cubre:* RF-14, RF-11. **Hecho cuando:** Test de ratón y de puntero táctil.
-- [ ] **R-136** El texto se confirma al salir del campo (desenfoque, Enter o clic fuera) como un paso de historial — *Cubre:* RF-14, RF-15. **Hecho cuando:** Test: una edición = un paso.
-- [ ] **R-137** Esc cierra el menú sin perder el texto escrito — *Cubre:* RF-14. **Hecho cuando:** Test de Esc con texto a medias.
-- [ ] **R-138** Menú del globo: agregar hijo, agregar hermano (no en la raíz), colapsar o expandir (solo con hijos), eliminar (no en la raíz) — *Cubre:* RF-14, RF-2. **Hecho cuando:** Test de cada acción y de las acciones ocultas o deshabilitadas.
-- [ ] **R-139** Eliminar con hijos avisa cuántos globos se eliminan, con «Deshacer» — *Cubre:* RF-14. **Hecho cuando:** Test: aviso con el conteo y deshacer restituye la rama.
-- [ ] **R-140** Texto de relleno atenuado cuando el globo queda vacío — *Cubre:* RF-14. **Hecho cuando:** Test: el globo vacío muestra el texto de relleno y no se elimina.
-- [ ] **R-141** Retirar el campo «Texto hijo» y la franja inferior del mapa — *Cubre:* RF-14, RF-1. **Hecho cuando:** Test: no existen en el mapa.
-- [ ] **R-142** Menú de color con relleno, borde, texto y línea reutilizando el selector de color, la paleta y los recientes — *Cubre:* RF-9. **Hecho cuando:** Test: cada color se aplica al elemento correcto.
-- [ ] **R-143** Aviso de contraste entre relleno y texto sin impedir la elección — *Cubre:* RF-9, RNF-3. **Hecho cuando:** Test: aviso visible con contraste insuficiente y el color se aplica.
-- [ ] **R-144** «Aplicar a la rama» en el menú con un solo paso de historial — *Cubre:* RF-10, RF-15. **Hecho cuando:** Test: aplicar y deshacer en un paso.
-- [ ] **R-145** Un globo nuevo se crea sin estilo y colocado sin superposición — *Cubre:* RF-10, RF-11. **Hecho cuando:** Test de interfaz con hijo y hermano nuevos.
+- [x] **R-134** Un clic sin movimiento selecciona, abre el menú y pone el texto en edición — *Cubre:* RF-14. **Hecho cuando:** Test: un solo clic produce los tres efectos.
+- [x] **R-135** Un arrastre de más de 5 px mueve el globo y no abre el campo de texto — *Cubre:* RF-14, RF-11. **Hecho cuando:** Test de ratón y de puntero táctil.
+- [x] **R-136** El texto se confirma al salir del campo (desenfoque, Enter o clic fuera) como un paso de historial — *Cubre:* RF-14, RF-15. **Hecho cuando:** Test: una edición = un paso.
+- [x] **R-137** Esc cierra el menú sin perder el texto escrito — *Cubre:* RF-14. **Hecho cuando:** Test de Esc con texto a medias.
+- [x] **R-138** Menú del globo: agregar hijo, agregar hermano (no en la raíz), colapsar o expandir (solo con hijos), eliminar (no en la raíz) — *Cubre:* RF-14, RF-2. **Hecho cuando:** Test de cada acción y de las acciones ocultas o deshabilitadas.
+- [x] **R-139** Eliminar con hijos avisa cuántos globos se eliminan, con «Deshacer» — *Cubre:* RF-14. **Hecho cuando:** Test: aviso con el conteo y deshacer restituye la rama.
+- [x] **R-140** Texto de relleno atenuado cuando el globo queda vacío — *Cubre:* RF-14. **Hecho cuando:** Test: el globo vacío muestra el texto de relleno y no se elimina.
+- [x] **R-141** Retirar el campo «Texto hijo» y la franja inferior del mapa — *Cubre:* RF-14, RF-1. **Hecho cuando:** Test: no existen en el mapa.
+- [x] **R-142** Menú de color con relleno, borde, texto y línea reutilizando el selector de color, la paleta y los recientes — *Cubre:* RF-9. **Hecho cuando:** Test: cada color se aplica al elemento correcto.
+- [x] **R-143** Aviso de contraste entre relleno y texto sin impedir la elección — *Cubre:* RF-9, RNF-3. **Hecho cuando:** Test: aviso visible con contraste insuficiente y el color se aplica.
+- [x] **R-144** «Aplicar a la rama» en el menú con un solo paso de historial — *Cubre:* RF-10, RF-15. **Hecho cuando:** Test: aplicar y deshacer en un paso.
+- [x] **R-145** Un globo nuevo se crea sin estilo y colocado sin superposición — *Cubre:* RF-10, RF-11. **Hecho cuando:** Test de interfaz con hijo y hermano nuevos.
 
 ### Mover, vista y cuadrícula del mapa
 
 *Requiere: Clic único, menú y color.*
 
-- [ ] **R-146** Arrastrar un globo mueve su rama con las líneas ajustadas en tiempo real — *Cubre:* RF-11. **Hecho cuando:** Test: durante el gesto, el globo y sus descendientes se mueven el mismo delta.
-- [ ] **R-147** Al soltar se guarda el `off` y se registra un solo paso de historial — *Cubre:* RF-11, RF-15. **Hecho cuando:** Test: un arrastre largo = un paso.
-- [ ] **R-148** Las posiciones persisten al cerrar y reabrir la página — *Cubre:* RF-11. **Hecho cuando:** e2e: mover, recargar y ver el globo en su lugar.
-- [ ] **R-149** «Reordenar automáticamente» en un paso de historial — *Cubre:* RF-11, RF-15. **Hecho cuando:** Test: reordena y se deshace de una vez.
-- [ ] **R-150** Superponer globos está permitido y «Reordenar» los separa — *Cubre:* CL-6. **Hecho cuando:** Test: dos globos superpuestos se separan al reordenar.
-- [ ] **R-151** Cuadrícula visible en el mapa, con el mismo paso que el diagrama — *Cubre:* RF-18. **Hecho cuando:** Test: el paso es el de la constante del núcleo.
-- [ ] **R-152** Acomodo a cuadrícula del globo arrastrado con Alt para movimiento libre y el interruptor compartido — *Cubre:* RF-18. **Hecho cuando:** Test: con acomodo la posición es múltiplo; con Alt o interruptor apagado, libre.
-- [ ] **R-153** Arrastrar el fondo desplaza la vista — *Cubre:* RF-13. **Hecho cuando:** Test de desplazamiento con ratón y con un dedo.
-- [ ] **R-154** Ctrl + rueda y pellizco hacen zoom centrado en el puntero — *Cubre:* RF-13. **Hecho cuando:** Test: el punto bajo el puntero no se mueve al hacer zoom.
-- [ ] **R-155** Botones de acercar, alejar, restablecer al 100 % y ajustar a la vista — *Cubre:* RF-13. **Hecho cuando:** Test de cada botón y del porcentaje.
-- [ ] **R-156** Zoom y posición se recuerdan solo con la página abierta; al reabrirla se encuadra el mapa completo — *Cubre:* RF-13. **Hecho cuando:** Test: reabrir encuadra todo.
-- [ ] **R-157** Si el mapa no cabe ni al zoom mínimo, «Ajustar a la vista» avisa — *Cubre:* CL-10. **Hecho cuando:** Test con un mapa enorme.
-- [ ] **R-158** Alto ajustable del mapa con asa, teclado y un paso de historial — *Cubre:* RF-12, RF-15. **Hecho cuando:** Test igual que el del diagrama (R-041, R-042).
-- [ ] **R-159** Vista ampliada del mapa con los mismos controles y Esc por capas — *Cubre:* RF-3, RNF-8. **Hecho cuando:** Test: ampliar y salir conserva selección y texto.
+- [x] **R-146** Arrastrar un globo mueve su rama con las líneas ajustadas en tiempo real — *Cubre:* RF-11. **Hecho cuando:** Test: durante el gesto, el globo y sus descendientes se mueven el mismo delta.
+- [x] **R-147** Al soltar se guarda el `off` y se registra un solo paso de historial — *Cubre:* RF-11, RF-15. **Hecho cuando:** Test: un arrastre largo = un paso.
+- [x] **R-148** Las posiciones persisten al cerrar y reabrir la página — *Cubre:* RF-11. **Hecho cuando:** e2e: mover, recargar y ver el globo en su lugar.
+- [x] **R-149** «Reordenar automáticamente» en un paso de historial — *Cubre:* RF-11, RF-15. **Hecho cuando:** Test: reordena y se deshace de una vez.
+- [x] **R-150** Superponer globos está permitido y «Reordenar» los separa — *Cubre:* CL-6. **Hecho cuando:** Test: dos globos superpuestos se separan al reordenar.
+- [x] **R-151** Cuadrícula visible en el mapa, con el mismo paso que el diagrama — *Cubre:* RF-18. **Hecho cuando:** Test: el paso es el de la constante del núcleo.
+- [x] **R-152** Acomodo a cuadrícula del globo arrastrado con Alt para movimiento libre y el interruptor compartido — *Cubre:* RF-18. **Hecho cuando:** Test: con acomodo la posición es múltiplo; con Alt o interruptor apagado, libre.
+- [x] **R-153** Arrastrar el fondo desplaza la vista — *Cubre:* RF-13. **Hecho cuando:** Test de desplazamiento con ratón y con un dedo.
+- [x] **R-154** Ctrl + rueda y pellizco hacen zoom centrado en el puntero — *Cubre:* RF-13. **Hecho cuando:** Test: el punto bajo el puntero no se mueve al hacer zoom.
+- [x] **R-155** Botones de acercar, alejar, restablecer al 100 % y ajustar a la vista — *Cubre:* RF-13. **Hecho cuando:** Test de cada botón y del porcentaje.
+- [x] **R-156** Zoom y posición se recuerdan solo con la página abierta; al reabrirla se encuadra el mapa completo — *Cubre:* RF-13. **Hecho cuando:** Test: reabrir encuadra todo.
+- [x] **R-157** Si el mapa no cabe ni al zoom mínimo, «Ajustar a la vista» avisa — *Cubre:* CL-10. **Hecho cuando:** Test con un mapa enorme.
+- [x] **R-158** Alto ajustable del mapa con asa, teclado y un paso de historial — *Cubre:* RF-12, RF-15. **Hecho cuando:** Test igual que el del diagrama (R-041, R-042).
+- [x] **R-159** Vista ampliada del mapa con los mismos controles y Esc por capas — *Cubre:* RF-3, RNF-8. **Hecho cuando:** Test: ampliar y salir conserva selección y texto.
 
 ### Teclado, táctil y textos del mapa
 
 *Requiere: Mover, vista y cuadrícula del mapa.*
 
-- [ ] **R-160** Tab recorre los globos y Enter abre menú y edición — *Cubre:* RF-17. **Hecho cuando:** Test de recorrido solo con teclado.
-- [ ] **R-161** Flechas mueven el globo seleccionado una celda (Mayús = 5) y 1 px / 10 px con acomodo apagado — *Cubre:* RF-17, RF-18. **Hecho cuando:** Test de los cuatro casos.
-- [ ] **R-162** Supr/Retroceso eliminan, Ctrl+C/V usan el portapapeles interno, +/−/0 hacen zoom, F ajusta y Ctrl+Mayús+F amplía — *Cubre:* RF-17. **Hecho cuando:** Test de cada atajo con foco dentro del lienzo y sin choque con los del editor.
-- [ ] **R-163** Cambios de selección y avisos en una región de estado — *Cubre:* RF-17, RNF-3. **Hecho cuando:** Test: el lector recibe el aviso de eliminación y de selección.
-- [ ] **R-164** Objetivos táctiles de 44 px y menú que no queda bajo el dedo — *Cubre:* RF-17. **Hecho cuando:** Test con puntero grueso simulado.
-- [ ] **R-165** El foco sale del bloque con Tab sin quedar atrapado (fuera de la vista ampliada) — *Cubre:* CL-14. **Hecho cuando:** Test: Tab desde el último elemento sale del bloque.
-- [ ] **R-166** Textos del mapa en español de México y en inglés — *Cubre:* RNF-6. **Hecho cuando:** La prueba de paridad de idiomas pasa.
+- [x] **R-160** Tab recorre los globos y Enter abre menú y edición — *Cubre:* RF-17. **Hecho cuando:** Test de recorrido solo con teclado.
+- [x] **R-161** Flechas mueven el globo seleccionado una celda (Mayús = 5) y 1 px / 10 px con acomodo apagado — *Cubre:* RF-17, RF-18. **Hecho cuando:** Test de los cuatro casos.
+- [x] **R-162** Supr/Retroceso eliminan, Ctrl+C/V usan el portapapeles interno, +/−/0 hacen zoom, F ajusta y Ctrl+Mayús+F amplía — *Cubre:* RF-17. **Hecho cuando:** Test de cada atajo con foco dentro del lienzo y sin choque con los del editor.
+- [x] **R-163** Cambios de selección y avisos en una región de estado — *Cubre:* RF-17, RNF-3. **Hecho cuando:** Test: el lector recibe el aviso de eliminación y de selección.
+- [x] **R-164** Objetivos táctiles de 44 px y menú que no queda bajo el dedo — *Cubre:* RF-17. **Hecho cuando:** Test con puntero grueso simulado.
+- [x] **R-165** El foco sale del bloque con Tab sin quedar atrapado (fuera de la vista ampliada) — *Cubre:* CL-14. **Hecho cuando:** Test: Tab desde el último elemento sale del bloque.
+- [x] **R-166** Textos del mapa en español de México y en inglés — *Cubre:* RNF-6. **Hecho cuando:** La prueba de paridad de idiomas pasa.
 
 ### Cierre del Hito 3
 
 *Requiere: Teclado, táctil y textos del mapa.*
 
-- [ ] **R-167** e2e del mapa: clic escribe y abre menú, mover con rama y reabrir, color de rama, zoom/100 %/ajustar, alto persistido — *Cubre:* RF-9, RF-10, RF-11, RF-12, RF-13, RF-14. **Hecho cuando:** e2e pasa en navegador real.
-- [ ] **R-168** e2e: mapa y diagrama con el mismo ancho que otros bloques en tres anchos de ventana — *Cubre:* RF-12, CL-11. **Hecho cuando:** e2e pasa.
-- [ ] **R-169** Medir fluidez con 200 globos al arrastrar una rama — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma ≤ 100 ms o plan B de R-003 aplicado.
-- [ ] **R-170** Cerrar el Hito 3: `bun run typecheck` y `bun run test` pasan — *Cubre:* RNF-8. **Hecho cuando:** Ambos comandos pasan y el estado se anota arriba.
+- [x] **R-167** e2e del mapa: clic escribe y abre menú, mover con rama y reabrir, color de rama, zoom/100 %/ajustar, alto persistido — *Cubre:* RF-9, RF-10, RF-11, RF-12, RF-13, RF-14. **Hecho cuando:** e2e pasa en navegador real.
+- [x] **R-168** e2e: mapa y diagrama con el mismo ancho que otros bloques en tres anchos de ventana — *Cubre:* RF-12, CL-11. **Hecho cuando:** e2e pasa.
+- [x] **R-169** Medir fluidez con 200 globos al arrastrar una rama — *Cubre:* RNF-1. **Hecho cuando:** Peor fotograma ≤ 100 ms o plan B de R-003 aplicado.
+- [x] **R-170** Cerrar el Hito 3: `bun run typecheck` y `bun run test` pasan — *Cubre:* RNF-8. **Hecho cuando:** Ambos comandos pasan y el estado se anota arriba.
 
 ---
 

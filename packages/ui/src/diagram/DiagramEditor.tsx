@@ -436,7 +436,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const toolbar = (
     <>
       {SHAPES.map((s) => (
-        <button key={s} type="button" data-shape-button={s} onPointerDown={dragShape(s)} onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } addAtCenter(s); }} className="vn-grab rounded border px-2 py-1 text-sm">
+        <button key={s} type="button" data-shape-button={s} onPointerDown={dragShape(s)} onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } addAtCenter(s); }} className="vn-clickable rounded border px-2 py-1 text-sm">
           {shapeName(s)}
         </button>
       ))}
@@ -446,7 +446,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   );
 
   return (
-    <div onKeyDown={onKeyDown} contentEditable={false}>
+    <div onKeyDown={onKeyDown} contentEditable={false} className="w-full">
       <CanvasFrame
         testId="diagram" label={t("diagram.canvas")} height={diagram.view?.height} defaultHeight={DEFAULT_DIAGRAM_HEIGHT}
         onHeightChange={(h) => commit({ ...history.current.current, view: { height: h } })}

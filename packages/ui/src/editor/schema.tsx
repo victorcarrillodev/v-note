@@ -10,6 +10,7 @@ import { DatabasePicker, EmbeddedDatabaseView } from "../databases/EmbeddedDatab
 import { DiagramEditor } from "../diagram/DiagramEditor";
 import { MentionView } from "./MentionView";
 import { MatrixEditor, TimelineEditor, TreeEditor } from "../diagram/Organizers";
+import { MindMapEditor } from "../diagram/MindMapEditor";
 
 export const CALLOUT_VARIANTS = ["info", "success", "warning", "danger"] as const;
 type Variant = (typeof CALLOUT_VARIANTS)[number];
@@ -135,7 +136,7 @@ const organizerProps = { data: { default: "" } } as const;
 /** Organizadores gráficos (RF-10): el estado de cada uno se guarda como texto JSON en el bloque. */
 export const mindmapBlock = createReactBlockSpec(
   { type: "mindmap", propSchema: organizerProps, content: "none" },
-  { render: ({ block, editor }) => <TreeEditor kind="mindmap" value={block.props.data} onChange={(data) => editor.updateBlock(block, { props: { data } })} /> },
+  { render: ({ block, editor }) => <MindMapEditor value={block.props.data} onChange={(data) => editor.updateBlock(block, { props: { data } })} /> },
 );
 export const orgchartBlock = createReactBlockSpec(
   { type: "orgchart", propSchema: organizerProps, content: "none" },

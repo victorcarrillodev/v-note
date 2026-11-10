@@ -1,0 +1,25 @@
+{
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "id": "a",
+        "text": "A"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "id": "b1",
+            "text": "B1"
+          }
+        ],
+        "collapsed": true,
+        "id": "b",
+        "text": "B"
+      }
+    ],
+    "id": "root",
+    "text": "Idea"
+  }
+}

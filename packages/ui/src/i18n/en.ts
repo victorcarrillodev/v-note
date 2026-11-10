@@ -476,6 +476,8 @@ export const en: Widen<typeof esMX> = {
     dark: "Dark",
     system: "Follow system",
   },
+  mmap: { canvas: "Mind map", placeholder: "Write an idea", reflow: "Rearrange automatically", addChild: "Add child", addSibling: "Add sibling", collapse: "Collapse", expand: "Expand", delete: "Delete", applyBranch: "Apply to branch",
+      fill: "Fill", stroke: "Border", text: "Text", line: "Line", removedBranch: "{{count}} bubbles were deleted.", undo: "Undo", selected: "Selected: {{text}}", node: "Bubble: {{text}}", root: "central idea", editText: "Bubble text", doesNotFit: "The map does not fit even at the minimum zoom.", moved: "Moved: {{text}}" },
   canvas: {
     menu: { appearance: "Appearance", structure: "Structure", actions: "Actions", shape: "Shape options", connector: "Connector options", point: "Point options", node: "Bubble options" },
     frame: {

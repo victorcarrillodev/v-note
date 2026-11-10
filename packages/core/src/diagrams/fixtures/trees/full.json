@@ -1,0 +1,42 @@
+{
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "id": "a",
+        "off": {
+          "x": 40,
+          "y": -20
+        },
+        "style": {
+          "fill": "palette:green",
+          "line": "#336699",
+          "stroke": "none",
+          "text": "palette:ink"
+        },
+        "text": "A"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "id": "b1",
+            "text": "B1"
+          }
+        ],
+        "collapsed": true,
+        "id": "b",
+        "text": "B"
+      }
+    ],
+    "id": "root",
+    "off": {
+      "x": 20,
+      "y": 0
+    },
+    "text": "Idea"
+  },
+  "view": {
+    "height": 480
+  }
+}

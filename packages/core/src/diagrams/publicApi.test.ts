@@ -9,3 +9,11 @@ describe("API pública de la spec 004 (núcleo base)", () => {
     }
   });
 });
+
+describe("API pública del mapa mental (R-125)", () => {
+  it("exporta el núcleo del mapa", () => {
+    for (const name of ["resolveTreeLayout", "moveBranch", "reflowAuto", "placeNewNode", "setTreeNodeStyle", "applyStyleToBranch", "setTreeNodeOffset", "effectiveBase"]) {
+      expect(core, name).toHaveProperty(name);
+    }
+  });
+});

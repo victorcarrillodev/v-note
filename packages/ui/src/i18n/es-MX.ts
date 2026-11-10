@@ -472,6 +472,8 @@ export const esMX = {
     dark: "Oscuro",
     system: "Seguir al sistema",
   },
+  mmap: { canvas: "Mapa mental", placeholder: "Escribe una idea", reflow: "Reordenar automáticamente", addChild: "Agregar hijo", addSibling: "Agregar hermano", collapse: "Colapsar", expand: "Expandir", delete: "Eliminar", applyBranch: "Aplicar a la rama",
+      fill: "Relleno", stroke: "Borde", text: "Texto", line: "Línea", removedBranch: "Se eliminaron {{count}} globos.", undo: "Deshacer", selected: "Seleccionado: {{text}}", node: "Globo: {{text}}", root: "idea central", editText: "Texto del globo", doesNotFit: "El mapa no cabe completo ni con el zoom mínimo.", moved: "Movido: {{text}}" },
   canvas: {
     menu: { appearance: "Apariencia", structure: "Estructura", actions: "Acciones", shape: "Opciones de la forma", connector: "Opciones del conector", point: "Opciones del punto", node: "Opciones del globo" },
     frame: {

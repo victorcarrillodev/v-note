@@ -88,6 +88,7 @@ export { orthogonalRoute, routeWithPin, validWaypoints } from "./diagrams/routin
 export { insertIndexFor } from "./diagrams/routing/free";
 export { curveHandle, curvatureForPoint, curvedThroughCmds, CURVATURE_MIN, CURVATURE_MAX, DEFAULT_CURVATURE } from "./diagrams/routing/curved";
 export * from "./diagrams/tree";
+export * from "./diagrams/mindmap";
 export * from "./diagrams/timeline";
 export * from "./diagrams/matrix";
 export * from "./diagrams/blockText";

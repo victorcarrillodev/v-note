@@ -8,7 +8,7 @@ import { loadRecentColors, pushRecentColor } from "./recentColors";
 const currentTheme = (): "light" | "dark" => (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
 
 /** Últimos colores personalizados de este dispositivo: se actualizan al aplicar un color con su valor propio. */
-function useRecents(): [string[], (c: string) => void] {
+export function useRecents(): [string[], (c: string) => void] {
   const [list, setList] = useState<string[]>(() => loadRecentColors());
   return [list, (c) => setList(pushRecentColor(c))];
 }
