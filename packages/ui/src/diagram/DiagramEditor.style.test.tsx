@@ -29,6 +29,8 @@ const pick = (id: string) => fireEvent.click(node(id));
 const selectEdge = () => fireEvent.keyDown(document.querySelector("[data-connector]")!, { key: "Enter" });
 const shapePanel = () => screen.getByRole("group", { name: "Estilo de la forma" });
 const edgePanel = () => screen.getByRole("group", { name: "Estilo del conector" });
+/** El menú es compacto: cada grupo de controles vive en una sección que se despliega con su ficha. */
+const open = (panel: HTMLElement, name: string) => { const b = within(panel).getByRole("button", { name }); if (b.getAttribute("aria-expanded") !== "true") fireEvent.click(b); };
 
 // El acomodo a la cuadrícula (spec 004) se prueba en DiagramEditor.frame.test.tsx: aquí los gestos usan coordenadas exactas.
 beforeEach(() => { clearDiagramClipboard(); try { localStorage.clear(); localStorage.setItem(GRID_PREFS_KEY, JSON.stringify({ show: true, snap: false })); } catch { /* sin almacenamiento */ } });
@@ -38,32 +40,32 @@ describe("estilo de la forma en el panel (G-128, G-134)", () => {
   it("cada control cambia su propiedad y se guarda de inmediato", async () => {
     const { last, onChange } = await mount(base());
     pick("a");
-    const p = shapePanel();
+    const p = shapePanel(); open(p, "Relleno");
     fireEvent.click(within(within(p).getByRole("group", { name: "Relleno" })).getByRole("button", { name: "Rojo" }));
     expect(last().nodes[0]!.style.fill).toBe("palette:red"); expect(onChange).toHaveBeenCalledTimes(1);
     fireEvent.change(within(p).getByLabelText("Relleno: hexadecimal"), { target: { value: "#ff8800" } });
     expect(last().nodes[0]!.style.fill).toBe("#ff8800");
     fireEvent.change(within(p).getByLabelText("Opacidad del relleno"), { target: { value: "40" } });
     expect(last().nodes[0]!.style.fillOpacity).toBe(0.4);
-    fireEvent.click(within(within(p).getByRole("group", { name: "Contorno" })).getByRole("button", { name: "Verde" }));
+    open(p, "Contorno"); fireEvent.click(within(within(p).getByRole("group", { name: "Contorno" })).getByRole("button", { name: "Verde" }));
     expect(last().nodes[0]!.style.stroke).toBe("palette:green");
     fireEvent.change(within(p).getByLabelText("Grosor del contorno"), { target: { value: "3" } });
     expect(last().nodes[0]!.style.strokeWidth).toBe(3);
     fireEvent.change(within(p).getByLabelText("Tipo de línea del contorno"), { target: { value: "dashed" } });
     expect(last().nodes[0]!.style.strokeDash).toBe("dashed");
-    fireEvent.click(within(within(p).getByRole("group", { name: "Color del texto" })).getByRole("button", { name: "Azul" }));
+    open(p, "Color del texto"); fireEvent.click(within(within(p).getByRole("group", { name: "Color del texto" })).getByRole("button", { name: "Azul" }));
     expect(last().nodes[0]!.style.textColor).toBe("palette:blue");
   });
   it("«Sin relleno» deja la forma sin color de fondo", async () => {
     const { last } = await mount(base());
     pick("a");
-    fireEvent.click(within(within(shapePanel()).getByRole("group", { name: "Relleno" })).getByRole("button", { name: "Sin relleno" }));
+    open(shapePanel(), "Relleno"); fireEvent.click(within(within(shapePanel()).getByRole("group", { name: "Relleno" })).getByRole("button", { name: "Sin relleno" }));
     expect(last().nodes[0]!.style.fill).toBe("none");
   });
   it("un color aplicado es un paso de deshacer y Deshacer lo devuelve (G-134)", async () => {
     const { last } = await mount(base());
     pick("a");
-    fireEvent.click(within(within(shapePanel()).getByRole("group", { name: "Relleno" })).getByRole("button", { name: "Rojo" }));
+    open(shapePanel(), "Relleno"); fireEvent.click(within(within(shapePanel()).getByRole("group", { name: "Relleno" })).getByRole("button", { name: "Rojo" }));
     expect(last().nodes[0]!.style.fill).toBe("palette:red");
     fireEvent.click(screen.getByRole("button", { name: "Deshacer" }));
     expect(last().nodes[0]!.style.fill).toBe("palette:blue");
@@ -81,7 +83,7 @@ describe("estilo de la forma en el panel (G-128, G-134)", () => {
     fireEvent.keyDown(document, { key: "Control", code: "ControlLeft", ctrlKey: true });
     fireEvent.click(node("b"), { ctrlKey: true });
     fireEvent.keyUp(document, { key: "Control", code: "ControlLeft" });
-    fireEvent.click(within(within(shapePanel()).getByRole("group", { name: "Relleno" })).getByRole("button", { name: "Verde" }));
+    open(shapePanel(), "Relleno"); fireEvent.click(within(within(shapePanel()).getByRole("group", { name: "Relleno" })).getByRole("button", { name: "Verde" }));
     expect(last().nodes.map((n) => n.style.fill)).toEqual(["palette:green", "palette:green"]);
     expect(onChange).toHaveBeenCalledTimes(1);
   });
@@ -95,7 +97,7 @@ describe("aviso de contraste no bloqueante (G-133, CL-7)", () => {
   it("con un texto casi igual al relleno avisa, pero deja aplicarlo", async () => {
     const { last } = await mount(setNodeStyle(base(), ["a"], { fill: "#ffffff" }));
     pick("a");
-    fireEvent.change(within(shapePanel()).getByLabelText("Color del texto: hexadecimal"), { target: { value: "#fefefe" } });
+    open(shapePanel(), "Color del texto"); fireEvent.change(within(shapePanel()).getByLabelText("Color del texto: hexadecimal"), { target: { value: "#fefefe" } });
     expect(last().nodes[0]!.style.textColor).toBe("#fefefe");
     expect(document.querySelector("[data-contrast-warning]")).toHaveTextContent("El texto tiene poco contraste con el relleno (menos de 4,5:1).");
   });
@@ -103,7 +105,7 @@ describe("aviso de contraste no bloqueante (G-133, CL-7)", () => {
     await mount(setNodeStyle(base(), ["a"], { fill: "#000000", textColor: "#111111", fillOpacity: 1 }));
     pick("a");
     expect(document.querySelector("[data-contrast-warning]")).not.toBeNull();
-    fireEvent.change(within(shapePanel()).getByLabelText("Opacidad del relleno"), { target: { value: "0" } });
+    open(shapePanel(), "Relleno"); fireEvent.change(within(shapePanel()).getByLabelText("Opacidad del relleno"), { target: { value: "0" } });
     expect(document.querySelector("[data-contrast-warning]")).toBeNull();
   });
 });
@@ -111,7 +113,7 @@ describe("aviso de contraste no bloqueante (G-133, CL-7)", () => {
 describe("colores recientes (G-131)", () => {
   it("un color personalizado aplicado aparece después entre los usados recientemente", async () => {
     await mount(base()); pick("a");
-    fireEvent.change(within(shapePanel()).getByLabelText("Relleno: hexadecimal"), { target: { value: "#12ab34" } });
+    open(shapePanel(), "Relleno"); fireEvent.change(within(shapePanel()).getByLabelText("Relleno: hexadecimal"), { target: { value: "#12ab34" } });
     expect(JSON.parse(localStorage.getItem("vnote.diagram.recentColors")!)).toEqual(["#12ab34"]);
   });
 });
@@ -120,14 +122,14 @@ describe("estilo del conector (G-139, G-140)", () => {
   it("el panel cambia color, grosor, línea, puntas y color del texto, y el lienzo lo dibuja", async () => {
     const { last } = await mount(withEdge());
     selectEdge();
-    const p = edgePanel();
+    const p = edgePanel(); open(p, "Línea");
     fireEvent.click(within(within(p).getByRole("group", { name: "Color de la línea" })).getByRole("button", { name: "Rojo" }));
     expect(last().edges[0]!.style.color).toBe("palette:red");
     fireEvent.change(within(p).getByLabelText("Grosor de la línea"), { target: { value: "thick" } });
     fireEvent.change(within(p).getByLabelText("Tipo de línea"), { target: { value: "dotted" } });
     fireEvent.change(within(p).getByLabelText("Punta de origen"), { target: { value: "circle" } });
     fireEvent.change(within(p).getByLabelText("Punta de destino"), { target: { value: "diamond" } });
-    fireEvent.click(within(within(p).getByRole("group", { name: "Color del texto del conector" })).getByRole("button", { name: "Azul" }));
+    open(p, "Color del texto del conector"); fireEvent.click(within(within(p).getByRole("group", { name: "Color del texto del conector" })).getByRole("button", { name: "Azul" }));
     expect(last().edges[0]!.style).toMatchObject({ color: "palette:red", width: "thick", dash: "dotted", startCap: "circle", endCap: "diamond", textColor: "palette:blue" });
     const path = document.querySelector("[data-connector-path]")!;
     expect(path.getAttribute("stroke")).toBe("var(--block-red-text)"); expect(path.getAttribute("stroke-width")).toBe("5"); // grueso 4 + 1 por estar seleccionado
@@ -167,7 +169,7 @@ describe("valores predeterminados por espacio (G-143, G-144, G-145)", () => {
     const api = fake();
     const { last } = await mount(setNodeStyle(base(), ["a"], { fill: "palette:green", stroke: "#b45309" }), api);
     pick("a");
-    fireEvent.click(within(shapePanel()).getByRole("button", { name: "Usar como predeterminado" }));
+    open(shapePanel(), "Más opciones"); fireEvent.click(within(shapePanel()).getByRole("button", { name: "Usar como predeterminado" }));
     await vi.waitFor(() => expect(document.querySelector("[data-diagram-notice]")).toHaveTextContent("predeterminado para las formas nuevas"));
     expect(api.saveShape).toHaveBeenCalledWith(expect.objectContaining({ fill: "palette:green", stroke: "#b45309" }));
     addShape("Proceso");
@@ -189,7 +191,7 @@ describe("valores predeterminados por espacio (G-143, G-144, G-145)", () => {
     const d = withEdge();
     await mount({ ...d, edges: d.edges.map((e) => ({ ...e, route: "curved" as const, style: { ...e.style, color: "#dc2626", width: "thick" as const } })) }, api);
     selectEdge();
-    fireEvent.click(within(edgePanel()).getByRole("button", { name: "Usar como predeterminado" }));
+    open(edgePanel(), "Más opciones"); fireEvent.click(within(edgePanel()).getByRole("button", { name: "Usar como predeterminado" }));
     await vi.waitFor(() => expect(api.saveEdge).toHaveBeenCalledWith(expect.objectContaining({ color: "#dc2626", width: "thick" }), "curved"));
   });
   it("«Restablecer predeterminados» vuelve a los del sistema", async () => {
@@ -197,7 +199,7 @@ describe("valores predeterminados por espacio (G-143, G-144, G-145)", () => {
     const { last } = await mount(base(), api);
     await new Promise((r) => setTimeout(r, 0));
     pick("a");
-    fireEvent.click(within(shapePanel()).getByRole("button", { name: "Restablecer predeterminados" }));
+    open(shapePanel(), "Más opciones"); fireEvent.click(within(shapePanel()).getByRole("button", { name: "Restablecer predeterminados" }));
     await vi.waitFor(() => expect(document.querySelector("[data-diagram-notice]")).toHaveTextContent("Se restablecieron"));
     expect(api.reset).toHaveBeenCalled();
     addShape("Proceso");
@@ -205,7 +207,7 @@ describe("valores predeterminados por espacio (G-143, G-144, G-145)", () => {
   });
   it("sin servicio de predeterminados los botones no se ofrecen", async () => {
     await mount(base()); pick("a");
-    expect(within(shapePanel()).queryByRole("button", { name: "Usar como predeterminado" })).toBeNull();
+    open(shapePanel(), "Más opciones"); expect(within(shapePanel()).queryByRole("button", { name: "Usar como predeterminado" })).toBeNull();
   });
 });
 
@@ -261,18 +263,18 @@ describe("copiar y pegar (G-148 a G-156)", () => {
   it("copiar y pegar formato aplica el estilo sin cambiar el texto ni la posición", async () => {
     const { last } = await mount(setNodeStyle(base(), ["a"], { fill: "palette:red", strokeWidth: 4 }));
     pick("a");
-    fireEvent.click(within(shapePanel()).getByRole("button", { name: "Copiar formato" }));
+    open(shapePanel(), "Más opciones"); fireEvent.click(within(shapePanel()).getByRole("button", { name: "Copiar formato" }));
     pick("b");
-    fireEvent.click(within(shapePanel()).getByRole("button", { name: "Pegar formato" }));
+    open(shapePanel(), "Más opciones"); fireEvent.click(within(shapePanel()).getByRole("button", { name: "Pegar formato" }));
     expect(last().nodes[1]!.style).toMatchObject({ fill: "palette:red", strokeWidth: 4 });
     expect(last().nodes[1]).toMatchObject({ text: "B", x: 400, y: 200 });
   });
   it("el formato de una forma no se pega sobre un conector", async () => {
     const { onChange } = await mount(withEdge());
     pick("a");
-    fireEvent.click(within(shapePanel()).getByRole("button", { name: "Copiar formato" }));
+    open(shapePanel(), "Más opciones"); fireEvent.click(within(shapePanel()).getByRole("button", { name: "Copiar formato" }));
     selectEdge();
-    fireEvent.click(within(edgePanel()).getByRole("button", { name: "Pegar formato" }));
+    open(edgePanel(), "Más opciones"); fireEvent.click(within(edgePanel()).getByRole("button", { name: "Pegar formato" }));
     expect(onChange).not.toHaveBeenCalled();
     expect(document.querySelector("[data-diagram-notice]")).toHaveTextContent("No hay formato copiado de este tipo de elemento.");
   });
@@ -285,3 +287,60 @@ describe("atajos sin conflicto (G-155)", () => {
     expect(new Set(Object.values(DIAGRAM_SHORTCUTS).map(normalizeCombo)).size).toBe(Object.keys(DIAGRAM_SHORTCUTS).length);
   });
 });
+
+describe("agregar formas desde la barra", () => {
+  it("dos formas agregadas seguidas no quedan una encima de la otra", async () => {
+    const { last } = await mount(emptyDiagram());
+    fireEvent.click(screen.getByRole("button", { name: "Proceso" }));
+    fireEvent.click(screen.getByRole("button", { name: "Decisión" }));
+    fireEvent.click(screen.getByRole("button", { name: "Proceso" }));
+    const at = last().nodes.map((n) => `${n.x},${n.y}`);
+    expect(at).toHaveLength(3);
+    expect(new Set(at).size).toBe(3);
+  });
+  it("los botones de forma son de icono, con nombre accesible y descripción emergente", async () => {
+    await mount(emptyDiagram());
+    const b = screen.getByRole("button", { name: "Decisión" });
+    expect(b).toHaveAttribute("title", "Decisión");
+    expect(b.textContent).toBe("");
+  });
+});
+
+describe("menú de estilo compacto", () => {
+  it("al seleccionar una forma solo se ven las fichas; cada una despliega su sección, de una en una", async () => {
+    await mount(base());
+    pick("a");
+    const p = shapePanel();
+    expect(within(p).queryByRole("group", { name: "Relleno" })).toBeNull();
+    expect(within(p).queryByLabelText("Grosor del contorno")).toBeNull();
+    const fill = within(p).getByRole("button", { name: "Relleno" });
+    expect(fill).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(fill);
+    expect(fill).toHaveAttribute("aria-expanded", "true");
+    expect(within(p).getByRole("group", { name: "Relleno" })).toBeTruthy();
+    expect(within(p).getByLabelText("Opacidad del relleno")).toBeTruthy();
+    fireEvent.click(within(p).getByRole("button", { name: "Contorno" }));
+    expect(within(p).queryByRole("group", { name: "Relleno" })).toBeNull();
+    expect(within(p).getByLabelText("Grosor del contorno")).toBeTruthy();
+    fireEvent.click(within(p).getByRole("button", { name: "Contorno" }));
+    expect(within(p).queryByLabelText("Grosor del contorno")).toBeNull(); // la misma ficha la pliega
+  });
+  it("«Más opciones» reúne copiar y pegar formato y los valores predeterminados", async () => {
+    await mount(base(), { load: vi.fn(async () => ({})), saveShape: vi.fn(async () => undefined), saveEdge: vi.fn(async () => undefined), reset: vi.fn(async () => undefined) });
+    pick("a");
+    const p = shapePanel();
+    expect(within(p).queryByRole("button", { name: "Copiar formato" })).toBeNull();
+    open(p, "Más opciones");
+    for (const name of ["Copiar formato", "Pegar formato", "Usar como predeterminado", "Restablecer predeterminados"]) expect(within(p).getByRole("button", { name })).toBeTruthy();
+  });
+  it("el conector agrupa color, grosor, tipo y puntas en «Línea»", async () => {
+    await mount(withEdge());
+    selectEdge();
+    const p = edgePanel();
+    expect(within(p).queryByLabelText("Punta de origen")).toBeNull();
+    open(p, "Línea");
+    expect(within(p).getByRole("group", { name: "Color de la línea" })).toBeTruthy();
+    for (const l of ["Grosor de la línea", "Tipo de línea", "Punta de origen", "Punta de destino"]) expect(within(p).getByLabelText(l)).toBeTruthy();
+  });
+});
+

@@ -11,43 +11,69 @@ import { useGridPrefs } from "../canvas/gridPrefs";
 import { useAltHeld } from "../canvas/useAltHeld";
 import { fillFor, strokeFor } from "../design/diagramPalette";
 import { cx } from "../design/cx";
+import { Icon } from "../design/Icon";
 import { SvgLayer } from "../design/SvgLayer";
 import { ColorPicker } from "./ColorPicker";
 import { hasLowContrast } from "./diagramContrast";
 import { useRecents } from "./StylePanels";
 
 const MIN_ZOOM = 0.02, MAX_ZOOM = 4, DRAG_THRESHOLD = 5, PAD = 40;
+/** Zoom mínimo al que aún se encuadra el mapa entero al revelar un globo nuevo; por debajo solo se centra el globo. */
+const REVEAL_MIN_ZOOM = 0.6;
+/** Alto que el menú del globo puede ocupar aunque el lienzo sea bajo: cabe el selector de color sin desplazarse. */
+const MENU_MIN_HEIGHT = 260;
 const theme = (): "light" | "dark" => (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
 const matches = (q: string) => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia(q).matches;
 
 type MindData = {
-  id: string; text: string; style: TStyle | undefined; hasChildren: boolean; collapsed: boolean; isRoot: boolean; selected: boolean; editing: boolean; draft: string; label: string; placeholder: string; editLabel: string;
-  onDown: (e: ReactPointerEvent, id: string) => void; onDraft: (v: string) => void; onCommit: () => void; onEsc: () => void; onFocusNode: (id: string) => void;
+  id: string; text: string; style: TStyle | undefined; hasChildren: boolean; collapsed: boolean; hidden: number; isRoot: boolean; selected: boolean; editing: boolean; draft: string; label: string; placeholder: string; editLabel: string; side: "left" | "right"; addLabel: string;
+  onDown: (e: ReactPointerEvent, id: string) => void; onDraft: (v: string) => void; onCommit: () => void; onEsc: () => void; onFocusNode: (id: string) => void; onAdd: (id: string) => void;
 };
 
 /** Globo del mapa: un clic lo selecciona y pone el texto en edición; arrastrar lo mueve con su rama (el gesto lo gestiona el editor). */
 const MindNode = memo(function MindNode({ data }: NodeProps<Node<MindData>>) {
   const d = data;
   const fill = fillFor(d.style?.fill ?? (d.isRoot ? "palette:blue" : "palette:white"));
-  const border = strokeFor(d.style?.stroke ?? "palette:ink");
+  // Sin color propio el borde es discreto (como una tarjeta); con color elegido se dibuja con ese color y más grueso.
+  const border = d.style?.stroke ? (d.style.stroke === "none" ? "2px solid transparent" : `2px solid ${strokeFor(d.style.stroke)}`) : d.isRoot ? `2px solid ${strokeFor("palette:blue")}` : "1px solid var(--c-border-control)";
   return (
+    <div className="relative" style={{ width: NODE_W, height: NODE_H }}>
     <div
       role={d.editing ? "group" : "button"} tabIndex={0} aria-label={d.label} data-selected={d.selected ? "true" : "false"} {...(d.editing ? { "aria-current": true } : { "aria-pressed": d.selected })} aria-expanded={d.hasChildren && !d.editing ? !d.collapsed : undefined} data-mind-id={d.id} data-depth="" data-mind-fill={d.style?.fill ?? ""}
       onPointerDown={(e) => d.onDown(e, d.id)} onMouseDown={(e) => e.stopPropagation()} onFocus={() => d.onFocusNode(d.id)}
-      style={{ width: NODE_W, height: NODE_H, background: fill, border: `2px solid ${border}`, color: strokeFor(d.style?.text ?? "palette:ink"), touchAction: "none", boxSizing: "border-box", pointerEvents: "all" }}
-      className={cx("nopan relative flex items-center justify-center rounded-full px-2 text-center text-[length:var(--text-ui-small-size)] leading-4 [@media(pointer:coarse)]:before:absolute [@media(pointer:coarse)]:before:-inset-0.5 [@media(pointer:coarse)]:before:content-['']", d.selected && "vn-selected", d.editing ? "cursor-text" : "vn-grab")}
+      style={{ width: NODE_W, height: NODE_H, background: fill, border, color: strokeFor(d.style?.text ?? "palette:ink"), touchAction: "none", boxSizing: "border-box", pointerEvents: "all" }}
+      className={cx(
+        "nopan relative flex items-center justify-center px-3 text-center text-[length:var(--text-ui-small-size)] leading-4 shadow-[var(--elevation-1)] transition-shadow duration-100 hover:shadow-[var(--elevation-2)]",
+        "[@media(pointer:coarse)]:before:absolute [@media(pointer:coarse)]:before:-inset-0.5 [@media(pointer:coarse)]:before:content-['']",
+        d.isRoot ? "rounded-[var(--radius-full)] font-semibold" : "rounded-[var(--radius-lg)]", d.selected && "vn-selected", d.editing ? "cursor-text" : "vn-grab",
+      )}
     >
       <div data-mind-inner={d.id} className="flex h-full w-full items-center justify-center" style={{ willChange: "transform" }}>
         {d.editing ? (
           <input
-            autoFocus aria-label={d.editLabel} value={d.draft} className="nodrag nopan w-full bg-transparent text-center outline-none" onPointerDown={(e) => e.stopPropagation()}
+            autoFocus aria-label={d.editLabel} value={d.draft} placeholder={d.placeholder} className="nodrag nopan w-full bg-transparent text-center outline-none placeholder:opacity-60" onPointerDown={(e) => e.stopPropagation()}
             onChange={(e) => d.onDraft(e.target.value)} onBlur={d.onCommit} onFocus={(e) => e.currentTarget.select()}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); d.onCommit(); } else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); d.onEsc(); } else e.stopPropagation(); }}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); d.onCommit(); } else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); d.onEsc(); } else if (e.key === "Tab" && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) { e.preventDefault(); e.stopPropagation(); d.onAdd(d.id); } else if (!((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "f")) e.stopPropagation(); }}
           />
         ) : (
-          <span className={cx("line-clamp-2 break-words", d.text === "" && "opacity-60")} title={d.text}>{d.text === "" ? d.placeholder : d.text}{d.collapsed ? " +" : ""}</span>
+          <span className={cx("line-clamp-2 break-words", d.text === "" && "opacity-60")} title={d.text}>{d.text === "" ? d.placeholder : d.text}</span>
         )}
       </div>
+      {d.collapsed && !d.editing ? (
+        <span data-mind-hidden="" aria-hidden="true" className="absolute -right-2 -top-2 rounded-[var(--radius-full)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-1.5 text-[length:var(--text-ui-small-size)] leading-4 text-[var(--c-text)] shadow-[var(--elevation-1)]">+{d.hidden}</span>
+      ) : null}
+    </div>
+    {d.selected ? (
+      <button
+        type="button" data-mind-add={d.id} aria-label={d.addLabel} title={d.addLabel}
+        onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }} onClick={(e) => { e.stopPropagation(); d.onAdd(d.id); }}
+        style={{ pointerEvents: "all" }}
+        className={cx(
+          "nodrag nopan absolute top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-[var(--radius-full)] border border-[var(--c-border-control)] bg-[var(--c-card)] text-[var(--c-text-muted)] shadow-[var(--elevation-1)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11",
+          d.side === "right" ? "left-full ml-2" : "right-full mr-2",
+        )}
+      ><Icon name="create" size={14} /></button>
+    ) : null}
     </div>
   );
 });
@@ -73,12 +99,13 @@ const Lines = memo(function Lines({ tree, layout, drag }: { tree: Tree; layout: 
   walk(tree.root);
   return (
     <SvgLayer width={1} height={1} unbounded>
-      {items.map((i) => <path key={i.key} data-edge={i.key} d={i.d} fill="none" stroke={i.color} strokeWidth={2} />)}
+      {items.map((i) => <path key={i.key} data-edge={i.key} d={i.d} fill="none" stroke={i.color} strokeWidth={1.5} strokeLinecap="round" />)}
     </SvgLayer>
   );
 });
 
 const parentIdOf = (n: TNode, id: string): string | null => (n.children.some((c) => c.id === id) ? n.id : n.children.reduce<string | null>((f, c) => f ?? parentIdOf(c, id), null));
+const countAll = (n: TNode): number => n.children.reduce((sum, c) => sum + 1 + countAll(c), 0);
 const branchIds = (n: TNode): string[] => [n.id, ...(n.collapsed ? [] : n.children.flatMap(branchIds))];
 
 function Inner({ value, onChange }: { value: string; onChange: (data: string) => void }) {
@@ -111,6 +138,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
 
   const commit = useCallback((next: Tree) => {
     history.current.push(next);
+    treeRef.current = history.current.current; // las acciones encadenadas (guardar texto y agregar) leen ya el árbol nuevo
     setTree(history.current.current);
     const text = serializeTree(history.current.current);
     if (text !== lastSaved.current) { lastSaved.current = text; onChange(text); }
@@ -142,6 +170,8 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     if (n && n.text !== text) commit(renameNode(treeRef.current, id, text));
   }, [commit]);
   const selectedRef = useRef(selected); selectedRef.current = selected;
+  const addRef = useRef<(kind: "child" | "sibling", from?: string) => void>(() => undefined);
+  const onAdd = useCallback((id: string) => addRef.current("child", id), []);
   const draftRef = useRef(draft); draftRef.current = draft;
   const editingRef = useRef(editing); editingRef.current = editing;
   const onCommit = useCallback(() => {
@@ -198,13 +228,14 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
 
   // --- nodos de la librería ---
   const label = useCallback((n: { id: string; text: string }) => `${n.text === "" ? t("mmap.placeholder") : n.text}${n.id === "root" ? ` (${t("mmap.root")})` : ""}`, [t]);
+  const rootX = layout.get("root")?.x ?? 0;
   const nodes: Node<MindData>[] = useMemo(() => visible.map((v) => {
     const n = findNode(tree, v.id)!, p = layout.get(v.id)!;
     return {
       id: v.id, type: "mind", position: { x: p.x - NODE_W / 2, y: p.y - NODE_H / 2 }, width: NODE_W, height: NODE_H, draggable: false, selectable: false, focusable: false, connectable: false,
-      data: { id: v.id, text: n.text, style: n.style, hasChildren: v.hasChildren, collapsed: v.collapsed, isRoot: v.id === "root", selected: v.id === selected, editing: editing && v.id === selected, draft, label: label(n), placeholder: t("mmap.placeholder"), editLabel: t("mmap.editText"), onDown, onDraft: setDraft, onCommit, onEsc, onFocusNode: () => undefined },
+      data: { id: v.id, text: n.text, style: n.style, hasChildren: v.hasChildren, collapsed: v.collapsed, hidden: v.collapsed ? countAll(n) : 0, isRoot: v.id === "root", selected: v.id === selected, editing: editing && v.id === selected, draft, label: label(n), placeholder: t("mmap.placeholder"), editLabel: t("mmap.editText"), side: (layout.get(v.id)?.x ?? 0) < rootX ? "left" : "right", addLabel: t("mmap.quickAdd"), onAdd, onDown, onDraft: setDraft, onCommit, onEsc, onFocusNode: () => undefined },
     };
-  }), [visible, tree, layout, selected, editing, draft, label, t, onDown, onCommit, onEsc]);
+  }), [visible, tree, layout, rootX, selected, editing, draft, label, t, onDown, onCommit, onEsc, onAdd]);
 
   // --- vista ---
   const viewportSize = () => ({ w: box.current?.clientWidth ?? 800, h: box.current?.clientHeight ?? 400 });
@@ -216,31 +247,42 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     setNotice(needed < MIN_ZOOM ? { text: t("mmap.doesNotFit") } : null);
     void rf.fitView({ padding: 0.1, maxZoom: 1, minZoom: MIN_ZOOM, duration: animMs });
   }, [rf, animMs, t]);
-  // Al reabrir se encuadra el mapa completo: se hace en cuanto el marco tiene un ancho medido (antes no hay con qué encuadrar).
-  const fitted = useRef(false);
+  // Se encuadra el mapa completo al abrir y cada vez que cambia el ancho disponible (ventana, barra lateral o vista ampliada).
   const onWidth = useCallback((w: number) => {
-    if (w <= 0 || fitted.current) return;
-    fitted.current = true;
-    window.requestAnimationFrame(() => { void rf.fitView({ padding: 0.1, maxZoom: 1, minZoom: MIN_ZOOM }); });
+    if (w <= 0) return;
+    window.requestAnimationFrame(() => { void rf.fitView({ padding: 0.15, maxZoom: 1, minZoom: MIN_ZOOM }); });
   }, [rf]);
 
-  /** Si el globo queda fuera de lo que se ve, desplaza la vista (sin cambiar el zoom) para mostrarlo. */
+  /**
+   * Si el globo queda fuera de lo que se ve, se vuelve a encuadrar: el mapa entero cuando cabe a un zoom legible
+   * (sin acercar más de lo que ya estaba), y si no, se centra el globo sin tocar el zoom.
+   */
   const reveal = (next: Tree, id: string) => {
-    const c = resolveTreeLayout(next, "mindmap").get(id), vp = rf.getViewport(), size = viewportSize();
+    const all = resolveTreeLayout(next, "mindmap"), c = all.get(id), vp = rf.getViewport(), size = viewportSize();
     if (!c) return;
     const x = c.x * vp.zoom + vp.x, y = c.y * vp.zoom + vp.y, hw = (NODE_W / 2) * vp.zoom, hh = (NODE_H / 2) * vp.zoom;
-    if (x - hw < 0 || x + hw > size.w || y - hh < 0 || y + hh > size.h) void rf.setCenter(c.x, c.y, { zoom: vp.zoom, duration: animMs });
+    if (!(x - hw < 0 || x + hw > size.w || y - hh < 0 || y + hh > size.h)) return;
+    const xs = [...all.values()].map((p) => p.x), ys = [...all.values()].map((p) => p.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    const whole = Math.min(size.w / (maxX - minX + NODE_W + PAD * 2), size.h / (maxY - minY + NODE_H + PAD * 2));
+    if (whole >= REVEAL_MIN_ZOOM) void rf.setCenter((minX + maxX) / 2, (minY + maxY) / 2, { zoom: Math.min(vp.zoom, whole), duration: animMs });
+    else void rf.setCenter(c.x, c.y, { zoom: vp.zoom, duration: animMs });
   };
 
   // --- acciones del menú ---
   const current = selected ? findNode(tree, selected) : null;
-  const addNew = (kind: "child" | "sibling") => {
-    if (!current) return;
-    const r = kind === "child" ? addChild(tree, current.id, "") : addSibling(tree, current.id, "");
+  const addNew = (kind: "child" | "sibling", from?: string) => {
+    const id = from ?? selectedRef.current;
+    if (!id) return;
+    // El texto que se estaba escribiendo se guarda antes, para que agregar no lo pierda.
+    if (editingRef.current && selectedRef.current) commitDraft(selectedRef.current, draftRef.current);
+    const base = treeRef.current;
+    const r = kind === "child" ? addChild(base, id, "") : addSibling(base, id, "");
     if (!r.ok) { setNotice({ text: r.error.message }); return; }
     const next = placeNewNode(r.value.tree, r.value.node.id);
     commit(next); setNotice(null); select(r.value.node.id, true); reveal(next, r.value.node.id);
   };
+  addRef.current = addNew;
   const remove = (id: string) => {
     const r = deleteTreeNode(treeRef.current, id);
     if (!r.ok) return;
@@ -263,24 +305,42 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const frameArea = box.current ? box.current.getBoundingClientRect() : undefined;
   const st = current?.style ?? {};
   const low = current ? hasLowContrast(st.text ?? "palette:ink", st.fill ?? (current.id === "root" ? "palette:blue" : "palette:white"), 1, theme()) : false;
-  const btn = "rounded border border-[var(--c-border-control)] px-2 py-1 text-[length:var(--text-ui-size)] hover:bg-[var(--c-raised)] disabled:cursor-not-allowed disabled:text-[var(--c-text-disabled)] [@media(pointer:coarse)]:min-h-11";
+  const [colorKey, setColorKey] = useState<keyof TStyle | null>(null);
+  const GHOST = "inline-flex h-8 items-center justify-center gap-1 rounded-[var(--radius-md)] px-2 text-[length:var(--text-ui-size)] text-[var(--c-text)] transition-colors duration-100 hover:bg-[var(--c-raised)] active:bg-[var(--c-border)] disabled:cursor-not-allowed disabled:text-[var(--c-text-disabled)] disabled:hover:bg-transparent aria-expanded:bg-[var(--c-raised)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:min-w-11";
+  const SEP = <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-[var(--c-border)]" />;
+  const defaults: Record<keyof TStyle, string> = { fill: current?.id === "root" ? "palette:blue" : "palette:white", stroke: current?.id === "root" ? "palette:blue" : "palette:gray", text: "palette:ink", line: "palette:gray" };
+  const colorKeys: (keyof TStyle)[] = current?.id === "root" ? ["fill", "stroke", "text"] : ["fill", "stroke", "text", "line"];
+  const chip = (key: keyof TStyle) => {
+    const v = st[key] ?? defaults[key];
+    const paint = v === "none" ? "transparent" : key === "fill" ? fillFor(v) : strokeFor(v);
+    return (
+      <button key={key} type="button" className={GHOST} aria-label={t(`mmap.${key}`)} aria-expanded={colorKey === key} onClick={() => setColorKey((k) => (k === key ? null : key))}>
+        <span aria-hidden="true" className="h-4 w-4 rounded-[var(--radius-full)] border border-[var(--c-border-control)]" style={{ background: paint }} />
+        <span>{t(`mmap.${key}`)}</span>
+      </button>
+    );
+  };
   const menuGroups: MenuGroup[] = !current ? [] : [
-    { id: "structure", label: t("canvas.menu.structure"), children: (
+    { id: "structure", label: t("canvas.menu.structure"), hideLabel: true, children: (
       <>
-        <button type="button" className={btn} onClick={() => addNew("child")}>{t("mmap.addChild")}</button>
-        {current.id !== "root" && <button type="button" className={btn} onClick={() => addNew("sibling")}>{t("mmap.addSibling")}</button>}
-        {current.children.length > 0 && <button type="button" className={btn} onClick={() => commit(toggleCollapsed(tree, current.id))}>{current.collapsed ? t("mmap.expand") : t("mmap.collapse")}</button>}
-        {current.id !== "root" && <button type="button" className={btn} onClick={() => remove(current.id)}>{t("mmap.delete")}</button>}
+        <button type="button" className={GHOST} aria-label={t("mmap.addChild")} title={t("mmap.addChildHint")} onClick={() => addNew("child")}><Icon name="addChild" size={16} /><span aria-hidden="true">{t("mmap.child")}</span></button>
+        {current.id !== "root" && <button type="button" className={GHOST} aria-label={t("mmap.addSibling")} title={t("mmap.addSibling")} onClick={() => addNew("sibling")}><Icon name="create" size={16} /><span aria-hidden="true">{t("mmap.sibling")}</span></button>}
+        {current.children.length > 0 && <>{SEP}<button type="button" className={GHOST} aria-label={current.collapsed ? t("mmap.expand") : t("mmap.collapse")} title={current.collapsed ? t("mmap.expand") : t("mmap.collapse")} onClick={() => commit(toggleCollapsed(tree, current.id))}><Icon name={current.collapsed ? "unfold" : "fold"} size={16} /></button></>}
+        {current.id !== "root" && <>{SEP}<button type="button" className={cx(GHOST, "hover:text-[var(--c-danger)]")} aria-label={t("mmap.delete")} title={t("mmap.delete")} onClick={() => remove(current.id)}><Icon name="delete" size={16} /></button></>}
       </>
     ) },
-    { id: "appearance", label: t("canvas.menu.appearance"), children: (
-      <div className="flex flex-col gap-2">
-        <ColorPicker label={t("mmap.fill")} role="fill" allowNone value={st.fill ?? (current.id === "root" ? "palette:blue" : "palette:white")} recents={recents} onChange={(v) => patchStyle("fill", v)} />
-        <ColorPicker label={t("mmap.stroke")} role="stroke" allowNone value={st.stroke ?? "palette:ink"} recents={recents} onChange={(v) => patchStyle("stroke", v)} />
-        <ColorPicker label={t("mmap.text")} role="text" value={st.text ?? "palette:ink"} recents={recents} onChange={(v) => patchStyle("text", v)} />
-        {current.id !== "root" && <ColorPicker label={t("mmap.line")} role="stroke" value={st.line ?? "palette:gray"} recents={recents} onChange={(v) => patchStyle("line", v)} />}
-        {low && <p data-contrast-warning="" role="status" className="text-xs text-[var(--c-warning)]">{t("diagram.lowContrast")}</p>}
-        <button type="button" className={btn} disabled={current.children.length === 0} onClick={() => { const r = applyStyleToBranch(tree, current.id); if (r.ok) commit(r.value); }}>{t("mmap.applyBranch")}</button>
+    { id: "appearance", label: t("mmap.colors"), hideLabel: true, children: (
+      <div className="flex w-full flex-col gap-1.5 border-t border-[var(--c-border)] pt-1.5">
+        <div className="flex flex-wrap items-center gap-0.5">
+          {colorKeys.map(chip)}
+          {current.children.length > 0 && <>{SEP}<button type="button" className={GHOST} aria-label={t("mmap.applyBranch")} title={t("mmap.applyBranch")} onClick={() => { const r = applyStyleToBranch(tree, current.id); if (r.ok) commit(r.value); }}><Icon name="applyBranch" size={16} /></button></>}
+        </div>
+        {colorKey && colorKeys.includes(colorKey) ? (
+          <div className="px-1 pb-1">
+            <ColorPicker label={t(`mmap.${colorKey}`)} role={colorKey === "fill" ? "fill" : colorKey === "text" ? "text" : "stroke"} allowNone={colorKey === "fill" || colorKey === "stroke"} value={st[colorKey] ?? defaults[colorKey]} recents={recents} onChange={(v) => patchStyle(colorKey, v)} />
+          </div>
+        ) : null}
+        {low && <p data-contrast-warning="" role="status" className="px-1 text-[length:var(--text-ui-small-size)] text-[var(--c-warning)]">{t("diagram.lowContrast")}</p>}
       </div>
     ) },
   ];
@@ -315,7 +375,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
         testId="mindmap" label={t("mmap.canvas")} height={tree.view?.height} defaultHeight={defaultMapHeight(contentHeight)}
         onHeightChange={(h) => commit({ ...history.current.current, view: { height: h } })}
         onWidthChange={onWidth}
-        toolbar={<button type="button" className={btn} onClick={() => commit(reflowAuto(history.current.current))}>{t("mmap.reflow")}</button>}
+        toolbar={<button type="button" className={GHOST} aria-label={t("mmap.reflow")} title={t("mmap.reflow")} onClick={() => commit(reflowAuto(history.current.current))}><Icon name="reflow" size={16} /><span aria-hidden="true">{t("mmap.reflowShort")}</span></button>}
         zoom={{ level: zoom, min: MIN_ZOOM, max: MAX_ZOOM, onIn: () => void rf.zoomIn({ duration: animMs }), onOut: () => void rf.zoomOut({ duration: animMs }), onFit: fit, onReset: () => void rf.zoomTo(1, { duration: animMs }) }}
         history={{ canUndo: history.current.canUndo, canRedo: history.current.canRedo, onUndo: () => apply(history.current.undo()), onRedo: () => apply(history.current.redo()) }}
       >
@@ -332,8 +392,8 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
       <p role="status" className="sr-only" data-mind-status="">{status}</p>
       {notice && <p role="status" data-mind-notice="" className="text-sm">{notice.text}{notice.undo ? <> <button type="button" className="underline" onClick={() => { apply(history.current.undo()); setNotice(null); }}>{t("mmap.undo")}</button></> : null}</p>}
       {current && menuAnchorEl ? (
-        <FloatingMenu open={menuOpen && !drag} anchor={{ element: menuAnchorEl }} area={frameArea} label={t("canvas.menu.node")} regionLabel={t("organizer.nodePanel")} groups={menuGroups}
-          onClose={() => { window.setTimeout(() => { onCommit(); setMenuOpen(false); }, 0); }} keepOpenOn={(el) => el.closest("[data-mind-id]") !== null} />
+        <FloatingMenu open={menuOpen && !drag} anchor={{ element: menuAnchorEl }} area={frameArea} label={t("canvas.menu.node")} regionLabel={t("organizer.nodePanel")} groups={menuGroups} minHeight={MENU_MIN_HEIGHT}
+          onClose={() => { window.setTimeout(() => { onCommit(); setMenuOpen(false); }, 0); }} keepOpenOn={(el) => el.closest("[data-mind-id], [data-mind-add]") !== null} />
       ) : null}
     </div>
   );

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { ANCHORS, anchorPosition, isAttached, type DEdge, type Diagram, type Endpoint } from "@vnote/core";
 import { nodeLabel } from "./labels";
+import { FIELD_CONTROL, FIELD_LABEL } from "./panelStyles";
 
 const FREE = "__free__";
 type End = "from" | "to";
@@ -26,27 +27,27 @@ export function EdgeEnds({ diagram, edge, onChange }: { diagram: Diagram; edge: 
       if (Number.isFinite(v)) onChange(end, { x: e.x, y: e.y, [axis]: v });
     };
     return (
-      <fieldset key={end} className="flex flex-wrap items-end gap-2 rounded border p-2">
-        <legend className="px-1">{title}</legend>
-        <label className="flex flex-col gap-1">{t("diagram.endShape")}
-          <select aria-label={field(t("diagram.endShape"))} value={attached ? e.node : FREE} onChange={(ev) => pickShape(ev.target.value)}>
+      <fieldset key={end} className="flex flex-wrap items-end gap-2 rounded-[var(--radius-md)] border border-[var(--c-border)] p-2">
+        <legend className="px-1 text-[length:var(--text-note-size)] font-medium text-[var(--c-text-muted)]">{title}</legend>
+        <label className={FIELD_LABEL}>{t("diagram.endShape")}
+          <select className={FIELD_CONTROL} aria-label={field(t("diagram.endShape"))} value={attached ? e.node : FREE} onChange={(ev) => pickShape(ev.target.value)}>
             {diagram.nodes.map((n) => <option key={n.id} value={n.id}>{nodeLabel(t, n)}</option>)}
             <option value={FREE}>{t("diagram.endFree")}</option>
           </select>
         </label>
         {attached ? (
-          <label className="flex flex-col gap-1">{t("diagram.endAnchor")}
-            <select aria-label={field(t("diagram.endAnchor"))} value={e.anchor} onChange={(ev) => onChange(end, { node: e.node, anchor: ev.target.value as typeof e.anchor })}>
+          <label className={FIELD_LABEL}>{t("diagram.endAnchor")}
+            <select className={FIELD_CONTROL} aria-label={field(t("diagram.endAnchor"))} value={e.anchor} onChange={(ev) => onChange(end, { node: e.node, anchor: ev.target.value as typeof e.anchor })}>
               {ANCHORS.map((a) => <option key={a} value={a}>{t(`diagram.anchors.${a}`)}</option>)}
             </select>
           </label>
         ) : (
           <>
-            <label className="flex flex-col gap-1">{t("diagram.endX")}
-              <input type="number" aria-label={field(t("diagram.endX"))} value={e.x} onChange={(ev) => setPoint("x", ev.target.value)} className="w-24 rounded border px-1" />
+            <label className={FIELD_LABEL}>{t("diagram.endX")}
+              <input type="number" aria-label={field(t("diagram.endX"))} value={e.x} onChange={(ev) => setPoint("x", ev.target.value)} className={`w-24 ${FIELD_CONTROL}`} />
             </label>
-            <label className="flex flex-col gap-1">{t("diagram.endY")}
-              <input type="number" aria-label={field(t("diagram.endY"))} value={e.y} onChange={(ev) => setPoint("y", ev.target.value)} className="w-24 rounded border px-1" />
+            <label className={FIELD_LABEL}>{t("diagram.endY")}
+              <input type="number" aria-label={field(t("diagram.endY"))} value={e.y} onChange={(ev) => setPoint("y", ev.target.value)} className={`w-24 ${FIELD_CONTROL}`} />
             </label>
           </>
         )}

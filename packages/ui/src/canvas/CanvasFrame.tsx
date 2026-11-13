@@ -30,9 +30,9 @@ type Props = {
 };
 
 const TOOL = cx(
-  "inline-flex h-8 min-w-8 items-center justify-center rounded border border-transparent px-1 text-[var(--c-text)] transition-colors duration-100",
+  "inline-flex h-8 min-w-8 items-center justify-center rounded-[var(--radius-md)] px-1 text-[var(--c-text-muted)] transition-colors duration-100",
   "[@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:min-w-11",
-  "hover:bg-[var(--c-raised)] active:bg-[var(--c-border)] disabled:text-[var(--c-text-disabled)] aria-pressed:bg-[var(--c-raised)] aria-pressed:border-[var(--c-border-control)]",
+  "hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] active:bg-[var(--c-border)] disabled:text-[var(--c-text-disabled)] disabled:hover:bg-transparent aria-pressed:bg-[var(--c-raised)] aria-pressed:text-[var(--c-text)]",
 );
 const FOCUSABLE = "button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])";
 
@@ -151,17 +151,19 @@ export function CanvasFrame({ testId, label, height, defaultHeight, onHeightChan
       role={expanded ? "dialog" : "group"} aria-label={expanded ? t("canvas.frame.expandedView") : label} {...(expanded ? { "aria-modal": true } : {})}
       onKeyDown={trap}
       style={{ width: "100%", ...(expanded ? { position: "fixed" as const } : { height: shown }) }}
-      className={cx("flex flex-col overflow-hidden rounded border border-[var(--c-border-control)] bg-[var(--c-card)]", expanded && "inset-0 z-[var(--z-sidebar-overlay)] rounded-none bg-[var(--c-canvas)]", !expanded && "relative")}
+      className={cx("group/frame flex flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)] transition-colors duration-100 hover:border-[var(--c-border-control)] focus-within:border-[var(--c-border-control)]", expanded && "inset-0 z-[var(--z-sidebar-overlay)] rounded-none bg-[var(--c-canvas)]", !expanded && "relative")}
     >
-      <div role="toolbar" aria-label={t("canvas.frame.tools")} className="flex flex-wrap items-center gap-1 border-b border-[var(--c-border)] px-2 py-1 text-[length:var(--text-ui-size)]">
+      <div role="toolbar" aria-label={t("canvas.frame.tools")} className="flex flex-wrap items-center gap-0.5 border-b border-[var(--c-border)] px-1.5 py-1 text-[length:var(--text-ui-size)]">
         {toolbar}
         <span className="flex-1" />
         {tool("undo", t("canvas.frame.undo"), history.onUndo, { disabled: !history.canUndo })}
         {tool("redo", t("canvas.frame.redo"), history.onRedo, { disabled: !history.canRedo })}
-        <span role="group" aria-label={t("canvas.frame.grid")} className="flex items-center gap-1">
+        <span aria-hidden="true" className="mx-1 h-5 w-px bg-[var(--c-border)]" />
+        <span role="group" aria-label={t("canvas.frame.grid")} className="flex items-center gap-0.5">
           {tool("grid", t("canvas.frame.showGrid"), () => setGrid({ show: !grid.show }), { pressed: grid.show })}
           {tool("snap", t("canvas.frame.snapGrid"), () => setGrid({ snap: !grid.snap }), { pressed: grid.snap })}
         </span>
+        <span aria-hidden="true" className="mx-1 h-5 w-px bg-[var(--c-border)]" />
         {tool(expanded ? "exitFullscreen" : "fullscreen", expanded ? t("canvas.frame.exit") : t("canvas.frame.expand"), toggle)}
       </div>
       <div className="relative min-h-0 flex-1">
@@ -174,9 +176,9 @@ export function CanvasFrame({ testId, label, height, defaultHeight, onHeightChan
           aria-valuenow={shown} aria-valuemin={MIN_HEIGHT} aria-valuemax={MAX_HEIGHT} tabIndex={0}
           onKeyDown={keyResize} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}
           style={{ touchAction: "none" }}
-          className="vn-resize-ns flex h-3 shrink-0 items-center justify-center border-t border-[var(--c-border)] bg-[var(--c-raised)] [@media(pointer:coarse)]:h-5"
+          className="vn-resize-ns flex h-2.5 shrink-0 items-center justify-center border-t border-[var(--c-border)] transition-colors duration-100 hover:bg-[var(--c-raised)] focus-visible:bg-[var(--c-raised)] [@media(pointer:coarse)]:h-5"
         >
-          <span aria-hidden="true" className="h-1 w-10 rounded bg-[var(--c-border-control)]" />
+          <span aria-hidden="true" className="h-0.5 w-8 rounded-[var(--radius-full)] bg-[var(--c-border-control)] opacity-60" />
         </div>
       )}
     </div>

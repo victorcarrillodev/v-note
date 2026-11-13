@@ -1,6 +1,6 @@
 // R-033, R-034 (prueba primero): reglas puras del menú emergente (plan 004, §5.3).
 import { describe, it, expect } from "vitest";
-import { anchorVisible, maxMenuHeight, MENU_HEIGHT_RATIO, MENU_OFFSET } from "./menuGeometry";
+import { anchorVisible, maxMenuHeight, menuSide, MENU_HEIGHT_RATIO, MENU_OFFSET } from "./menuGeometry";
 
 const area = { left: 100, top: 50, width: 800, height: 500 };
 
@@ -35,3 +35,12 @@ describe("tamaño del menú (RNF-4)", () => {
   });
   it("deja una separación mínima con el elemento para no taparlo", () => { expect(MENU_OFFSET).toBeGreaterThanOrEqual(8); });
 });
+
+describe("lado del menú", () => {
+  const box = (top: number) => ({ left: 400, top, width: 140, height: 60 });
+  it("va arriba del elemento cuando cabe ahí", () => { expect(menuSide(box(400), area, 200)).toBe("top"); });
+  it("pasa abajo cuando arriba no cabe y abajo hay más sitio (elemento cerca del borde superior)", () => { expect(menuSide(box(70), area, 200)).toBe("bottom"); });
+  it("se queda arriba si abajo tampoco hay más sitio", () => { expect(menuSide(box(250), { ...area, height: 300 }, 260)).toBe("top"); });
+  it("sin área conocida, arriba", () => { expect(menuSide(box(10), undefined, 200)).toBe("top"); });
+});
+

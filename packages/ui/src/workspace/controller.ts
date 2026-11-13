@@ -199,9 +199,18 @@ export class WorkspaceController {
 
   /** Variantes con operación inversa para ofrecer «Deshacer» en la interfaz (RF-11.1). */
   async trashPageUndoable(id: string): Promise<Result<{ undo: () => Promise<void> }>> {
+    const wasOpen = this.snapshot.selectedId === id;
     const r = await trashWithUndo(this.pages, id);
     await this.refresh();
-    return r.ok ? ok({ undo: async () => { await r.value.undo(); await this.refresh(); } }) : r;
+    if (!r.ok) return r;
+    return ok({
+      undo: async () => {
+        await r.value.undo();
+        await this.refresh();
+        // Si se eliminó la página abierta y no se abrió otra entretanto, deshacer vuelve a mostrarla.
+        if (wasOpen && this.snapshot.selectedId === null) await this.select(id);
+      },
+    });
   }
   async duplicateUndoable(id: string, opts: { withChildren: boolean }): Promise<Result<{ undo: () => Promise<void> }>> {
     const r = await duplicateWithUndo(this.pages, id, opts);

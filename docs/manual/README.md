@@ -227,12 +227,12 @@ Desde `/` puedes insertar lienzos visuales dentro de una página:
 
 ### Diagrama de flujo
 
-- **Formas:** elige una de la paleta (o arrástrala al lugar que quieras), **muévela**, **redimensiónala** con los tiradores de sus esquinas y edita su texto.
+- **Formas:** elige una de la barra (cada botón muestra el contorno de la forma y su nombre al pasar el puntero) o arrástrala al lugar que quieras. Si agregas varias seguidas, cada una queda un poco desplazada de la anterior para no taparla. Luego **muévela**, **redimensiónala** con los tiradores de sus esquinas y edita su texto.
 - **Conectar donde tú quieras:** al seleccionar una forma, pasar el puntero por ella o arrastrar un conector cerca, aparecen sus **8 puntos de unión**. Arrastra desde uno y suéltalo en un punto de otra forma: el conector queda unido **exactamente ahí** y **sigue a ese punto** cuando mueves o cambias de tamaño las formas. Si sueltas en un lugar vacío, el extremo queda **libre** en ese punto; puedes arrastrarlo después a otra forma o despegarlo. Con el teclado, el panel del conector permite elegir la forma y el punto de unión de cada extremo.
 - **Trazado del conector:** en su panel elige **Recto**, **Ángulos de 90°** (se calcula solo y puedes arrastrar sus tramos intermedios; «Restablecer ruta» vuelve al cálculo automático), **Redondeado** (arrastra su asa o usa «Curvatura») o **Libre** (puntos de control: arrástralos, añade uno con doble clic o con «Añadir punto», quítalo con Supr; «Suavizado» alterna entre segmentos rectos y curva). Si cambias de trazado se avisa de los ajustes que se descartan y puedes deshacer.
 - **Colores y estilo:** cada forma tiene **relleno** (o sin relleno) con **opacidad**, **contorno** (color, grosor y tipo de línea) y **color del texto**; cada conector, **color**, **grosor**, **tipo de línea**, **punta de cada extremo** (flecha, círculo, rombo o ninguna) y color de su texto. Elige de la **paleta** (cambia con el tema claro u oscuro) o escribe un color **hexadecimal**; los colores personalizados se ven igual en ambos temas, y si el texto queda con poco contraste se te avisa sin impedirlo. Los últimos colores usados quedan a la mano.
-- **Estilo predeterminado:** «Usar como predeterminado» guarda el estilo de la forma (o del conector, con su trazado) para las nuevas de **ese espacio de trabajo**; «Restablecer predeterminados» vuelve al del sistema. Lo ya dibujado no cambia.
-- **Copiar y pegar:** **Copiar** y **Pegar** (Ctrl/Cmd+C y V con el foco en el diagrama) duplican las formas seleccionadas con los conectores que las unen, desplazadas; se puede pegar en otro diagrama mientras la ventana siga abierta. **Copiar formato** y **Pegar formato** (Ctrl/Cmd+Alt+C y V) pasan solo el estilo a otro elemento del mismo tipo. Nada de esto usa el portapapeles del sistema.
+- **Estilo predeterminado:** en **Más opciones** (los tres puntos del menú), «Usar como predeterminado» guarda el estilo de la forma (o del conector, con su trazado) para las nuevas de **ese espacio de trabajo**; «Restablecer predeterminados» vuelve al del sistema. Lo ya dibujado no cambia.
+- **Copiar y pegar:** **Copiar** y **Pegar** (Ctrl/Cmd+C y V con el foco en el diagrama) duplican las formas seleccionadas con los conectores que las unen, desplazadas; se puede pegar en otro diagrama mientras la ventana siga abierta. **Copiar formato** y **Pegar formato** (en **Más opciones** del menú, o Ctrl/Cmd+Alt+C y V) pasan solo el estilo a otro elemento del mismo tipo. Nada de esto usa el portapapeles del sistema.
 - **Vista:** botones **Acercar**, **Alejar** y **Ajustar a pantalla** en una esquina del lienzo, desplazamiento arrastrando el fondo, y **Deshacer/Rehacer** de cada acción.
 - **Al eliminar una forma** sus conectores no se pierden: quedan con ese extremo libre y se avisa cuántos son; **Deshacer** los vuelve a unir.
 
@@ -244,7 +244,7 @@ Un diagrama grande (200 formas y 300 conectores) se mueve y amplía con fluidez.
 
 ### Menú, vista ampliada y cuadrícula (diagrama y mapa mental)
 
-- **Menú junto al elemento:** al seleccionar una forma, un conector, un punto o un globo aparece un **menú emergente pegado a él** (Apariencia, Estructura, Acciones). Se cierra con **Esc** o con un clic fuera.
+- **Menú junto al elemento:** al seleccionar una forma, un conector, un punto o un globo aparece un **menú emergente pegado a él**. Es una barra compacta: cada ficha (**Relleno**, **Contorno**, **Texto**, **Más opciones**; en el conector, **Línea**) despliega sus controles, de una en una, y la misma ficha los vuelve a plegar. Se abre arriba del elemento, o abajo si arriba no cabe. Se cierra con **Esc** o con un clic fuera.
 - **Alto ajustable:** arrastra la franja inferior del lienzo (o enfócala y usa las flechas arriba y abajo; Mayús = 5 celdas). El alto se guarda con la página.
 - **Vista ampliada:** el botón **Ampliar** (o Ctrl+Mayús+F con el foco en el lienzo) cubre la ventana; **Esc** o **Salir de la vista ampliada** vuelve a donde estabas, con tu selección y tu texto a medias.
 - **Cuadrícula:** botones **Mostrar cuadrícula** y **Acomodar a la cuadrícula** (valen para el diagrama y el mapa y se recuerdan en este dispositivo). Con el acomodo activo, formas, puntos y globos quedan en puntos de la cuadrícula; mantén **Alt** para moverlos libremente.
@@ -258,6 +258,7 @@ Un diagrama grande (200 formas y 300 conectores) se mueve y amplía con fluidez.
 ### Mapa mental
 
 - **Un clic** en un globo lo selecciona, abre su menú y deja escribir de inmediato; Enter confirma el texto. **Arrastrar** (más de 5 px) lo mueve **junto con su rama**; «Reordenar automáticamente» (barra) deshace las posiciones manuales. Las posiciones se guardan.
+- **Alta rápida:** el globo seleccionado muestra un botón **+** a su lado que agrega un hijo; mientras escribes, **Tab** guarda el texto y agrega un hijo (Mayús+Tab sigue moviendo el foco).
 - **Menú del globo:** agregar hijo, agregar hermano, colapsar o expandir, eliminar (avisa cuántos globos se eliminan y permite deshacer) y **color** de relleno, borde, texto y línea, con aviso de poco contraste y **Aplicar a la rama**.
 - **Vista:** acercar, alejar, 100 %, ajustar a pantalla, Ctrl + rueda o pellizco para zoom y arrastrar el fondo para desplazar. Atajos con el foco en el lienzo: flechas (mover), Supr (eliminar), Ctrl+C / Ctrl+V (copiar y pegar una rama), + − 0 (zoom) y F (ajustar).
 

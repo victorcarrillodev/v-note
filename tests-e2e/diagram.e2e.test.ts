@@ -83,6 +83,7 @@ describe("diagrama de flujo en la aplicación real", () => {
     expect((await nodes(p))[0]!.w).toBeGreaterThan(wBefore + 20);
 
     // T-332 (spec 003): cambiar el relleno con el selector de color (botón de la paleta)
+    await p.eval(`document.querySelector('[role=region][aria-label="Propiedades de la forma"] button[aria-label="Relleno"][aria-expanded="false"]')?.click()`); await sleep(200);
     await p.eval(`[...document.querySelectorAll('[role=region][aria-label="Propiedades de la forma"] [role=group][aria-label=Relleno] button')].find(b => b.getAttribute('aria-label') === 'Verde').click()`);
     await p.waitFor("getComputedStyle(document.querySelector('[data-testid=diagram] .react-flow__node [role=group]')).backgroundColor === 'rgb(221, 241, 229)'");
 

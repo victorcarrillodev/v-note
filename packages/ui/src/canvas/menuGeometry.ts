@@ -18,3 +18,14 @@ export function anchorVisible(anchor: ScreenPoint | Rect, area: Rect | undefined
 
 export const maxMenuHeight = (areaHeight: number, ratio: number = MENU_HEIGHT_RATIO): number =>
   Number.isFinite(areaHeight) && areaHeight > 0 ? Math.floor(areaHeight * ratio) : 0;
+
+/**
+ * Lado en que se abre el menú: arriba del elemento por defecto; abajo cuando arriba no cabe dentro del lienzo
+ * y abajo queda más sitio (un elemento pegado al borde superior no manda el menú fuera del marco).
+ */
+export function menuSide(anchor: Rect, area: Rect | undefined, menuHeight: number): "top" | "bottom" {
+  if (!area) return "top";
+  const above = anchor.top - area.top, below = area.top + area.height - (anchor.top + anchor.height);
+  return above < menuHeight + MENU_OFFSET && below > above ? "bottom" : "top";
+}
+

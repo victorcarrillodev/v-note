@@ -14,7 +14,17 @@ const nodeSel = (i: number) => `${Q} .react-flow__node:nth-of-type(${i}) [role=g
 const count = (p: Page, sel: string) => p.eval<number>(`document.querySelectorAll('${sel}').length`);
 const shapeRegion = '[role=region][aria-label="Propiedades de la forma"]';
 const edgeRegion = '[role=region][aria-label="Propiedades del conector"]';
-const pickColor = (p: Page, region: string, group: string, name: string) =>
+/** El menú es compacto: abre la sección (ficha) que contiene un control, si no está ya abierta. */
+const openSection = async (p: Page, region: string, label: string) => {
+  await p.eval(`(() => { const b = [...document.querySelectorAll('${region} button[aria-expanded]')].find(x => x.getAttribute('aria-label') === ${JSON.stringify(label)}); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); })()`);
+  await sleep(150);
+};
+const SECTION_OF: Record<string, string> = { "Relleno": "Relleno", "Contorno": "Contorno", "Color del texto": "Color del texto", "Color de la línea": "Línea" };
+const pickColor = async (p: Page, region: string, group: string, name: string) => {
+  await openSection(p, region, SECTION_OF[group] ?? group);
+  return pickColorIn(p, region, group, name);
+};
+const pickColorIn = (p: Page, region: string, group: string, name: string) =>
   p.eval(`[...document.querySelectorAll('${region} [role=group][aria-label="${group}"] button')].find(b => b.getAttribute('aria-label') === ${JSON.stringify(name)}).click()`);
 
 async function insertDiagram(p: Page) {
@@ -48,10 +58,12 @@ describe("estilo y portapapeles en el navegador real", () => {
     await p.waitFor(`document.querySelector('${shapeRegion}')`, 5000);
     await pickColor(p, shapeRegion, "Relleno", "Rojo");
     expect((await fill(p)).fill).toBe("palette:red");
+    await openSection(p, shapeRegion, "Relleno");
     await setValue(p, `${shapeRegion} input[aria-label="Relleno: hexadecimal"]`, "#ff8800");
     await p.waitFor(`document.querySelector('${nodeSel(1)}').dataset.fill === '#ff8800'`, 5000);
     await setValue(p, `${shapeRegion} input[aria-label="Opacidad del relleno"]`, "40");
     await p.waitFor(`document.querySelector('${nodeSel(1)}').dataset.fillOpacity === '0.4'`, 5000);
+    await openSection(p, shapeRegion, "Contorno");
     await setValue(p, `${shapeRegion} select[aria-label="Grosor del contorno"]`, "4");
     await setValue(p, `${shapeRegion} select[aria-label="Tipo de línea del contorno"]`, "dashed");
     await pickColor(p, shapeRegion, "Contorno", "Verde");
@@ -112,6 +124,7 @@ describe("estilo y portapapeles en el navegador real", () => {
     await p.click(nodeSel(1));
     await p.waitFor(`document.querySelector('${shapeRegion}')`, 5000);
     await pickColor(p, shapeRegion, "Relleno", "Verde");
+    await openSection(p, shapeRegion, "Más opciones");
     await p.eval(`[...document.querySelectorAll('${shapeRegion} button')].find(b => b.innerText.trim() === 'Usar como predeterminado').click()`);
     await p.waitFor(`document.querySelector('[data-diagram-notice]')?.innerText.includes('predeterminado')`, 5000);
     await addShape(p, "process", 2);
@@ -137,6 +150,7 @@ describe("estilo y portapapeles en el navegador real", () => {
     expect((await fill(p)).fill).toBe("palette:green");
     // se deja el espacio como estaba para no afectar a otras pruebas del mismo perfil
     await p.click(nodeSel(1));
+    await openSection(p, shapeRegion, "Más opciones");
     await p.eval(`[...document.querySelectorAll('${shapeRegion} button')].find(b => b.innerText.trim() === 'Restablecer predeterminados').click()`);
     await p.waitFor(`document.querySelector('[data-diagram-notice]')?.innerText.includes('Se restablecieron')`, 5000);
     await p.close();

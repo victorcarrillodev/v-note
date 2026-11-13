@@ -49,6 +49,13 @@ describe("App", () => {
     await screen.findByText(/aún no hay páginas/i);
     expect(screen.queryByRole("textbox", { name: "Título de la página" })).toBeNull();
   });
+  it("sin página abierta el área principal invita a elegir o crear una página, y su botón crea y abre una", async () => {
+    const { user } = await mount({ existing: ["Personal"] });
+    expect(await screen.findByRole("heading", { name: "Ninguna página abierta" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Crear página" }));
+    expect(await screen.findByRole("textbox", { name: "Título de la página" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Ninguna página abierta" })).toBeNull();
+  });
   it("navega a la papelera y de vuelta", async () => {
     const { user } = await mount({ existing: ["Personal"] });
     await user.click(await screen.findByRole("button", { name: "Papelera" }));

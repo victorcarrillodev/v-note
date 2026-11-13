@@ -155,4 +155,8 @@ describe("ancla en un rectángulo (conectores)", () => {
     rerenderWith({ anchor: { rect: { left: 900, top: 200, width: 400, height: 120 } } });   // cruza el borde: sigue visible
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
+  it("un menú compacto puede pedir un alto mínimo mayor que el 40 % (selector de color del mapa)", async () => {
+    setup({ minHeight: 300 }); const d = await screen.findByRole("dialog");
+    expect(d.style.maxHeight).toBe("300px");
+  });
 });

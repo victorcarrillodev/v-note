@@ -46,7 +46,7 @@ async function dragBy(p: Page, from: { x: number; y: number }, dx: number, dy: n
 const resetPrefs = (p: Page) => p.eval("localStorage.removeItem('vnote.canvas.grid')");
 async function addChildTo(p: Page, id: string, text: string) {
   const r = await rect(p, bubble(id)); await click(p, r.cx, r.cy); await sleep(400);
-  await p.eval(`[...document.querySelectorAll('[data-floating-menu] button')].find(b => b.innerText.trim() === 'Agregar hijo').click()`); await sleep(300);
+  await p.eval(`[...document.querySelectorAll('[data-floating-menu] button')].find(b => b.getAttribute('aria-label') === 'Agregar hijo').click()`); await sleep(300);
   await p.typeText(text); await p.key("Enter", "Enter", 13); await sleep(400);
 }
 
@@ -85,8 +85,9 @@ describe("mapa mental en el navegador real", () => {
 
     // color de la rama
     const rb = await rect(p, bubble(a.id)); await click(p, rb.cx, rb.cy); await sleep(500);
+    await p.eval(`[...document.querySelectorAll('[data-floating-menu] button')].find(b => b.innerText.trim() === 'Relleno').click()`); await sleep(200);
     await p.eval(`(() => { const g = [...document.querySelectorAll('[data-floating-menu] [role=group]')].find(x => x.getAttribute('aria-label') === 'Relleno'); g.querySelectorAll('button')[1].click(); })()`); await sleep(200);
-    await p.eval(`[...document.querySelectorAll('[data-floating-menu] button')].find(b => b.innerText.trim() === 'Aplicar a la rama').click()`); await sleep(400);
+    await p.eval(`[...document.querySelectorAll('[data-floating-menu] button')].find(b => b.getAttribute('aria-label') === 'Aplicar a la rama').click()`); await sleep(400);
     const s2 = await saved(p);
     expect(s2.root.children[0]!.style!.fill).toMatch(/^palette:/);
     expect(s2.root.children[0]!.children[0]!.style!.fill).toBe(s2.root.children[0]!.style!.fill);
@@ -113,6 +114,27 @@ describe("mapa mental en el navegador real", () => {
     await reopen(p);
     expect(Math.abs((await rect(p, Q)).h - h1)).toBeLessThan(3);
   }, 240000);
+
+  it("alta rápida: el botón + junto al globo y Tab mientras se escribe agregan hijos sin perder el texto", async () => {
+    const p = await web.open();
+    await openMap(p, "Rápido");
+    const r = await rect(p, bubble("root")); await click(p, r.cx, r.cy); await sleep(500);
+    const add = await rect(p, '[data-mind-add="root"]'); await click(p, add.cx, add.cy); await sleep(400);
+    await p.typeText("Investigar"); await sleep(100);
+    await p.key("Tab", "Tab", 9); await sleep(400);
+    await p.typeText("Entrevistas"); await p.key("Enter", "Enter", 13); await sleep(400);
+    const t = await saved(p);
+    expect(t.root.children.map((c) => c.text)).toEqual(["Investigar"]);
+    expect(t.root.children[0]!.children.map((c) => c.text)).toEqual(["Entrevistas"]);
+    // todo el mapa sigue a la vista tras agregar
+    const f = await rect(p, Q);
+    for (const id of ["root", t.root.children[0]!.id, t.root.children[0]!.children[0]!.id]) {
+      const b = await rect(p, bubble(id));
+      expect(b.x, `el globo ${id} no se sale por la izquierda`).toBeGreaterThanOrEqual(f.x - 1);
+      expect(b.x + b.w, `el globo ${id} no se sale por la derecha`).toBeLessThanOrEqual(f.x + f.w + 1);
+    }
+    await p.close();
+  }, 120000);
 
   it("R-168: el mapa tiene el ancho de la columna en tres anchos de ventana", async () => {
     const p = await web.open();

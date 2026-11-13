@@ -141,7 +141,7 @@ describe("conexión por anclajes en el navegador real", () => {
     await audit("conector (panel de trazado y estilo)");
     // forma seleccionada: panel de estilo con paleta, campos hexadecimales, controles de opacidad y aviso
     await p.click(node(1));
-    await p.waitFor(`document.querySelector('[role=region][aria-label="Propiedades de la forma"] [role=group][aria-label="Relleno"]')`, 5000);
+    await p.waitFor(`document.querySelector('[role=region][aria-label="Propiedades de la forma"] button[aria-label="Relleno"]')`, 5000);
     await audit("forma (panel de estilo)");
     await p.close();
   }, 120000);

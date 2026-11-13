@@ -21,6 +21,9 @@ import { EdgeStylePanel, ShapeStylePanel } from "./StylePanels";
 import { useDiagramDefaults } from "./DiagramDefaults";
 import { diagramClipboard } from "./diagramClipboard";
 import { ShapeNode, type NodeData } from "./ShapeNode";
+import { ShapeGlyph } from "./ShapeGlyph";
+import { Icon } from "../design/Icon";
+import { FIELD_CONTROL, FIELD_LABEL, PANEL_BUTTON } from "./panelStyles";
 import { endLabel, nodeLabel } from "./labels";
 
 const MIN_ZOOM = 0.02, MAX_ZOOM = 4;
@@ -49,6 +52,9 @@ function useLatest<T extends Record<string, (...args: never[]) => unknown>>(fns:
   const ref = useRef(fns); ref.current = fns;
   return useMemo(() => Object.fromEntries(Object.keys(fns).map((k) => [k, (...args: never[]) => (ref.current[k] as (...a: never[]) => unknown)(...args)])) as T, []); // eslint-disable-line react-hooks/exhaustive-deps
 }
+
+/** Alto que el menú puede ocupar aunque el lienzo sea bajo: plegado es una fila; con una sección abierta cabe sin desplazarse. */
+const MENU_MIN_HEIGHT = 260;
 
 function Inner({ value, onChange }: { value: string; onChange: (data: string) => void }) {
   const { t, i18n } = useTranslation();
@@ -120,7 +126,15 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     const q = gridPrefs.snap ? snapPoint(p) : { x: Math.round(p.x), y: Math.round(p.y) };
     commit(addNode(history.current.current, { shape, x: q.x, y: q.y, style: applyDefaultsToDiagramParts(defaultsRef.current).node }).diagram);
   };
-  const addAtCenter = (shape: Shape) => { const s = viewportSize(); addAt(shape, rf.screenToFlowPosition({ x: (box.current?.getBoundingClientRect().left ?? 0) + s.w / 2 - 70, y: (box.current?.getBoundingClientRect().top ?? 0) + s.h / 2 - 30 })); };
+  /** Agrega en el centro de lo que se ve; si ya hay una forma justo ahí, baja en escalera para no taparla. */
+  const addAtCenter = (shape: Shape) => {
+    const s = viewportSize();
+    const c = rf.screenToFlowPosition({ x: (box.current?.getBoundingClientRect().left ?? 0) + s.w / 2 - 70, y: (box.current?.getBoundingClientRect().top ?? 0) + s.h / 2 - 30 });
+    let p = gridPrefs.snap ? snapPoint(c) : { x: Math.round(c.x), y: Math.round(c.y) };
+    const taken = (q: { x: number; y: number }) => history.current.current.nodes.some((n) => Math.abs(n.x - q.x) < GRID && Math.abs(n.y - q.y) < GRID);
+    for (let i = 0; i < 50 && taken(p); i++) p = { x: p.x + GRID, y: p.y + GRID };
+    addAt(shape, p);
+  };
 
   // Arrastrar una forma desde la paleta con el puntero (también funciona con ratón real automatizado)
   const dragShape = (shape: Shape) => (e: ReactPointerEvent) => {
@@ -362,7 +376,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const menuGroups: MenuGroup[] = [];
   if (selectedNodes.length > 0) {
     menuGroups.push({
-      id: "look", label: t("canvas.menu.appearance"), icon: "edit",
+      id: "look", label: t("canvas.menu.appearance"), hideLabel: true,
       children: (
         <ShapeStylePanel
           nodes={selectedNodes}
@@ -373,16 +387,16 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
       ),
     });
     if (node) menuGroups.push({
-      id: "structure", label: t("canvas.menu.structure"), icon: "note",
+      id: "structure", label: t("canvas.menu.structure"), hideLabel: true,
       children: (
-        <label className="flex flex-col gap-1">{t("diagram.text")}
-          <input aria-label={t("diagram.text")} value={node.text} onChange={(e) => commit(setNodeText(history.current.current, node.id, e.target.value))} className="rounded border px-1" />
-        </label>
+        <div className="w-full border-t border-[var(--c-border)] pt-1.5">
+          <input aria-label={t("diagram.text")} placeholder={t("diagram.text")} value={node.text} onChange={(e) => commit(setNodeText(history.current.current, node.id, e.target.value))} className={`w-full ${FIELD_CONTROL}`} />
+        </div>
       ),
     });
     menuGroups.push({
-      id: "actions", label: t("canvas.menu.actions"), icon: "more",
-      children: <button type="button" onClick={() => removeSelection([...selectedIds], [])} className="rounded border px-2 py-1">{selectedNodes.length === 1 ? t("diagram.deleteShape") : t("diagram.deleteShape")}</button>,
+      id: "actions", label: t("canvas.menu.actions"), hideLabel: true,
+      children: <button type="button" onClick={() => removeSelection([...selectedIds], [])} className={`${PANEL_BUTTON} gap-1.5 text-[var(--c-danger)]`}><Icon name="delete" size={14} />{selectedNodes.length === 1 ? t("diagram.deleteShape") : t("diagram.deleteShape")}</button>,
     });
   } else if (edge) {
     menuGroups.push({
@@ -393,8 +407,8 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
       id: "structure", label: t("canvas.menu.structure"), icon: "link",
       children: (
         <div className="flex flex-col gap-2">
-          <label className="flex flex-col gap-1">{t("diagram.text")}
-            <input aria-label={t("diagram.connectorText")} value={edge.label} onChange={(e) => commit(setEdgeLabel(history.current.current, edge.id, e.target.value))} className="rounded border px-1" />
+          <label className={FIELD_LABEL}>{t("diagram.text")}
+            <input aria-label={t("diagram.connectorText")} value={edge.label} onChange={(e) => commit(setEdgeLabel(history.current.current, edge.id, e.target.value))} className={FIELD_CONTROL} />
           </label>
           <RouteControls
             edge={edge} onRoute={(r) => changeRoute(edge.id, r)} onReset={() => applyEdit(resetRoute(history.current.current, edge.id))}
@@ -409,11 +423,11 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     menuGroups.push({
       id: "actions", label: t("canvas.menu.actions"), icon: "more",
       children: (
-        <>
-          <button type="button" onClick={() => centerEnd(edge.id, "from")}>{t("diagram.centerFrom")}</button>
-          <button type="button" onClick={() => centerEnd(edge.id, "to")}>{t("diagram.centerTo")}</button>
-          <button type="button" onClick={() => removeSelection([], [edge.id])}>{t("diagram.deleteConnector")}</button>
-        </>
+        <div className="flex flex-wrap gap-1.5">
+          <button type="button" className={PANEL_BUTTON} onClick={() => centerEnd(edge.id, "from")}>{t("diagram.centerFrom")}</button>
+          <button type="button" className={PANEL_BUTTON} onClick={() => centerEnd(edge.id, "to")}>{t("diagram.centerTo")}</button>
+          <button type="button" className={`${PANEL_BUTTON} gap-1.5 text-[var(--c-danger)]`} onClick={() => removeSelection([], [edge.id])}><Icon name="delete" size={14} />{t("diagram.deleteConnector")}</button>
+        </div>
       ),
     });
   }
@@ -425,23 +439,25 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     menuGroups.push({
       id: "actions", label: t("canvas.menu.actions"), icon: "more",
       children: (
-        <>
-          <button type="button" onClick={() => removePointAt(edge.id, selectedPoint.index)}>{t("diagram.removePointAction")}</button>
-          {edge.route === "orthogonal" && <button type="button" onClick={() => { applyEdit(resetRoute(history.current.current, edge.id)); setSelectedPoint(null); }}>{t("diagram.resetRoute")}</button>}
-        </>
+        <div className="flex flex-wrap gap-1.5">
+          <button type="button" className={PANEL_BUTTON} onClick={() => removePointAt(edge.id, selectedPoint.index)}>{t("diagram.removePointAction")}</button>
+          {edge.route === "orthogonal" && <button type="button" className={PANEL_BUTTON} onClick={() => { applyEdit(resetRoute(history.current.current, edge.id)); setSelectedPoint(null); }}>{t("diagram.resetRoute")}</button>}
+        </div>
       ),
     });
   }
   const menuAnchor = pointAnchor ? { point: pointAnchor } : selectedNodes.length > 0 ? { element: nodeElement(selectedNodes[0]!.id) } : edgeAnchor ? { rect: edgeAnchor } : null;
+  const TOOL = "inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] text-[var(--c-text-muted)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] active:bg-[var(--c-border)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11";
   const toolbar = (
     <>
       {SHAPES.map((s) => (
-        <button key={s} type="button" data-shape-button={s} onPointerDown={dragShape(s)} onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } addAtCenter(s); }} className="vn-clickable rounded border px-2 py-1 text-sm">
-          {shapeName(s)}
+        <button key={s} type="button" data-shape-button={s} aria-label={shapeName(s)} title={shapeName(s)} onPointerDown={dragShape(s)} onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } addAtCenter(s); }} className={`vn-clickable ${TOOL}`}>
+          <ShapeGlyph shape={s} />
         </button>
       ))}
-      <button type="button" onClick={copyShapes} className="rounded border px-2 py-1 text-sm">{t("diagram.copy")}</button>
-      <button type="button" onClick={pasteShapes} className="rounded border px-2 py-1 text-sm">{t("diagram.paste")}</button>
+      <span aria-hidden="true" className="mx-1 h-4 w-px bg-[var(--c-border)]" />
+      <button type="button" aria-label={t("diagram.copy")} title={t("diagram.copy")} onClick={copyShapes} className={TOOL}><Icon name="copy" /></button>
+      <button type="button" aria-label={t("diagram.paste")} title={t("diagram.paste")} onClick={pasteShapes} className={TOOL}><Icon name="paste" /></button>
     </>
   );
 
@@ -480,7 +496,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
 
       {menuAnchor && menuGroups.length > 0 ? (
         <FloatingMenu
-          open={!drag} anchor={menuAnchor} area={frameArea} label={t(pointMenu ? "canvas.menu.point" : selectedNodes.length > 0 ? "canvas.menu.shape" : "canvas.menu.connector")}
+          open={!drag} anchor={menuAnchor} area={frameArea} minHeight={MENU_MIN_HEIGHT} label={t(pointMenu ? "canvas.menu.point" : selectedNodes.length > 0 ? "canvas.menu.shape" : "canvas.menu.connector")}
           {...(pointMenu ? {} : { regionLabel: t(selectedNodes.length > 0 ? "diagram.shapePanel" : "diagram.connectorPanel") })}
           groups={menuGroups} onClose={() => { window.setTimeout(deselectAll, 0); }} keepOpenOn={keepOpenOn}
         />

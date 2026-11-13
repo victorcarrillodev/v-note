@@ -75,6 +75,7 @@ export const en: Widen<typeof esMX> = {
     empty: "No pages yet. Create the first one.",
   },
   page: {
+    noneOpen: "No page open", noneOpenHint: "Pick a page from the sidebar or create a new one.", createFirst: "Create page",
     fullWidth: "Full width",
     deleteInDatabasesTitle: "Delete a page that is in several databases",
     deleteInDatabases: "This page is in {{count}} databases or boards. If you delete it, it goes to the trash and disappears from all of them; restoring it brings it back to all.",
@@ -396,7 +397,7 @@ export const en: Widen<typeof esMX> = {
     pick: "Database", insert: "Insert database", none: "There are no databases in this workspace yet.", gone: "The database no longer exists.",
     slash: "Database view", slashHint: "Shows a database or board inside the note",
   },
-  diagram: {
+  diagram: { moreOptions: "More options", lineSection: "Line",
     shape: { terminator: "Start / end", process: "Process", decision: "Decision", io: "Input / output", note: "Note" },
     palette: "Diagram shapes", canvas: "Diagram canvas", zoomControls: "Diagram zoom", connector: "Connector",
     undo: "Undo", redo: "Redo", fit: "Fit to screen", dismiss: "Dismiss",
@@ -476,7 +477,7 @@ export const en: Widen<typeof esMX> = {
     dark: "Dark",
     system: "Follow system",
   },
-  mmap: { canvas: "Mind map", placeholder: "Write an idea", reflow: "Rearrange automatically", addChild: "Add child", addSibling: "Add sibling", collapse: "Collapse", expand: "Expand", delete: "Delete", applyBranch: "Apply to branch",
+  mmap: { quickAdd: "New child bubble", addChildHint: "Add child (Tab)", child: "Child", sibling: "Sibling", reflowShort: "Rearrange", colors: "Bubble colors", canvas: "Mind map", placeholder: "Write an idea", reflow: "Rearrange automatically", addChild: "Add child", addSibling: "Add sibling", collapse: "Collapse", expand: "Expand", delete: "Delete", applyBranch: "Apply to branch",
       fill: "Fill", stroke: "Border", text: "Text", line: "Line", removedBranch: "{{count}} bubbles were deleted.", undo: "Undo", selected: "Selected: {{text}}", node: "Bubble: {{text}}", root: "central idea", editText: "Bubble text", doesNotFit: "The map does not fit even at the minimum zoom.", moved: "Moved: {{text}}" },
   canvas: {
     menu: { appearance: "Appearance", structure: "Structure", actions: "Actions", shape: "Shape options", connector: "Connector options", point: "Point options", node: "Bubble options" },

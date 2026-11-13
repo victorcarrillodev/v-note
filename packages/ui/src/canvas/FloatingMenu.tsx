@@ -2,9 +2,10 @@ import * as P from "@radix-ui/react-popover";
 import { useMemo, type KeyboardEvent, type ReactNode } from "react";
 import { Icon } from "../design/Icon";
 import type { IconName } from "../design/iconMap";
-import { anchorVisible, maxMenuHeight, MENU_OFFSET, type Rect, type ScreenPoint } from "./menuGeometry";
+import { anchorVisible, maxMenuHeight, menuSide, MENU_OFFSET, type Rect, type ScreenPoint } from "./menuGeometry";
 
-export type MenuGroup = { id: string; label: string; icon?: IconName; children: ReactNode };
+/** `hideLabel`: el grupo conserva su nombre accesible pero no muestra encabezado (filas de botones tipo barra). */
+export type MenuGroup = { id: string; label: string; icon?: IconName; hideLabel?: boolean; children: ReactNode };
 export type MenuAnchor = { element: HTMLElement | null } | { point: ScreenPoint } | { rect: Rect };
 
 type Props = {
@@ -20,6 +21,8 @@ type Props = {
   onClose: () => void;
   /** Clics en estos elementos no cierran el menú (por ejemplo, otros elementos del lienzo que cambian la selección). */
   keepOpenOn?: ((target: Element) => boolean) | undefined;
+  /** Alto que el menú puede ocupar aunque el 40 % del área sea menor (menús compactos que despliegan un selector). */
+  minHeight?: number | undefined;
 };
 
 const FOCUSABLE = 'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
@@ -29,7 +32,7 @@ const isTextual = (el: EventTarget | null) => el instanceof HTMLElement && (el.m
  * Menú emergente anclado al elemento seleccionado (spec 004, RF-1, RF-2). No es modal y no roba el foco: quien lo abre
  * puede seguir escribiendo. Se cierra con Esc o con un clic fuera, y se oculta mientras su ancla no se ve.
  */
-export function FloatingMenu({ open, anchor, area: areaProp, label, regionLabel, groups, onClose, keepOpenOn }: Props) {
+export function FloatingMenu({ open, anchor, area: areaProp, label, regionLabel, groups, onClose, keepOpenOn, minHeight = 0 }: Props) {
   // Un área sin tamaño (sin diseño, como en jsdom) no dice nada sobre qué se ve: se trata como desconocida.
   const area = areaProp && (areaProp.width > 0 || areaProp.height > 0) ? areaProp : undefined;
   const element = "element" in anchor ? anchor.element : null;
@@ -40,7 +43,11 @@ export function FloatingMenu({ open, anchor, area: areaProp, label, regionLabel,
     current: box ? { getBoundingClientRect: () => new DOMRect(bl, bt, bw, bh) } : { getBoundingClientRect: () => (element ? element.getBoundingClientRect() : new DOMRect(0, 0, 0, 0)) },
   }), [box !== null, bl, bt, bw, bh, element]); // eslint-disable-line react-hooks/exhaustive-deps
   const visible = box ? anchorVisible(box, area) : element ? anchorVisible(element.getBoundingClientRect(), area) : false;
-  const maxHeight = area ? maxMenuHeight(area.height) : Math.floor(window.innerHeight * 0.4);
+  const maxHeight = Math.max(minHeight, area ? maxMenuHeight(area.height) : Math.floor(window.innerHeight * 0.4));
+  const anchorRect = virtualRef.current.getBoundingClientRect();
+  // Sin medidas (ancla aún sin dibujar, o jsdom) no se decide nada: arriba, como siempre.
+  const measured = box !== null || anchorRect.width > 0 || anchorRect.height > 0;
+  const side = measured ? menuSide({ left: anchorRect.left, top: anchorRect.top, width: anchorRect.width, height: anchorRect.height }, area, maxHeight) : "top";
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].includes(e.key) || isTextual(e.target)) return;
@@ -58,7 +65,7 @@ export function FloatingMenu({ open, anchor, area: areaProp, label, regionLabel,
       <P.Anchor virtualRef={virtualRef} />
       <P.Portal>
         <P.Content
-          data-floating-menu="" aria-label={label} side="top" align="center" sideOffset={MENU_OFFSET} collisionPadding={8} avoidCollisions sticky="always" updatePositionStrategy="always"
+          data-floating-menu="" aria-label={label} side={side} align="center" sideOffset={MENU_OFFSET} collisionPadding={8} avoidCollisions sticky="always" updatePositionStrategy="always"
           onOpenAutoFocus={(e) => e.preventDefault()} onCloseAutoFocus={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => { e.preventDefault(); onClose(); }} // preventDefault: marca el Esc como atendido para que un contenedor (la vista ampliada) no actúe también
           onFocusOutside={(e) => e.preventDefault()}
@@ -69,14 +76,16 @@ export function FloatingMenu({ open, anchor, area: areaProp, label, regionLabel,
           }}
           onKeyDown={onKeyDown}
           style={{ maxHeight, overflowY: "auto" }}
-          className="z-[var(--z-menu)] max-w-[var(--size-popover-max)] rounded-md border border-[var(--c-border)] bg-[var(--c-card)] p-2 text-[length:var(--text-ui-size)] text-[var(--c-text)] shadow-[var(--elevation-3)]"
+          className="vn-menu-scroll z-[var(--z-menu)] max-w-[var(--size-popover-max)] rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)] p-1.5 text-[length:var(--text-ui-size)] text-[var(--c-text)] shadow-[var(--elevation-3)]"
         >
-          <div className="flex flex-col gap-2" {...(regionLabel ? { role: "region", "aria-label": regionLabel } : {})}>
+          <div className="flex flex-col gap-1.5" {...(regionLabel ? { role: "region", "aria-label": regionLabel } : {})}>
             {groups.map((g) => (
               <section key={g.id} role="group" aria-label={g.label} className="flex flex-col gap-1">
-                <div aria-hidden="true" className="flex items-center gap-1 text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">
-                  {g.icon ? <Icon name={g.icon} size={14} /> : null}<span>{g.label}</span>
-                </div>
+                {g.hideLabel ? null : (
+                  <div aria-hidden="true" className="flex items-center gap-1 px-1 pt-1 text-[length:var(--text-ui-small-size)] font-medium text-[var(--c-text-muted)]">
+                    {g.icon ? <Icon name={g.icon} size={14} /> : null}<span>{g.label}</span>
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-1">{g.children}</div>
               </section>
             ))}

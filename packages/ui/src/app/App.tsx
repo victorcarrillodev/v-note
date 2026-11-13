@@ -34,6 +34,7 @@ import { Sidebar } from "../sidebar/Sidebar";
 import { PageHeader } from "../page/PageHeader";
 import { ExportDialog } from "../page/ExportDialog";
 import { TrashView } from "../trash/TrashView";
+import { EmptyState } from "../empty/EmptyState";
 import { WorkspaceManagerView } from "../workspaces/WorkspaceManagerView";
 import { WorkspaceController } from "../workspace/controller";
 import { BackupPanel } from "../backup/BackupPanel";
@@ -347,9 +348,15 @@ function findKind(nodes: readonly { page: { id: string; kind: string }; children
 }
 
 function PageArea({ controller, workspace, renderPageBody, exporter }: { controller: WorkspaceController; workspace: Workspace; renderPageBody: AppProps["renderPageBody"]; exporter?: NonNullable<ReturnType<typeof useServices>["exporter"]> }) {
+  const { t } = useTranslation();
   const snap = useWorkspace(controller);
   const [exporting, setExporting] = useState<string | null>(null);
-  if (!snap.selectedId) return <div className="p-8" />;
+  // Sin página abierta (espacio nuevo, o tras eliminar la que se veía) se dice qué hacer en vez de dejar el área en blanco.
+  if (!snap.selectedId) return (
+    <div className="flex min-h-96 items-center justify-center p-8">
+      <EmptyState illustration="pages" title={t("page.noneOpen")} hint={t("page.noneOpenHint")} action={{ label: t("page.createFirst"), onClick: () => void controller.createPage(null) }} />
+    </div>
+  );
   const kind = findKind(snap.tree, snap.selectedId);
   const fullWidth = findPage(snap.tree, snap.selectedId)?.fullWidth ?? false;
   const dialog = exporting && exporter ? (

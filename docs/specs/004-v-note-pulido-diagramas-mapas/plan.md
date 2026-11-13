@@ -443,6 +443,21 @@ Auditoría de accesibilidad (axe, ya en el proyecto) sobre diagrama, mapa, menú
 
 ---
 
+## 17e. Pulido visual posterior al cierre (petición del usuario)
+
+Sin dependencias nuevas ni cambios en el formato de datos; solo presentación e interacción.
+
+- **Menú del globo compacto**: una fila de botones de icono (hijo, hermano, colapsar, eliminar) y una fila de fichas de color (relleno, borde, texto, línea) que despliegan un solo selector a la vez. "Aplicar a la rama" es un botón de icono con nombre accesible.
+- **Alto del menú**: sigue la regla del 40 % (RNF-4). El mapa pide un mínimo de 260 px (`minHeight` de `FloatingMenu`) para que el selector de color quepa sin desplazarse; el diagrama no lo usa porque su menú, más alto, taparía la barra de formas.
+- **Encuadre**: el mapa se vuelve a encuadrar cuando cambia el ancho disponible (ventana, barra lateral, vista ampliada). Al agregar un globo que queda fuera, se encuadra el mapa entero si cabe a un zoom ≥ 0,6 y sin acercar; si no, se centra el globo nuevo.
+- **Vista ampliada**: Ctrl/Cmd + Mayús + F también funciona mientras se escribe en un globo (el campo ya no retiene el atajo).
+- **Alta rápida en el mapa**: el globo seleccionado muestra un botón "+" en su lado exterior (hermano del globo en el DOM, sin controles anidados) y Tab mientras se escribe guarda el texto y agrega un hijo; Mayús + Tab sigue siendo navegación. El texto en edición se guarda antes de agregar, también desde el menú.
+- **Barra del diagrama**: las formas son botones de icono con la miniatura de su contorno, nombre accesible y descripción emergente; copiar y pegar pasan a icono. Una forma agregada donde ya hay otra baja en escalera (20 px) para no taparla.
+- **Menús del lienzo y cabecera de página**: selectores, campos y botones comparten un mismo aspecto (`diagram/panelStyles.ts`); las acciones de la página (icono, portada, favorita, duplicar, exportar, eliminar) son botones discretos con icono, con los mismos textos y el mismo orden.
+- **Menú de estilo del diagrama, compacto**: una fila de fichas (Relleno, Contorno, Texto, Más opciones; en el conector: Línea, Texto, Más opciones) que despliegan su sección de una en una. "Más opciones" reúne copiar y pegar formato y los valores predeterminados. El texto de la forma y "Eliminar forma" quedan siempre a la vista. El diagrama usa el mismo mínimo de 260 px que el mapa: plegado, el menú es una fila y ya no tapa la barra de formas.
+- **Lado del menú**: se abre arriba del elemento; pasa abajo cuando arriba no cabe dentro del lienzo y abajo hay más sitio (`menuSide`).
+- **Aspecto**: globos tipo tarjeta con sombra suave, raíz en píldora, indicador "+N" en ramas colapsadas, líneas de 1,5 px; marco y barra más discretos; el porcentaje de zoom es el botón que restablece el 100 %. Se conservan los objetivos de 32/44 px y el borde de control de la spec 003 (G-068, G-070).
+
 ## 18. Decisiones sobre los pendientes de la spec
 | ID | Resolución |
 |---|---|

@@ -235,3 +235,33 @@ describe("notas de la bandeja (T-379)", () => {
   });
 });
 
+describe("deshacer la eliminación de la página abierta", () => {
+  it("al eliminar la página abierta no queda ninguna seleccionada, y «Deshacer» la vuelve a abrir", async () => {
+    const a = must(await c.createPage(null, "A"));
+    expect(c.getSnapshot().selectedId).toBe(a.id);
+    const r = must(await c.trashPageUndoable(a.id));
+    expect(c.getSnapshot().selectedId).toBeNull();
+    await r.undo();
+    expect(titles()).toEqual(["A"]);
+    expect(c.getSnapshot().selectedId).toBe(a.id);
+  });
+  it("si entretanto se abrió otra página, «Deshacer» restaura sin cambiar de página", async () => {
+    const a = must(await c.createPage(null, "A"));
+    const b = must(await c.createPage(null, "B"));
+    await c.select(a.id);
+    const r = must(await c.trashPageUndoable(a.id));
+    await c.select(b.id);
+    await r.undo();
+    expect(titles().sort()).toEqual(["A", "B"]);
+    expect(c.getSnapshot().selectedId).toBe(b.id);
+  });
+  it("eliminar una página que no era la abierta no cambia la selección, ni al deshacer", async () => {
+    const a = must(await c.createPage(null, "A"));
+    const b = must(await c.createPage(null, "B"));
+    const r = must(await c.trashPageUndoable(a.id));
+    expect(c.getSnapshot().selectedId).toBe(b.id);
+    await r.undo();
+    expect(c.getSnapshot().selectedId).toBe(b.id);
+  });
+});
+

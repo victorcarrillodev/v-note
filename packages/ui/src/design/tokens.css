@@ -224,6 +224,9 @@
 :root { --selection-halo: 0 0 0 2px var(--c-text), 0 0 0 5px color-mix(in srgb, var(--c-text) 18%, transparent); }
 .vn-selected { box-shadow: var(--selection-halo); }
 
+/* Menús emergentes: barra de desplazamiento fina y discreta. */
+.vn-menu-scroll { scrollbar-width: thin; scrollbar-color: var(--c-border-control) transparent; }
+
 /* Puntero: todo lo clicable muestra la mano; lo deshabilitado, «no permitido». */
 button, a[href], summary, select, label[for],
 [role="button"], [role="tab"], [role="option"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],

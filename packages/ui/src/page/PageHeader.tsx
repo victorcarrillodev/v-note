@@ -8,6 +8,12 @@ import { PageTags } from "../tags/PageTags";
 import { Switch } from "../components/controls";
 import { coverBackground, randomCover } from "./cover";
 import { useWorkspace } from "../workspace/useController";
+import { Icon } from "../design/Icon";
+import { cx } from "../design/cx";
+
+/** Acciones de la página: discretas (texto atenuado) hasta pasar el puntero, como en un editor de notas. */
+const ACTION = "inline-flex h-7 items-center gap-1.5 rounded-[var(--radius-md)] px-2 text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] [@media(pointer:coarse)]:h-11";
+const MENU_ITEM = "rounded-[var(--radius-base)] px-2 py-1 text-left text-[length:var(--text-ui-small-size)] text-[var(--c-text)] hover:bg-[var(--c-raised)] [@media(pointer:coarse)]:py-3";
 
 
 /** Busca una página en el árbol y devuelve su ruta de ancestros (iterativo). */
@@ -71,49 +77,49 @@ export function PageHeader({ controller, pageId, onExport }: { controller: Works
 
       <PageTags controller={controller} pageId={page.id} />
 
-      <div className="flex flex-wrap items-center gap-2 text-sm">
+      <div className="-ml-2 flex flex-wrap items-center gap-0.5 text-sm">
         {page.icon ? (
-          <button type="button" onClick={() => void controller.setIcon(page.id, null)}>{t("page.removeIcon")}</button>
+          <button type="button" className={ACTION} onClick={() => void controller.setIcon(page.id, null)}><Icon name="emoji" size={14} />{t("page.removeIcon")}</button>
         ) : editingIcon ? (
           <input
             aria-label={t("page.iconLabel")}
             autoFocus
             maxLength={8}
-            className="w-16 rounded border px-1"
+            className="ml-2 h-7 w-16 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-1.5 text-[length:var(--text-ui-small-size)]"
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.currentTarget.value.trim()) { void controller.setIcon(page.id, e.currentTarget.value.trim()); setEditingIcon(false); }
               if (e.key === "Escape") setEditingIcon(false);
             }}
           />
         ) : (
-          <button type="button" onClick={() => setEditingIcon(true)}>{t("page.addIcon")}</button>
+          <button type="button" className={ACTION} onClick={() => setEditingIcon(true)}><Icon name="emoji" size={14} />{t("page.addIcon")}</button>
         )}
 
         {page.cover ? (
-          <button type="button" onClick={() => void controller.setCover(page.id, null)}>{t("page.removeCover")}</button>
+          <button type="button" className={ACTION} onClick={() => void controller.setCover(page.id, null)}><Icon name="image" size={14} />{t("page.removeCover")}</button>
         ) : (
-          <button type="button" onClick={() => void controller.setCover(page.id, randomCover())}>{t("page.addCover")}</button>
+          <button type="button" className={ACTION} onClick={() => void controller.setCover(page.id, randomCover())}><Icon name="image" size={14} />{t("page.addCover")}</button>
         )}
 
-        <button type="button" aria-pressed={page.favorite} onClick={() => void controller.toggleFavorite(page.id)}>
-          {page.favorite ? t("page.unfavorite") : t("page.favorite")}
+        <button type="button" className={cx(ACTION, page.favorite && "text-[var(--c-text)]")} aria-pressed={page.favorite} onClick={() => void controller.toggleFavorite(page.id)}>
+          <Icon name="favorite" size={14} />{page.favorite ? t("page.unfavorite") : t("page.favorite")}
         </button>
 
         <div className="relative">
-          <button type="button" aria-haspopup="menu" aria-expanded={dupOpen} onClick={() => setDupOpen((o) => !o)}>{t("page.duplicate")}</button>
+          <button type="button" className={ACTION} aria-haspopup="menu" aria-expanded={dupOpen} onClick={() => setDupOpen((o) => !o)}><Icon name="duplicate" size={14} />{t("page.duplicate")}</button>
           {dupOpen && (
-            <div role="menu" className="absolute z-10 flex flex-col rounded border bg-[var(--bg)] p-1 shadow">
-              <button type="button" role="menuitem" onClick={() => { duplicate(page.id, false); setDupOpen(false); }}>{t("page.duplicateOnlyThis")}</button>
-              <button type="button" role="menuitem" onClick={() => { duplicate(page.id, true); setDupOpen(false); }}>{t("page.duplicateWithChildren")}</button>
+            <div role="menu" className="absolute z-10 mt-1 flex min-w-max flex-col rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)] p-1 shadow-[var(--elevation-3)]">
+              <button type="button" role="menuitem" className={MENU_ITEM} onClick={() => { duplicate(page.id, false); setDupOpen(false); }}>{t("page.duplicateOnlyThis")}</button>
+              <button type="button" role="menuitem" className={MENU_ITEM} onClick={() => { duplicate(page.id, true); setDupOpen(false); }}>{t("page.duplicateWithChildren")}</button>
             </div>
           )}
         </div>
 
-        <Switch label={t("page.fullWidth")} checked={page.fullWidth === true} onChange={(v) => void controller.setFullWidth(page.id, v)} />
+        <span className="mx-2 inline-flex text-[var(--c-text-muted)]"><Switch label={t("page.fullWidth")} checked={page.fullWidth === true} onChange={(v) => void controller.setFullWidth(page.id, v)} /></span>
 
-        {onExport && <button type="button" onClick={() => onExport(page.id)}>{t("export.action")}</button>}
+        {onExport && <button type="button" className={ACTION} onClick={() => onExport(page.id)}><Icon name="export" size={14} />{t("export.action")}</button>}
 
-        <button type="button" onClick={() => void controller.describeRemoval(page.id).then((d) => { if (d.needsWarning) setWarn(d.databases); else trash(page.id); })}>{t("page.delete")}</button>
+        <button type="button" className={cx(ACTION, "hover:text-[var(--c-danger)]")} onClick={() => void controller.describeRemoval(page.id).then((d) => { if (d.needsWarning) setWarn(d.databases); else trash(page.id); })}><Icon name="delete" size={14} />{t("page.delete")}</button>
         <AlertDialog.Root open={warn !== null} onOpenChange={(o) => !o && setWarn(null)}>
           <AlertDialog.Portal>
             <AlertDialog.Overlay className="fixed inset-0 bg-black/40" />

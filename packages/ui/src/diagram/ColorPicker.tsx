@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { fillFor, paletteFor, strokeFor } from "../design/diagramPalette";
+import { FIELD_CONTROL } from "./panelStyles";
 
 const HEX = /^#?(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 // Color que muestra la entrada nativa cuando el valor es de paleta (no es un color elegido).
@@ -20,7 +21,7 @@ export function ColorPicker({ label, role, value, allowNone = false, recents, on
   const paint = (v: string) => (role === "fill" ? fillFor(v) : strokeFor(v));
   const swatch = (key: string, name: string, v: string, pressed: boolean) => (
     <button key={key} type="button" aria-label={name} title={name} aria-pressed={pressed} data-swatch={paint(v)} onClick={() => onChange(v)}
-      className="h-6 w-6 rounded border border-[var(--c-border-control)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11 aria-pressed:outline aria-pressed:outline-2 aria-pressed:outline-offset-2 aria-pressed:outline-[var(--c-accent)]"
+      className="h-6 w-6 rounded-[var(--radius-md)] border border-[var(--c-border-control)] transition-transform duration-100 hover:scale-110 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11 aria-pressed:outline aria-pressed:outline-2 aria-pressed:outline-offset-2 aria-pressed:outline-[var(--c-accent)]"
       style={{ background: v === "none" ? "transparent" : paint(v) }} />
   );
   const onText = (raw: string) => {
@@ -30,7 +31,7 @@ export function ColorPicker({ label, role, value, allowNone = false, recents, on
   };
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-1">
-      <span className="text-xs">{label}</span>
+      <span className="text-[length:var(--text-note-size)] text-[var(--c-text-muted)]">{label}</span>
       <div className="flex flex-wrap items-center gap-1">
         {allowNone && swatch("none", t("diagram.colors.none"), "none", value === "none")}
         {paletteFor(role).map((id) => swatch(id, t(`diagram.colors.${id}`), `palette:${id}`, value === `palette:${id}`))}
@@ -40,9 +41,9 @@ export function ColorPicker({ label, role, value, allowNone = false, recents, on
           {recents.map((c) => swatch(`r${c}`, c, c, value.toLowerCase() === c))}
         </div>
       )}
-      <div className="flex items-center gap-2">
-        <input aria-label={`${label}: ${t("diagram.hex")}`} value={text} onChange={(e) => onText(e.target.value)} aria-invalid={invalid} placeholder="#RRGGBB" className="w-24 rounded border px-1" />
-        <input type="color" aria-label={`${label}: ${t("diagram.pickColor")}`} value={custom ? toNative(custom) : NATIVE_DEFAULT} onChange={(e) => onChange(e.target.value)} />
+      <div className="mt-0.5 flex items-center gap-1.5">
+        <input aria-label={`${label}: ${t("diagram.hex")}`} value={text} onChange={(e) => onText(e.target.value)} aria-invalid={invalid} placeholder="#RRGGBB" className={`w-24 ${FIELD_CONTROL}`} />
+        <input type="color" className="h-7 w-8 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] p-0.5 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11" aria-label={`${label}: ${t("diagram.pickColor")}`} value={custom ? toNative(custom) : NATIVE_DEFAULT} onChange={(e) => onChange(e.target.value)} />
       </div>
       {invalid && <p className="text-xs text-[var(--c-danger)]">{t("diagram.invalidHex")}</p>}
     </div>

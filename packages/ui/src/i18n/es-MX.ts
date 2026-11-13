@@ -71,6 +71,7 @@ export const esMX = {
     empty: "Aún no hay páginas. Crea la primera.",
   },
   page: {
+    noneOpen: "Ninguna página abierta", noneOpenHint: "Elige una página en la barra lateral o crea una nueva.", createFirst: "Crear página",
     fullWidth: "Ancho completo",
     deleteInDatabasesTitle: "Eliminar una página que está en varias bases",
     deleteInDatabases: "Esta página está en {{count}} bases de datos o tableros. Si la eliminas se irá a la papelera y desaparecerá de todos; al restaurarla volverá a todos.",
@@ -392,7 +393,7 @@ export const esMX = {
     pick: "Base de datos", insert: "Insertar base de datos", none: "Aún no hay bases de datos en este espacio.", gone: "La base de datos ya no existe.",
     slash: "Vista de base de datos", slashHint: "Muestra una base de datos o un tablero dentro de la nota",
   },
-  diagram: {
+  diagram: { moreOptions: "Más opciones", lineSection: "Línea",
     shape: { terminator: "Inicio / fin", process: "Proceso", decision: "Decisión", io: "Entrada / salida", note: "Nota" },
     palette: "Formas del diagrama", canvas: "Lienzo del diagrama", zoomControls: "Zoom del diagrama", connector: "Conector",
     undo: "Deshacer", redo: "Rehacer", fit: "Ajustar a pantalla", dismiss: "Cerrar aviso",
@@ -472,7 +473,7 @@ export const esMX = {
     dark: "Oscuro",
     system: "Seguir al sistema",
   },
-  mmap: { canvas: "Mapa mental", placeholder: "Escribe una idea", reflow: "Reordenar automáticamente", addChild: "Agregar hijo", addSibling: "Agregar hermano", collapse: "Colapsar", expand: "Expandir", delete: "Eliminar", applyBranch: "Aplicar a la rama",
+  mmap: { quickAdd: "Nuevo globo hijo", addChildHint: "Agregar hijo (Tab)", child: "Hijo", sibling: "Hermano", reflowShort: "Reordenar", colors: "Colores del globo", canvas: "Mapa mental", placeholder: "Escribe una idea", reflow: "Reordenar automáticamente", addChild: "Agregar hijo", addSibling: "Agregar hermano", collapse: "Colapsar", expand: "Expandir", delete: "Eliminar", applyBranch: "Aplicar a la rama",
       fill: "Relleno", stroke: "Borde", text: "Texto", line: "Línea", removedBranch: "Se eliminaron {{count}} globos.", undo: "Deshacer", selected: "Seleccionado: {{text}}", node: "Globo: {{text}}", root: "idea central", editText: "Texto del globo", doesNotFit: "El mapa no cabe completo ni con el zoom mínimo.", moved: "Movido: {{text}}" },
   canvas: {
     menu: { appearance: "Apariencia", structure: "Estructura", actions: "Acciones", shape: "Opciones de la forma", connector: "Opciones del conector", point: "Opciones del punto", node: "Opciones del globo" },

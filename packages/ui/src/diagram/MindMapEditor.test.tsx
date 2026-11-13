@@ -57,7 +57,7 @@ describe("lienzo (R-126, R-128, R-133, R-141)", () => {
   it("los colapsados ocultan a sus descendientes y muestran el indicador (R-128)", async () => {
     await mount(sample({ root: { ...sample().root, children: sample().root.children.map((c) => (c.id === "a" ? { ...c, collapsed: true } : c)) } }));
     expect(bubble("a1")).toBeNull();
-    expect(bubble("a").textContent).toContain("+");
+    expect(bubble("a").querySelector("[data-mind-hidden]")!.textContent).toBe("+2");
     expect(bubble("a")).toHaveAttribute("aria-expanded", "false");
   });
   it("no existen el campo «Texto hijo» ni la franja inferior (R-141)", async () => {
@@ -165,6 +165,7 @@ describe("color (R-142 a R-145)", () => {
     click("b");
     await waitFor(() => expect(menu()).not.toBeNull());
     for (const [label, key] of [["Relleno", "fill"], ["Borde", "stroke"], ["Texto", "text"], ["Línea", "line"]] as const) {
+      fireEvent.click(within(menu()!).getByRole("button", { name: label }));
       const group = within(menu()!).getByRole("group", { name: label });
       fireEvent.click(within(group).getAllByRole("button")[2]!);
       expect(findNode(last(), "b")!.style![key]).toMatch(/^palette:/);
@@ -175,9 +176,10 @@ describe("color (R-142 a R-145)", () => {
     click("b");
     await waitFor(() => expect(menu()).not.toBeNull());
     expect(menu()!.querySelector("[data-contrast-warning]")).toBeNull();
-    const fill = within(menu()!).getByRole("group", { name: "Relleno" }), text = within(menu()!).getByRole("group", { name: "Texto" });
-    fireEvent.change(within(fill).getByRole("textbox"), { target: { value: "#ffff00" } });
-    fireEvent.change(within(text).getByRole("textbox"), { target: { value: "#ffffcc" } });
+    fireEvent.click(within(menu()!).getByRole("button", { name: "Relleno" }));
+    fireEvent.change(within(within(menu()!).getByRole("group", { name: "Relleno" })).getByRole("textbox"), { target: { value: "#ffff00" } });
+    fireEvent.click(within(menu()!).getByRole("button", { name: "Texto" }));
+    fireEvent.change(within(within(menu()!).getByRole("group", { name: "Texto" })).getByRole("textbox"), { target: { value: "#ffffcc" } });
     expect(menu()!.querySelector("[data-contrast-warning]")).not.toBeNull();
     expect(findNode(last(), "b")!.style).toEqual({ fill: "#ffff00", text: "#ffffcc" });
   });
@@ -185,6 +187,7 @@ describe("color (R-142 a R-145)", () => {
     const { last, saved } = await mount(sample());
     click("a");
     await waitFor(() => expect(menu()).not.toBeNull());
+    fireEvent.click(within(menu()!).getByRole("button", { name: "Relleno" }));
     const fill = within(menu()!).getByRole("group", { name: "Relleno" });
     fireEvent.click(within(fill).getAllByRole("button")[1]!);
     const before = saved.length;
@@ -300,6 +303,15 @@ describe("alto y vista ampliada (R-158, R-159)", () => {
     expect(bubble("a")).toHaveAttribute("data-selected", "true");
     expect(within(bubble("a")).getByRole("textbox")).toHaveValue("Escribiendo");
   });
+  it("Ctrl+Mayús+F amplía con el texto del globo en edición (R-162)", async () => {
+    await mount(sample());
+    click("a");
+    const input = within(bubble("a")).getByRole("textbox");
+    fireEvent.keyDown(input, { key: "F", ctrlKey: true, shiftKey: true });
+    expect(frame()).toHaveAttribute("data-expanded");
+    fireEvent.keyDown(input, { key: "F", ctrlKey: true, shiftKey: true });
+    expect(frame()).not.toHaveAttribute("data-expanded");
+  });
 });
 
 describe("cuadrícula, vista y foco (R-129, R-151, R-152, R-157, R-165)", () => {
@@ -342,3 +354,69 @@ describe("táctil (R-164)", () => {
     expect(bubble("a").className).toContain("pointer:coarse");
   });
 });
+
+describe("pulido visual (menú compacto y controles)", () => {
+  it("el menú es una barra compacta: los selectores de color solo aparecen al abrir su botón, de uno en uno", async () => {
+    await mount(sample());
+    click("b");
+    await waitFor(() => expect(menu()).not.toBeNull());
+    expect(within(menu()!).queryByRole("group", { name: "Relleno" })).toBeNull();
+    const fill = within(menu()!).getByRole("button", { name: "Relleno" });
+    expect(fill).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(fill);
+    expect(fill).toHaveAttribute("aria-expanded", "true");
+    expect(within(menu()!).getByRole("group", { name: "Relleno" })).toBeTruthy();
+    fireEvent.click(within(menu()!).getByRole("button", { name: "Borde" }));
+    expect(within(menu()!).queryByRole("group", { name: "Relleno" })).toBeNull();
+    expect(within(menu()!).getByRole("group", { name: "Borde" })).toBeTruthy();
+  });
+  it("la raíz no ofrece color de línea (no tiene línea a un padre)", async () => {
+    await mount(sample());
+    click("root");
+    await waitFor(() => expect(menu()).not.toBeNull());
+    expect(within(menu()!).queryByRole("button", { name: "Línea" })).toBeNull();
+  });
+  it("el porcentaje de zoom es el botón que vuelve al 100 %", async () => {
+    await mount(sample());
+    const reset = screen.getByRole("button", { name: "Restablecer al 100 %" });
+    expect(within(reset).getByLabelText("Nivel de zoom")).toBeTruthy();
+  });
+});
+
+describe("alta rápida de globos", () => {
+  it("sin selección no hay botón de alta rápida; el globo seleccionado lo muestra fuera del globo", async () => {
+    await mount(sample());
+    expect(screen.queryByRole("button", { name: "Nuevo globo hijo" })).toBeNull();
+    click("b");
+    const add = await screen.findByRole("button", { name: "Nuevo globo hijo" });
+    expect(bubble("b").contains(add)).toBe(false); // sin controles anidados dentro del globo
+  });
+  it("el botón + agrega un hijo, conserva el texto que se estaba escribiendo y deja el nuevo en edición", async () => {
+    const { last } = await mount(sample());
+    click("b");
+    fireEvent.change(within(bubble("b")).getByRole("textbox"), { target: { value: "Beta" } });
+    fireEvent.click(await screen.findByRole("button", { name: "Nuevo globo hijo" }));
+    const b = findNode(last(), "b")!;
+    expect(b.text).toBe("Beta");
+    expect(b.children).toHaveLength(1);
+    await waitFor(() => expect(within(bubble(b.children[0]!.id)).getByRole("textbox")).toBeTruthy());
+    expect(menu()).not.toBeNull();
+  });
+  it("Tab mientras se escribe guarda el texto y agrega un hijo", async () => {
+    const { last } = await mount(sample());
+    click("b");
+    const input = within(bubble("b")).getByRole("textbox");
+    fireEvent.change(input, { target: { value: "Beta" } });
+    fireEvent.keyDown(input, { key: "Tab" });
+    const b = findNode(last(), "b")!;
+    expect(b.text).toBe("Beta");
+    expect(b.children).toHaveLength(1);
+  });
+  it("Mayús + Tab no agrega nada (sigue siendo navegación)", async () => {
+    const { onChange } = await mount(sample());
+    click("b");
+    fireEvent.keyDown(within(bubble("b")).getByRole("textbox"), { key: "Tab", shiftKey: true });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
