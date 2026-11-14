@@ -1,4 +1,10 @@
 import { readTokens, GRAPH_TOKENS } from "../design/canvasColors";
+import { Button } from "../components/Button";
+import { IconButton } from "../components/IconButton";
+import { ViewLayout } from "../components/ViewLayout";
+import { INPUT } from "../components/formStyles";
+import { cx } from "../design/cx";
+import { Illustration } from "../design/Illustration";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { GraphData, PageKind, Positions } from "@vnote/core";
@@ -147,48 +153,51 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
   const selNode = data?.nodes.find((n) => n.id === selected) ?? null;
   const neighbours = data && selected ? data.nodes.filter((n) => highlight?.nodes.has(n.id) && n.id !== selected) : [];
 
+  const FILTER = "inline-flex items-center gap-2 text-[length:var(--text-ui-small-size)] font-medium";
+  const PICK = cx(INPUT, "h-7 w-auto font-normal text-[length:var(--text-ui-small-size)]");
+  const NOTICE = "mx-auto flex max-w-[var(--size-modal-s)] flex-col items-center gap-3 p-8 text-center text-[var(--c-text-muted)]";
+
   return (
-    <section aria-label={t("graph.title")} className="p-4">
-      <h1 className="text-xl font-semibold">{t("graph.title")}</h1>
-      <div role="group" aria-label={t("graph.filters")} className="my-2 flex flex-wrap items-center gap-3 text-sm">
+    <ViewLayout title={t("graph.title")} width="wide">
+      <div role="group" aria-label={t("graph.filters")} className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)] px-3 py-2">
         {currentPageId && (
-          <label>{t("graph.scope")}{" "}
-            <select value={scope} onChange={(e) => setScope(e.target.value as Scope)}>
+          <label className={FILTER}>{t("graph.scope")}{" "}
+            <select value={scope} onChange={(e) => setScope(e.target.value as Scope)} className={PICK}>
               <option value="local">{t("graph.local")}</option>
               <option value="all">{t("graph.all")}</option>
             </select>
           </label>
         )}
         {scope === "local" && currentPageId && (
-          <label>{t("graph.depth")}{" "}
-            <select value={depth} onChange={(e) => setDepth(Number(e.target.value))}>
+          <label className={FILTER}>{t("graph.depth")}{" "}
+            <select value={depth} onChange={(e) => setDepth(Number(e.target.value))} className={PICK}>
               <option value={1}>1</option><option value={2}>2</option><option value={3}>3</option>
             </select>
           </label>
         )}
-        <label>{t("graph.kind")}{" "}
-          <select value={kind} onChange={(e) => setKind(e.target.value as "" | PageKind)}>
+        <label className={FILTER}>{t("graph.kind")}{" "}
+          <select value={kind} onChange={(e) => setKind(e.target.value as "" | PageKind)} className={PICK}>
             <option value="">{t("graph.anyKind")}</option>
             <option value="note">{t("graph.kinds.note")}</option><option value="board">{t("graph.kinds.board")}</option><option value="database">{t("graph.kinds.database")}</option>
           </select>
         </label>
-        <label><input type="checkbox" checked={hideOrphans} onChange={(e) => setHideOrphans(e.target.checked)} /> {t("graph.hideOrphans")}</label>
-        <label><input type="checkbox" checked={includeTrashed} onChange={(e) => setIncludeTrashed(e.target.checked)} /> {t("graph.includeTrash")}</label>
-        <span role="group" aria-label={t("graph.zoom")}>
-          <button type="button" onClick={() => zoomBy(1.4)}>{t("graph.zoomIn")}</button>{" "}
-          <button type="button" onClick={() => zoomBy(1 / 1.4)}>{t("graph.zoomOut")}</button>{" "}
-          <button type="button" onClick={() => setTf(fitTransform(positions, size))}>{t("graph.fit")}</button>
+        <label className={cx(FILTER, "font-normal")}><input type="checkbox" checked={hideOrphans} onChange={(e) => setHideOrphans(e.target.checked)} /> {t("graph.hideOrphans")}</label>
+        <label className={cx(FILTER, "font-normal")}><input type="checkbox" checked={includeTrashed} onChange={(e) => setIncludeTrashed(e.target.checked)} /> {t("graph.includeTrash")}</label>
+        <span role="group" aria-label={t("graph.zoom")} className="ml-auto inline-flex items-center">
+          <IconButton icon="zoomIn" label={t("graph.zoomIn")} onClick={() => zoomBy(1.4)} />
+          <IconButton icon="zoomOut" label={t("graph.zoomOut")} onClick={() => zoomBy(1 / 1.4)} />
+          <IconButton icon="fitView" label={t("graph.fit")} onClick={() => setTf(fitTransform(positions, size))} />
         </span>
       </div>
 
-      {busy && <p role="status" className="opacity-70">{t("graph.computing")}</p>}
-      {!busy && data && !data.hasLinks && <p role="status" data-testid="graph-empty">{t("graph.noLinks")}</p>}
-      {!busy && data && data.hasLinks && data.nodes.length === 0 && <p role="status">{t("graph.noMatches")}</p>}
+      {busy && <p role="status" className="text-[var(--c-text-muted)]">{t("graph.computing")}</p>}
+      {!busy && data && !data.hasLinks && <div role="status" data-testid="graph-empty" className={NOTICE}><Illustration name="pages" /><p>{t("graph.noLinks")}</p></div>}
+      {!busy && data && data.hasLinks && data.nodes.length === 0 && <div role="status" className={NOTICE}><Illustration name="search" /><p>{t("graph.noMatches")}</p></div>}
 
       <div ref={wrap} className={!busy && data && data.nodes.length > 0 && data.hasLinks ? "" : "hidden"}>
         <canvas
           ref={canvas} data-testid="graph-canvas" role="img" aria-label={t("graph.canvas", { nodes: data?.nodes.length ?? 0, edges: data?.edges.length ?? 0 })}
-          className="vn-grab rounded-md border border-[var(--c-border-control)]" style={{ width: size.w, height: size.h, touchAction: "none" }}
+          className="vn-grab rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)]" style={{ width: size.w, height: size.h, touchAction: "none" }}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
           onDoubleClick={(e) => { if (!data) return; const r = canvas.current!.getBoundingClientRect(); const hit = hitNode(data, positions, tf, { x: e.clientX - r.left, y: e.clientY - r.top }); if (hit) onOpen(hit); }}
         />
@@ -201,12 +210,14 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
       </div>
 
       {selNode && (
-        <div role="region" aria-label={t("graph.selection")} className="mt-2 rounded border p-2 text-sm">
-          <p><strong>{selNode.title.trim() || t("app.untitled")}</strong>{selNode.trashed ? ` ${t("graph.inTrash")}` : ""}</p>
-          <p>{t("graph.connections", { count: neighbours.length })}{neighbours.length ? `: ${neighbours.map((n) => n.title.trim() || t("app.untitled")).join(", ")}` : ""}</p>
-          {!selNode.trashed && <button type="button" onClick={() => onOpen(selNode.id)}>{t("graph.open")}</button>}
+        <div role="region" aria-label={t("graph.selection")} className="flex flex-wrap items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)] px-4 py-3 text-[length:var(--text-ui-size)]">
+          <div className="min-w-0 flex-1">
+            <p><strong className="font-semibold">{selNode.title.trim() || t("app.untitled")}</strong>{selNode.trashed ? ` ${t("graph.inTrash")}` : ""}</p>
+            <p className="text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("graph.connections", { count: neighbours.length })}{neighbours.length ? `: ${neighbours.map((n) => n.title.trim() || t("app.untitled")).join(", ")}` : ""}</p>
+          </div>
+          {!selNode.trashed && <Button variant="primary" onClick={() => onOpen(selNode.id)}>{t("graph.open")}</Button>}
         </div>
       )}
-    </section>
+    </ViewLayout>
   );
 }

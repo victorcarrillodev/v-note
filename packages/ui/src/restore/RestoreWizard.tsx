@@ -1,5 +1,10 @@
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InlineAlert } from "../components/InlineAlert";
+import { Button } from "../components/Button";
+import { ViewLayout, ViewSection, VIEW_ROW } from "../components/ViewLayout";
+import { FIELD, INPUT, MUTED } from "../components/formStyles";
+import { cx } from "../design/cx";
+import { Icon } from "../design/Icon";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -96,98 +101,124 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
   const when = (iso: string) => new Date(iso).toLocaleString(i18n.language);
   const target = existing.find((w) => w.id === targetId);
 
+  const STEPS: Step[] = ["connect", "pick", "destination"];
+  const at = step === "done" ? STEPS.length : STEPS.indexOf(step);
+  const OPTION = "flex cursor-pointer items-center gap-3 rounded-[var(--radius-md)] border border-[var(--c-border)] px-3 py-2 has-[:checked]:border-[var(--c-accent)] has-[:checked]:bg-[var(--c-raised)]";
+
   return (
-    <section aria-label={t("restore.title")} className="flex max-w-xl flex-col gap-3 p-4">
-      <h1 className="text-xl font-semibold">{t("restore.title")}</h1>
+    <ViewLayout title={t("restore.title")} description={t("restore.hint")}>
+      <ol aria-label={t("restore.stepsLabel")} className="flex flex-wrap items-center gap-2 text-[length:var(--text-ui-small-size)]">
+        {STEPS.map((s, i) => (
+          <li key={s} aria-current={i === at ? "step" : undefined} className={cx("flex items-center gap-2", i === at ? "font-semibold text-[var(--c-text)]" : "text-[var(--c-text-muted)]")}>
+            <span className={cx("inline-flex h-6 w-6 items-center justify-center rounded-full tabular-nums", i < at ? "bg-[var(--c-success)] text-[var(--c-on-accent)]" : i === at ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]" : "bg-[var(--c-raised)]")}>
+              {i < at ? <Icon name="check" size={14} /> : i + 1}
+            </span>
+            {t(`restore.steps.${s}`)}
+            {i < STEPS.length - 1 && <span aria-hidden="true" className="mx-1 h-px w-8 bg-[var(--c-border-control)]" />}
+          </li>
+        ))}
+      </ol>
       {error && <InlineAlert tone="error">{error.message}</InlineAlert>}
 
       {step === "connect" && (
-        <form onSubmit={(e: FormEvent) => { e.preventDefault(); void connect(); }} className="flex flex-col gap-2">
-          <label className="flex flex-col gap-1">{t("backup.token")}
-            <input type="password" autoComplete="off" value={form.token} onChange={(e) => setForm({ ...form, token: e.target.value })} className="rounded border px-2 py-1" />
-          </label>
-          <label className="flex flex-col gap-1">{t("backup.owner")}
-            <input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="rounded border px-2 py-1" />
-          </label>
-          <label className="flex flex-col gap-1">{t("backup.repo")}
-            <input value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} className="rounded border px-2 py-1" />
-          </label>
-          {askPublic && <InlineAlert tone="warning" action={{ label: t("backup.publicRepo.confirm"), onClick: () => void connect(true) }}>{t("backup.publicRepo.body")}</InlineAlert>}
-          <div className="flex gap-2">
-            <button type="submit" disabled={busy}>{t("backup.connect")}</button>
-            <button type="button" onClick={onCancel}>{t("restore.cancel")}</button>
-          </div>
-        </form>
+        <ViewSection>
+          <form onSubmit={(e: FormEvent) => { e.preventDefault(); void connect(); }} className="flex max-w-md flex-col gap-3">
+            <label className={FIELD}>{t("backup.token")}
+              <input type="password" autoComplete="off" value={form.token} onChange={(e) => setForm({ ...form, token: e.target.value })} className={INPUT} />
+            </label>
+            <label className={FIELD}>{t("backup.owner")}
+              <input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className={INPUT} />
+            </label>
+            <label className={FIELD}>{t("backup.repo")}
+              <input value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} className={INPUT} />
+            </label>
+            {askPublic && <InlineAlert tone="warning" action={{ label: t("backup.publicRepo.confirm"), onClick: () => void connect(true) }}>{t("backup.publicRepo.body")}</InlineAlert>}
+            <div className="mt-1 flex gap-2">
+              <Button type="submit" variant="primary" disabled={busy}>{t("backup.connect")}</Button>
+              <Button variant="ghost" onClick={onCancel}>{t("restore.cancel")}</Button>
+            </div>
+          </form>
+        </ViewSection>
       )}
 
       {step === "pick" && points && (
         <>
           {points.length === 0 ? (
-            <p>{t("restore.none")}</p>
+            <ViewSection><p className="text-[var(--c-text-muted)]">{t("restore.none")}</p></ViewSection>
           ) : (
-            <div role="radiogroup" aria-label={t("restore.available")} className="flex flex-col gap-1">
-              {points.map((p) => (
-                <label key={p.sha} className="flex gap-2">
-                  <input type="radio" name="punto" checked={sha === p.sha} onChange={() => setSha(p.sha)} />
-                  <span>{when(p.date)} — {p.message}</span>
-                </label>
-              ))}
-            </div>
+            <ViewSection title={t("restore.available")} flush>
+              <div role="radiogroup" aria-label={t("restore.available")} className="flex flex-col">
+                {points.map((p) => (
+                  <label key={p.sha} className={cx(VIEW_ROW, "cursor-pointer has-[:checked]:bg-[var(--c-raised)]")}>
+                    <input type="radio" name="punto" checked={sha === p.sha} onChange={() => setSha(p.sha)} />
+                    <span className="min-w-0 flex-1 truncate">{when(p.date)} — {p.message}</span>
+                  </label>
+                ))}
+              </div>
+            </ViewSection>
           )}
           <div className="flex gap-2">
-            <button type="button" disabled={!sha || busy} onClick={() => void next()}>{t("restore.next")}</button>
-            <button type="button" onClick={onCancel}>{t("restore.cancel")}</button>
+            <Button variant="primary" disabled={!sha || busy} onClick={() => void next()}>{t("restore.next")}</Button>
+            <Button variant="ghost" onClick={onCancel}>{t("restore.cancel")}</Button>
           </div>
         </>
       )}
 
       {step === "destination" && (
         <>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="destino" checked={mode === "new"} onChange={() => setMode("new")} />{t("restore.newSpace")}
-          </label>
-          {mode === "new" && (
-            <label className="ml-6 flex flex-col gap-1">{t("restore.newName")}
-              <input value={newName} onChange={(e) => setNewName(e.target.value)} className="rounded border px-2 py-1" />
-            </label>
-          )}
-          {existing.length > 0 && (
-            <>
-              <label className="flex items-center gap-2">
-                <input type="radio" name="destino" checked={mode === "replace"} onChange={() => setMode("replace")} />{t("restore.replaceSpace")}
+          <ViewSection>
+            <div className="flex flex-col gap-3">
+              <label className={OPTION}>
+                <input type="radio" name="destino" checked={mode === "new"} onChange={() => setMode("new")} />{t("restore.newSpace")}
               </label>
-              {mode === "replace" && (
-                <div className="ml-6 flex flex-col gap-2">
-                  <label className="flex flex-col gap-1">{t("restore.chooseWorkspace")}
-                    <select value={targetId} onChange={(e) => { setTargetId(e.target.value); setTyped(""); }} className="rounded border px-2 py-1">
-                      {existing.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-                    </select>
-                  </label>
-                  {info && (
-                    <>
-                      <p>{t("restore.willReplace", { current: info.currentPages, name: info.workspaceName, backup: info.backupPages })}</p>
-                      {info.hasNoBackup && <p role="status" className="font-semibold text-[var(--c-danger)]">{t("workspace.noBackup")}</p>}
-                    </>
-                  )}
-                  <label className="flex flex-col gap-1">{t("restore.typeName", { name: target?.name ?? "" })}
-                    <input value={typed} onChange={(e) => setTyped(e.target.value)} className="rounded border px-2 py-1" />
-                  </label>
-                </div>
+              {mode === "new" && (
+                <label className={cx(FIELD, "ml-7 max-w-md")}>{t("restore.newName")}
+                  <input value={newName} onChange={(e) => setNewName(e.target.value)} className={INPUT} />
+                </label>
               )}
-            </>
-          )}
+              {existing.length > 0 && (
+                <>
+                  <label className={OPTION}>
+                    <input type="radio" name="destino" checked={mode === "replace"} onChange={() => setMode("replace")} />{t("restore.replaceSpace")}
+                  </label>
+                  {mode === "replace" && (
+                    <div className="ml-7 flex max-w-md flex-col gap-3">
+                      <label className={FIELD}>{t("restore.chooseWorkspace")}
+                        <select value={targetId} onChange={(e) => { setTargetId(e.target.value); setTyped(""); }} className={INPUT}>
+                          {existing.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+                        </select>
+                      </label>
+                      {info && (
+                        <>
+                          <p className={MUTED}>{t("restore.willReplace", { current: info.currentPages, name: info.workspaceName, backup: info.backupPages })}</p>
+                          {info.hasNoBackup && <p role="status" className="font-semibold text-[var(--c-danger)]">{t("workspace.noBackup")}</p>}
+                        </>
+                      )}
+                      <label className={FIELD}>{t("restore.typeName", { name: target?.name ?? "" })}
+                        <input value={typed} onChange={(e) => setTyped(e.target.value)} className={INPUT} />
+                      </label>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </ViewSection>
           <div className="flex gap-2">
             {mode === "new" ? (
-              <button type="button" disabled={busy || newName.trim() === ""} onClick={() => void restore()}>{busy ? t("restore.restoring") : t("restore.restore")}</button>
+              <Button variant="primary" disabled={busy || newName.trim() === ""} onClick={() => void restore()}>{busy ? t("restore.restoring") : t("restore.restore")}</Button>
             ) : (
-              <button type="button" disabled={busy || typed !== target?.name} onClick={() => setConfirmingReplace(true)}>{busy ? t("restore.restoring") : t("restore.replace")}</button>
+              <Button variant="danger" disabled={busy || typed !== target?.name} onClick={() => setConfirmingReplace(true)}>{busy ? t("restore.restoring") : t("restore.replace")}</Button>
             )}
-            <button type="button" onClick={onCancel}>{t("restore.cancel")}</button>
+            <Button variant="ghost" onClick={onCancel}>{t("restore.cancel")}</Button>
           </div>
         </>
       )}
 
-      {step === "done" && restored && <p role="status">{t("restore.done", { name: restored.name })}</p>}
+      {step === "done" && restored && (
+        <div role="status" className="flex items-center gap-2 rounded-md bg-[var(--chip-success-bg)] p-3 text-[var(--chip-success-fg)]">
+          <Icon name="success" size={20} />{t("restore.done", { name: restored.name })}
+        </div>
+      )}
       <ConfirmDialog
         open={confirmingReplace}
         onOpenChange={setConfirmingReplace}
@@ -197,6 +228,6 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
         cancelLabel={t("restore.cancel")}
         onConfirm={() => void restore()}
       />
-    </section>
+    </ViewLayout>
   );
 }

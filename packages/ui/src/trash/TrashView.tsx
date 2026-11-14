@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { EmptyState } from "../empty/EmptyState";
 import { useTranslation } from "react-i18next";
+import { TRASH_RETENTION_DAYS } from "@vnote/core";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { Button } from "../components/Button";
+import { ViewLayout, ViewSection, VIEW_ROW } from "../components/ViewLayout";
+import { Icon } from "../design/Icon";
 import type { WorkspaceController } from "../workspace/controller";
 import { useWorkspace } from "../workspace/useController";
 
@@ -18,24 +22,27 @@ export function TrashView({ controller }: { controller: WorkspaceController }) {
     else void controller.deleteForever(pending.id, true);
   };
   return (
-    <section aria-label={t("trash.title")} className="p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{t("trash.title")}</h1>
-        {snap.trash.length > 0 && <button type="button" onClick={() => setPending({ kind: "all" })}>{t("trash.emptyTrash")}</button>}
-      </div>
+    <ViewLayout
+      title={t("trash.title")}
+      description={t("trash.hint", { days: TRASH_RETENTION_DAYS })}
+      actions={snap.trash.length > 0 && <Button variant="danger" onClick={() => setPending({ kind: "all" })}><Icon name="delete" />{t("trash.emptyTrash")}</Button>}
+    >
       {snap.trash.length === 0 ? (
         <EmptyState illustration="trash" title={t("trash.empty")} />
       ) : (
-        <ul className="mt-4 flex flex-col gap-1">
-          {snap.trash.map((e) => (
-            <li key={e.page.id} className="flex items-center gap-3">
-              <span className="flex-1 truncate">{label(e.page.title)}</span>
-              <span className="text-sm opacity-70">{t("trash.daysLeft", { count: e.daysLeft })}</span>
-              <button type="button" aria-label={t("trash.restoreItem", { title: label(e.page.title) })} onClick={() => void controller.restore(e.page.id)}>{t("trash.restore")}</button>
-              <button type="button" aria-label={t("trash.deleteForeverItem", { title: label(e.page.title) })} onClick={() => setPending({ kind: "one", id: e.page.id, title: label(e.page.title) })}>{t("trash.deleteForever")}</button>
-            </li>
-          ))}
-        </ul>
+        <ViewSection flush>
+          <ul className="flex flex-col">
+            {snap.trash.map((e) => (
+              <li key={e.page.id} className={VIEW_ROW}>
+                <span className="shrink-0 text-[var(--c-text-muted)]"><Icon name="note" /></span>
+                <span className="min-w-0 flex-1 truncate font-medium">{label(e.page.title)}</span>
+                <span className="shrink-0 text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("trash.daysLeft", { count: e.daysLeft })}</span>
+                <Button size="sm" aria-label={t("trash.restoreItem", { title: label(e.page.title) })} onClick={() => void controller.restore(e.page.id)}><Icon name="restore" />{t("trash.restore")}</Button>
+                <Button size="sm" variant="danger" aria-label={t("trash.deleteForeverItem", { title: label(e.page.title) })} onClick={() => setPending({ kind: "one", id: e.page.id, title: label(e.page.title) })}>{t("trash.deleteForever")}</Button>
+              </li>
+            ))}
+          </ul>
+        </ViewSection>
       )}
       <ConfirmDialog
         open={pending !== null}
@@ -46,6 +53,6 @@ export function TrashView({ controller }: { controller: WorkspaceController }) {
         cancelLabel={t("trash.cancel")}
         onConfirm={confirm}
       />
-    </section>
+    </ViewLayout>
   );
 }

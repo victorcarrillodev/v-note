@@ -247,6 +247,81 @@ input[type="checkbox"], input[type="radio"], input[type="range"], input[type="co
   cursor: not-allowed;
 }
 
+/* Capa base: aspecto por defecto de los controles nativos sin clase. Va en `@layer base` para que cualquier utilidad de Tailwind la pueda cambiar. */
+@layer base {
+  :root { accent-color: var(--c-accent); }
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+  ::selection { background: color-mix(in srgb, var(--c-accent) 24%, transparent); }
+  * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--c-text) 24%, transparent) transparent; }
+
+  /* Bordes sin color propio: el borde suave del estándar; en los controles, el borde de control. */
+  *, ::before, ::after, ::backdrop { border-color: var(--c-border); }
+  button, input, select, textarea, ::file-selector-button { border-color: var(--c-border-control); }
+
+  /* Botón nativo sin clase: el botón secundario del estándar. */
+  button:where(:not([class]):not([role="tab"]):not([role="menuitem"]):not([role="menuitemcheckbox"]):not([role="menuitemradio"]):not([role="option"]):not([role="switch"]):not([role="checkbox"]):not([role="radio"]):not([role="treeitem"]):not([role="combobox"])) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: 32px;
+    min-width: 32px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--c-border-control);
+    border-radius: var(--radius-base);
+    background: transparent;
+    color: var(--c-text);
+    font-size: var(--text-ui-size);
+    font-weight: 500;
+    line-height: var(--text-ui-line);
+    white-space: nowrap;
+    transition: background-color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
+  }
+  button:where(:not([class])):hover:not(:disabled) { background: var(--c-raised); }
+  button:where(:not([class])):disabled { opacity: 0.5; }
+  button:where(:not([class]))[data-variant="primary"] { border-color: transparent; background: var(--c-accent); color: var(--c-on-accent); }
+  button:where(:not([class]))[data-variant="primary"]:hover:not(:disabled) { background: var(--c-accent); filter: brightness(0.95); }
+  button:where(:not([class]))[data-variant="danger"] { border-color: var(--c-danger); color: var(--c-danger); }
+  button:where(:not([class]))[data-variant="ghost"] { border-color: transparent; }
+
+  /* Campos de texto y selectores sin clase. */
+  input:where(:not([class]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"])),
+  select:where(:not([class])),
+  textarea:where(:not([class])) {
+    min-height: 32px;
+    padding: 0 var(--space-2);
+    border: 1px solid var(--c-border-control);
+    border-radius: var(--radius-base);
+    background: var(--c-card);
+    color: var(--c-text);
+    font-size: var(--text-ui-size);
+    line-height: var(--text-ui-line);
+  }
+  textarea:where(:not([class])) { padding: var(--space-2); }
+  :is(input, textarea)::placeholder { color: var(--c-text-placeholder); opacity: 1; }
+  :is(input, select, textarea):where(:not([class])):disabled { opacity: 0.5; }
+
+  /* Selector de archivo: su botón interno es un botón secundario. */
+  ::file-selector-button {
+    min-height: 28px;
+    margin-inline-end: var(--space-2);
+    padding: 0 var(--space-3);
+    border: 1px solid var(--c-border-control);
+    border-radius: var(--radius-base);
+    background: transparent;
+    color: var(--c-text);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Puntero grueso: objetivo táctil de 44 px. */
+  @media (pointer: coarse) {
+    button:where(:not([class]):not([role="tab"]):not([role="menuitem"]):not([role="option"]):not([role="treeitem"])),
+    input:where(:not([class]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"])),
+    select:where(:not([class])) { min-height: 44px; }
+  }
+}
+
 /* Cambio de tema: solo color de fondo y texto. */
 body, #root, aside, main, header {
   transition: background-color var(--motion-theme) linear, color var(--motion-theme) linear;

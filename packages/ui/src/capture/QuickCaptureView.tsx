@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "../components/Button";
 import { useTranslation } from "react-i18next";
 import { QuickCapture, resolveCaptureTarget, type Clock, type Workspace, type WorkspaceManager } from "@vnote/core";
 
@@ -66,42 +67,44 @@ export function QuickCaptureView({ manager, clock, onSaved, onClose }: { manager
   const cancel = async () => { await flush(); onClose?.(); };
   const discard = async () => { clearTimeout(timer.current); pending.current = null; await cap.current?.discardDraft(); setText(""); setRecovered(false); setMessage(null); area.current?.focus(); };
 
-  if (state.phase === "loading") return <p role="status" className="p-4 opacity-70">{t("app.loading")}</p>;
-  if (state.phase === "empty") return <p role="status" className="p-4">{error ?? t("capture.noWorkspaces")}</p>;
+  if (state.phase === "loading") return <p role="status" className="p-6 text-[var(--c-text-muted)]">{t("app.loading")}</p>;
+  if (state.phase === "empty") return <p role="status" className="p-6">{error ?? t("capture.noWorkspaces")}</p>;
   if (state.phase === "choose") {
     return (
-      <section aria-label={t("capture.title")} className="flex flex-col gap-2 p-4">
-        <h1 className="text-lg font-semibold">{t("capture.title")}</h1>
-        <p>{t("capture.chooseWorkspace")}</p>
-        <ul className="flex flex-col gap-1">
+      <section aria-label={t("capture.title")} className="flex flex-col gap-3 p-6">
+        <h1 className="text-[length:var(--text-dialog-title-size)] font-semibold">{t("capture.title")}</h1>
+        <p className="text-[var(--c-text-muted)]">{t("capture.chooseWorkspace")}</p>
+        <ul className="flex flex-col gap-2">
           {state.workspaces.map((w) => (
-            <li key={w.id}><button type="button" aria-label={t("capture.useWorkspace", { name: w.name })} onClick={() => void manager.setCaptureDefault(w.id).then(() => load())}>{w.name}</button></li>
+            <li key={w.id}><Button className="w-full justify-start" aria-label={t("capture.useWorkspace", { name: w.name })} onClick={() => void manager.setCaptureDefault(w.id).then(() => load())}>{w.name}</Button></li>
           ))}
         </ul>
       </section>
     );
   }
   return (
-    <section aria-label={t("capture.title")} className="flex flex-col gap-2 p-4">
-      <h1 className="text-lg font-semibold">{t("capture.title")}</h1>
-      <p className="text-sm opacity-70">{t("capture.destination", { space: state.workspace.name })}</p>
-      {recovered && <p role="status" className="rounded border border-[var(--c-warning)] bg-[var(--chip-warning-bg)] p-1 text-sm text-[var(--chip-warning-fg)]">{t("capture.recovered")}</p>}
-      {message && <p role="status" className="rounded border border-[var(--c-success)] bg-[var(--chip-success-bg)] p-1 text-sm text-[var(--chip-success-fg)]">{message}</p>}
-      {error && <p role="alert" className="text-sm text-[var(--c-danger)]">{error}</p>}
+    <section aria-label={t("capture.title")} className="flex flex-col gap-3 p-6">
+      <div>
+        <h1 className="text-[length:var(--text-dialog-title-size)] font-semibold">{t("capture.title")}</h1>
+        <p className="mt-1 text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("capture.destination", { space: state.workspace.name })}</p>
+      </div>
+      {recovered && <p role="status" className="rounded-md bg-[var(--chip-warning-bg)] px-3 py-2 text-[length:var(--text-ui-small-size)] text-[var(--chip-warning-fg)]">{t("capture.recovered")}</p>}
+      {message && <p role="status" className="rounded-md bg-[var(--chip-success-bg)] px-3 py-2 text-[length:var(--text-ui-small-size)] text-[var(--chip-success-fg)]">{message}</p>}
+      {error && <p role="alert" className="text-[length:var(--text-ui-small-size)] text-[var(--c-danger)]">{error}</p>}
       <textarea
-        ref={area} aria-label={t("capture.noteLabel")} value={text} rows={6} className="w-full rounded border p-2"
+        ref={area} aria-label={t("capture.noteLabel")} value={text} rows={6} className="w-full resize-y rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] p-3 text-[length:var(--text-reading-size)] leading-[var(--text-reading-line)] placeholder:text-[var(--c-text-placeholder)]"
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); void confirm(); }
           else if (e.key === "Escape") { e.preventDefault(); void cancel(); }
         }}
       />
-      <div className="flex gap-2">
-        <button type="button" onClick={() => void confirm()} disabled={text.trim() === ""}>{t("capture.save")}</button>
-        <button type="button" onClick={() => void cancel()}>{t("capture.cancel")}</button>
-        {(recovered || text !== "") && <button type="button" onClick={() => void discard()}>{t("capture.discard")}</button>}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="primary" onClick={() => void confirm()} disabled={text.trim() === ""}>{t("capture.save")}</Button>
+        <Button onClick={() => void cancel()}>{t("capture.cancel")}</Button>
+        {(recovered || text !== "") && <Button variant="ghost" onClick={() => void discard()}>{t("capture.discard")}</Button>}
+        <p className="ml-auto text-[length:var(--text-note-size)] text-[var(--c-text-muted)]">{t("capture.hint")}</p>
       </div>
-      <p className="text-xs opacity-70">{t("capture.hint")}</p>
     </section>
   );
 }

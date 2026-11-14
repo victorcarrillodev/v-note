@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { InlineAlert } from "../components/InlineAlert";
+import { Button } from "../components/Button";
+import { Chip } from "../components/Chip";
+import { ViewLayout, ViewSection, VIEW_ROW } from "../components/ViewLayout";
+import { FIELD, INPUT, MUTED } from "../components/formStyles";
+import { Icon } from "../design/Icon";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
 import type { BackupService, BackupSettings, BackupStatus } from "@vnote/core";
@@ -41,49 +46,69 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
 
   if (!settings || !status) return <p role="status">{t("app.loading")}</p>;
 
+  const DIALOG = "fixed left-1/2 top-1/3 z-[var(--z-dialog)] w-[var(--size-modal-s)] max-w-[calc(100vw-var(--space-12))] -translate-x-1/2 rounded-lg border border-[var(--c-border)] bg-[var(--c-card)] p-6 shadow-[var(--elevation-4)]";
+  const SCRIM = "fixed inset-0 z-[var(--z-scrim)] bg-[var(--c-scrim)]";
+  const DIALOG_TITLE = "text-[length:var(--text-dialog-title-size)] font-semibold text-[var(--c-text)]";
+  const DIALOG_BODY = "mt-2 text-[length:var(--text-ui-size)] text-[var(--c-text-muted)]";
+  const statusTone = (st: string) => (st === "success" ? "success" : st === "failed" ? "error" : st === "needs_decision" ? "warning" : "neutral") as "success" | "error" | "warning" | "neutral";
+
   return (
-    <section aria-label={t("backup.title")} className="flex flex-col gap-4 p-4">
-      <h1 className="text-xl font-semibold">{t("backup.title")}</h1>
+    <ViewLayout title={t("backup.title")} description={t("backup.hint")}>
       {platform === "web" && (
-        <div role="note" className="rounded border border-[var(--c-warning)] bg-[var(--chip-warning-bg)] p-2 text-sm text-[var(--chip-warning-fg)]">
-          <p>{t("backup.webNotice")}</p>
-          <p>{t("backup.independentNotice")}</p>
+        <div role="note" className="flex items-start gap-2 rounded-md bg-[var(--chip-warning-bg)] p-3 text-[length:var(--text-ui-size)] text-[var(--chip-warning-fg)]">
+          <span className="mt-0.5 shrink-0"><Icon name="info" size={20} /></span>
+          <div>
+            <p>{t("backup.webNotice")}</p>
+            <p>{t("backup.independentNotice")}</p>
+          </div>
         </div>
       )}
 
       {!status.connected ? (
-        <form onSubmit={onSubmit} className="flex max-w-md flex-col gap-2">
-          <label className="flex flex-col gap-1">{t("backup.token")}
-            <input type="password" autoComplete="off" value={form.token} onChange={(e) => setForm({ ...form, token: e.target.value })} className="rounded border px-2 py-1" />
-          </label>
-          <label className="flex flex-col gap-1">{t("backup.owner")}
-            <input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="rounded border px-2 py-1" />
-          </label>
-          <label className="flex flex-col gap-1">{t("backup.repo")}
-            <input value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} className="rounded border px-2 py-1" />
-          </label>
-          {connectError && <InlineAlert tone="error">{connectError}</InlineAlert>}
-          <button type="submit" disabled={busy} className="self-start rounded border px-3 py-1">{t("backup.connect")}</button>
-        </form>
+        <ViewSection title={t("backup.connectSection")} hint={t("backup.connectHint")}>
+          <form onSubmit={onSubmit} className="flex max-w-md flex-col gap-3">
+            <label className={FIELD}>{t("backup.token")}
+              <input type="password" autoComplete="off" value={form.token} onChange={(e) => setForm({ ...form, token: e.target.value })} className={INPUT} />
+            </label>
+            <label className={FIELD}>{t("backup.owner")}
+              <input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className={INPUT} />
+            </label>
+            <label className={FIELD}>{t("backup.repo")}
+              <input value={form.repo} onChange={(e) => setForm({ ...form, repo: e.target.value })} className={INPUT} />
+            </label>
+            {connectError && <InlineAlert tone="error">{connectError}</InlineAlert>}
+            <Button type="submit" variant="primary" disabled={busy} className="mt-1 self-start">{t("backup.connect")}</Button>
+          </form>
+        </ViewSection>
       ) : (
         <>
-          <div className="flex items-center gap-3">
-            <p className="font-medium">{settings.owner}/{settings.repo}</p>
-            <button type="button" onClick={() => void service.disconnect()}>{t("backup.disconnect")}</button>
-          </div>
-          {tokenNotSaved && <p role="note" className="text-sm text-[var(--chip-warning-fg)]">{t("backup.tokenNotSaved")}</p>}
+          <ViewSection>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="shrink-0 text-[var(--c-text-muted)]"><Icon name="backup" size={20} /></span>
+                <p className="min-w-0 flex-1 truncate font-medium">{settings.owner}/{settings.repo}</p>
+                <Button size="sm" onClick={() => void service.disconnect()}>{t("backup.disconnect")}</Button>
+              </div>
+              {tokenNotSaved && <p role="note" className="text-[length:var(--text-ui-small-size)] text-[var(--chip-warning-fg)]">{t("backup.tokenNotSaved")}</p>}
 
-          <label className="flex items-center gap-2">{t("backup.frequency")}
-            <select value={String(settings.frequencyDays)} onChange={(e) => void service.setFrequency(Number(e.target.value))} className="rounded border px-2 py-1">
-              {[1, 2, 3, 4, 5, 6, 7].map((d) => <option key={d} value={String(d)}>{t("backup.everyDays", { count: d })}</option>)}
-            </select>
-          </label>
+              <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[var(--c-border)] pt-4">
+                <label className={FIELD}>{t("backup.frequency")}
+                  <select value={String(settings.frequencyDays)} onChange={(e) => void service.setFrequency(Number(e.target.value))} className={`${INPUT} min-w-40`}>
+                    {[1, 2, 3, 4, 5, 6, 7].map((d) => <option key={d} value={String(d)}>{t("backup.everyDays", { count: d })}</option>)}
+                  </select>
+                </label>
+                <Button variant="primary" disabled={busy} onClick={() => void run()}>
+                  <Icon name="backup" />{busy ? t("backup.running") : t("backup.runNow")}
+                </Button>
+              </div>
 
-          <div>
-            <button type="button" disabled={busy} onClick={() => void run()} className="rounded border px-3 py-1 disabled:opacity-50">
-              {busy ? t("backup.running") : t("backup.runNow")}
-            </button>
-          </div>
+              <div className={`flex flex-col gap-0.5 ${MUTED}`}>
+                <p>{t("backup.lastSuccess", { when: when(status.lastSuccessAt) })}</p>
+                {status.nextDueAt !== null && <p>{t("backup.nextDue", { when: when(status.nextDueAt) })}</p>}
+                {status.retryAt !== null && <p>{t("backup.retryingAt", { when: when(status.retryAt) })}</p>}
+              </div>
+            </div>
+          </ViewSection>
 
           {status.alert?.type === "failed" && (
             <InlineAlert tone="error" title={errorText(String(status.alert.kind))} action={{ label: t("backup.retry"), onClick: () => void run() }}>
@@ -97,33 +122,30 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
           )}
           {status.paused && status.alert === null && <InlineAlert tone="warning">{t("backup.paused")}</InlineAlert>}
 
-          <div className="text-sm">
-            <p>{t("backup.lastSuccess", { when: when(status.lastSuccessAt) })}</p>
-            {status.nextDueAt !== null && <p>{t("backup.nextDue", { when: when(status.nextDueAt) })}</p>}
-            {status.retryAt !== null && <p>{t("backup.retryingAt", { when: when(status.retryAt) })}</p>}
-          </div>
-
-          <ul aria-label={t("backup.history")} className="flex flex-col gap-1 text-sm">
-            {status.history.map((h) => (
-              <li key={h.id} className="flex gap-2">
-                <span>{when(h.finishedAt)}</span>
-                <span>{t(`backup.status.${h.status}`)}</span>
-                {h.errorKind && <span className="opacity-70">{errorText(h.errorKind)}</span>}
-              </li>
-            ))}
-          </ul>
+          <ViewSection title={t("backup.history")} flush>
+            <ul aria-label={t("backup.history")} className="flex flex-col text-[length:var(--text-ui-size)]">
+              {status.history.map((h) => (
+                <li key={h.id} className={VIEW_ROW}>
+                  <span className="tabular-nums">{when(h.finishedAt)}</span>
+                  <Chip tone={statusTone(h.status)}>{t(`backup.status.${h.status}`)}</Chip>
+                  {h.errorKind && <span className={`min-w-0 flex-1 truncate ${MUTED}`}>{errorText(h.errorKind)}</span>}
+                </li>
+              ))}
+            </ul>
+            {status.history.length === 0 && <p className={`px-4 py-3 ${MUTED}`}>{t("backup.noHistory")}</p>}
+          </ViewSection>
         </>
       )}
 
       <AlertDialog.Root open={askPublic} onOpenChange={(o) => !o && setAskPublic(false)}>
         <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 bg-black/40" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 w-96 -translate-x-1/2 -translate-y-1/2 rounded bg-[var(--bg)] p-4 shadow">
-            <AlertDialog.Title className="font-semibold">{t("backup.publicRepo.title")}</AlertDialog.Title>
-            <AlertDialog.Description className="my-2 text-sm">{t("backup.publicRepo.body")}</AlertDialog.Description>
-            <div className="flex justify-end gap-2">
-              <AlertDialog.Cancel asChild><button type="button">{t("backup.publicRepo.cancel")}</button></AlertDialog.Cancel>
-              <button type="button" onClick={() => void connect(true)}>{t("backup.publicRepo.confirm")}</button>
+          <AlertDialog.Overlay className={SCRIM} />
+          <AlertDialog.Content className={DIALOG}>
+            <AlertDialog.Title className={DIALOG_TITLE}>{t("backup.publicRepo.title")}</AlertDialog.Title>
+            <AlertDialog.Description className={DIALOG_BODY}>{t("backup.publicRepo.body")}</AlertDialog.Description>
+            <div className="mt-6 flex justify-end gap-2">
+              <AlertDialog.Cancel asChild><Button>{t("backup.publicRepo.cancel")}</Button></AlertDialog.Cancel>
+              <Button variant="danger" onClick={() => void connect(true)}>{t("backup.publicRepo.confirm")}</Button>
             </div>
           </AlertDialog.Content>
         </AlertDialog.Portal>
@@ -131,17 +153,17 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
 
       <AlertDialog.Root open={status.alert?.type === "needs_decision"}>
         <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 bg-black/40" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded bg-[var(--bg)] p-4 shadow">
-            <AlertDialog.Title className="font-semibold">{t("backup.decision.title")}</AlertDialog.Title>
-            <AlertDialog.Description className="my-2 text-sm">{t("backup.decision.body")}</AlertDialog.Description>
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => void service.resolveExternalChange("cancel")}>{t("backup.decision.cancel")}</button>
-              <button type="button" onClick={() => void service.resolveExternalChange("continue")}>{t("backup.decision.continue")}</button>
+          <AlertDialog.Overlay className={SCRIM} />
+          <AlertDialog.Content className={DIALOG}>
+            <AlertDialog.Title className={DIALOG_TITLE}>{t("backup.decision.title")}</AlertDialog.Title>
+            <AlertDialog.Description className={DIALOG_BODY}>{t("backup.decision.body")}</AlertDialog.Description>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button onClick={() => void service.resolveExternalChange("cancel")}>{t("backup.decision.cancel")}</Button>
+              <Button variant="primary" onClick={() => void service.resolveExternalChange("continue")}>{t("backup.decision.continue")}</Button>
             </div>
           </AlertDialog.Content>
         </AlertDialog.Portal>
       </AlertDialog.Root>
-    </section>
+    </ViewLayout>
   );
 }
