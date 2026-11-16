@@ -9,7 +9,7 @@ import { PageTree } from "./PageTree";
 
 const page = (id: string, title: string, parentId: string | null = null): Page => ({
   id, parentId, position: id, title, icon: null, cover: null, kind: "note", favorite: false,
-  createdAt: 0, updatedAt: 0, deletedAt: null, deletedRootId: null,
+  style: {}, description: null, locked: false, coverCredit: null, createdAt: 0, updatedAt: 0, deletedAt: null, deletedRootId: null,
 });
 const node = (id: string, title: string, children: PageNode[] = []): PageNode => ({ page: page(id, title), children });
 

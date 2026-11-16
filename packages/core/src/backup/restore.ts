@@ -14,6 +14,7 @@ import { FORMAT_VERSION } from "./serialize";
 import { insertTags, validateTags, type TagsFile } from "./tags";
 import { insertDatabases, validateDatabases, type DbFile, type RemindersFile } from "./databases";
 import type { BackupError, CommitSummary, GitHubClient } from "./githubClient";
+import { styleToText } from "../pages/style";
 
 const dec = new TextDecoder();
 const KINDS = new Set(["note", "board", "database"]);
@@ -152,8 +153,9 @@ export async function restoreFromFiles(files: Map<string, Uint8Array>, target: {
       await tx.exec("PRAGMA defer_foreign_keys = ON");
       for (const p of v.value.pages) {
         await tx.exec(
-          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, full_width, created_at, updated_at, deleted_at, deleted_root_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          [p.id, p.parentId, p.position, p.title, p.icon, p.cover, p.kind, p.favorite ? 1 : 0, p.fullWidth ? 1 : 0, p.createdAt, p.updatedAt, p.deletedAt, p.deletedRootId],
+          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, style, created_at, updated_at, deleted_at, deleted_root_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          // Spec 005 (DP-6): el ancho completo de un respaldo se guarda en el estilo de la página.
+          [p.id, p.parentId, p.position, p.title, p.icon, p.cover, p.kind, p.favorite ? 1 : 0, p.fullWidth ? styleToText({ spacing: { width: "full" } }) : null, p.createdAt, p.updatedAt, p.deletedAt, p.deletedRootId],
         );
         if (p.blocks.length) {
           const doc = new Y.Doc();

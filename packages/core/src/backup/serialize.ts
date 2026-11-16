@@ -9,6 +9,7 @@ import { stableJson } from "./stableJson";
 import { buildPagePaths } from "./paths";
 import { blocksToMarkdown } from "./markdown";
 import { serializeDatabases, serializeReminders } from "./databases";
+import { parseStyle } from "../pages/style";
 
 export const FORMAT_VERSION = 1;
 /** Límite individual de GitHub para un archivo (plan P-5). */
@@ -23,7 +24,7 @@ export type SerializeResult = {
 
 type Row = {
   id: string; parent_id: string | null; position: string; title: string; icon: string | null; cover: string | null; kind: string;
-  favorite: number; full_width?: number; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
+  favorite: number; style?: string | null; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
 };
 
 const enc = new TextEncoder();
@@ -53,7 +54,8 @@ export async function serializeWorkspace(
       id: r.id, parentId: r.parent_id, position: r.position, title: r.title, icon: r.icon, cover: r.cover, kind: r.kind,
       favorite: r.favorite === 1, createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id,
       // Solo cuando es verdadero: así las páginas en ancho normal dan exactamente los mismos bytes que antes de existir el campo (RNF-7, RNF-11).
-      ...(r.full_width === 1 ? { fullWidth: true } : {}),
+      // Spec 005 (DP-6): el ancho completo sale ahora del estilo; el formato v2 (E-063) dejará de escribir este campo.
+      ...(parseStyle(r.style).spacing?.width === "full" ? { fullWidth: true } : {}),
       blocks,
     }));
     if (r.deleted_at === null) put(mdPaths.get(r.id)!, blocksToMarkdown(blocks));

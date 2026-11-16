@@ -1,6 +1,6 @@
 import {
   BoardService, DatabaseService, collectExportPages, databaseViewProvider, exportHtml, GraphService, LinkService, QuickCapture, ViewService, DocSession, DocStore, PagesRepo, PageService, SearchIndex, appError, err, ok,
-  type AssetStore, type Backlink, type DocSessionOptions, type Clock, type ExportOutcome, type GraphData, type GraphOptions, type LinkTarget, type Page, type PageKind, type RecentPage, type SearchHit, type PageNode, type Result, type SqlStore, type TrashEntry, trashWithUndo, TagService, duplicateWithUndo, moveWithUndo } from "@vnote/core";
+  type AssetStore, type Backlink, type DocSessionOptions, type Clock, type ExportOutcome, type GraphData, type GraphOptions, type LinkTarget, type Page, type PageKind, type PageStyle, type RecentPage, type SearchHit, type PageNode, type Result, type SqlStore, type TrashEntry, trashWithUndo, TagService, duplicateWithUndo, moveWithUndo } from "@vnote/core";
 
 import { DatabaseController } from "../databases/databaseController";
 
@@ -181,7 +181,8 @@ export class WorkspaceController {
   async setIcon(id: string, icon: string | null) { const r = await this.pages.setIcon(id, icon); await this.refresh(); return r; }
   async setCover(id: string, cover: string | null) { const r = await this.pages.setCover(id, cover); await this.refresh(); return r; }
 
-  async setFullWidth(id: string, value: boolean) { const r = await this.pages.setFullWidth(id, value); await this.refresh(); return r; }
+  /** Estilo de la página (spec 005): se guarda normalizado. */
+  async setPageStyle(id: string, style: PageStyle) { const r = await this.pages.setStyle(id, style); await this.refresh(); return r; }
 
   async toggleFavorite(id: string): Promise<Result<Page>> {
     const cur = await this.pages.get(id);

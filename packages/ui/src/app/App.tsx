@@ -358,7 +358,7 @@ function PageArea({ controller, workspace, renderPageBody, exporter }: { control
     </div>
   );
   const kind = findKind(snap.tree, snap.selectedId);
-  const fullWidth = findPage(snap.tree, snap.selectedId)?.fullWidth ?? false;
+  const fullWidth = findPage(snap.tree, snap.selectedId)?.style.spacing?.width === "full";
   const dialog = exporting && exporter ? (
     <ExportDialog key={exporting} controller={controller} pageId={exporting} assets={exporter.assetsFor(workspace.location)} runtime={exporter.runtime} onClose={() => setExporting(null)} />
   ) : null;

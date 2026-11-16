@@ -74,15 +74,15 @@
 
 *Requiere: estilo de página y portada.*
 
-- [ ] **E-035** Migración 14: añadir `style`, `description`, `locked` y `cover_credit` a `pages` — *Cubre:* RF-1.2, RF-2.5, RF-8.1. **Hecho cuando:** Test: columnas presentes y `locked` vale 0 por defecto.
-- [ ] **E-036** Migración 14: copiar `full_width = 1` a `style = {"spacing":{"width":"full"}}` — *Cubre:* RF-6.2, CL-14. **Hecho cuando:** Test sobre una base de la versión 13 con páginas con y sin ancho completo.
-- [ ] **E-037** Migración 14 en una base de la versión 13 con datos de todas las specs anteriores; el respaldo previo se ejecuta — *Cubre:* RNF-5. **Hecho cuando:** Test: ningún dato anterior cambia salvo `style`.
-- [ ] **E-038** Tipo `Page` y lectura de filas con `style`, `description`, `locked` y `coverCredit` — *Cubre:* RF-4.5. **Hecho cuando:** Test de lectura con valores y con `NULL`.
-- [ ] **E-039** `setField` admite las columnas nuevas y actualiza `updated_at` — *Cubre:* RF-1.5. **Hecho cuando:** Test: cada columna nueva cambia `updated_at`.
-- [ ] **E-040** `setDescription`: recorta a 280 caracteres y quita saltos de línea — *Cubre:* RF-1.2, CL-4. **Hecho cuando:** Test con 300 caracteres y con `\n`.
-- [ ] **E-041** Poner una portada que no es imagen borra `cover_credit` en la misma escritura — *Cubre:* RF-2.5. **Hecho cuando:** Test: de `asset:` con crédito a `color:` → crédito `NULL`.
-- [ ] **E-042** El repositorio deja de leer y escribir `full_width`; `setFullWidth` se elimina y sus usos pasan a `style` — *Cubre:* RF-6.1 (DP-6). **Hecho cuando:** `typecheck` pasa sin referencias a `setFullWidth`; prueba `fullWidth.test.ts` reescrita sobre `style`.
-- [ ] **E-043** `duplicate` copia `style`, `description`, `locked` y `cover_credit` — *Cubre:* RF-4.5. **Hecho cuando:** Test.
+- [x] **E-035** Migración 14: añadir `style`, `description`, `locked` y `cover_credit` a `pages` — *Cubre:* RF-1.2, RF-2.5, RF-8.1. **Hecho cuando:** Test: columnas presentes y `locked` vale 0 por defecto.
+- [x] **E-036** Migración 14: copiar `full_width = 1` a `style = {"spacing":{"width":"full"}}` — *Cubre:* RF-6.2, CL-14. **Hecho cuando:** Test sobre una base de la versión 13 con páginas con y sin ancho completo.
+- [x] **E-037** Migración 14 en una base de la versión 13 con datos de todas las specs anteriores; el respaldo previo se ejecuta — *Cubre:* RNF-5. **Hecho cuando:** Test: ningún dato anterior cambia salvo `style`.
+- [x] **E-038** Tipo `Page` y lectura de filas con `style`, `description`, `locked` y `coverCredit` — *Cubre:* RF-4.5. **Hecho cuando:** Test de lectura con valores y con `NULL`.
+- [x] **E-039** `setField` admite las columnas nuevas y actualiza `updated_at` — *Cubre:* RF-1.5. **Hecho cuando:** Test: cada columna nueva cambia `updated_at`.
+- [x] **E-040** `setDescription`: recorta a 280 caracteres y quita saltos de línea — *Cubre:* RF-1.2, CL-4. **Hecho cuando:** Test con 300 caracteres y con `\n`.
+- [x] **E-041** Poner una portada que no es imagen borra `cover_credit` en la misma escritura — *Cubre:* RF-2.5. **Hecho cuando:** Test: de `asset:` con crédito a `color:` → crédito `NULL`.
+- [x] **E-042** El repositorio deja de leer y escribir `full_width`; `setFullWidth` se elimina y sus usos pasan a `style` — *Cubre:* RF-6.1 (DP-6). **Hecho cuando:** `typecheck` pasa sin referencias a `setFullWidth`; prueba `fullWidth.test.ts` reescrita sobre `style`.
+- [x] **E-043** `duplicate` copia `style`, `description`, `locked` y `cover_credit` — *Cubre:* RF-4.5. **Hecho cuando:** Test.
 
 ### Predeterminado del espacio (`pages/pageDefaults.ts`)
 

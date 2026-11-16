@@ -4,6 +4,8 @@ import { newId } from "../ids";
 import type { SqlStore } from "../ports/sqlStore";
 import { positionBetween } from "./positions";
 import { DAY_MS, TRASH_RETENTION_DAYS } from "./trash";
+import { parseStyle, styleToText, type PageStyle } from "./style";
+import { parseCoverCredit, type CoverCredit } from "./cover";
 
 export type PageKind = "note" | "board" | "database";
 export type Page = {
@@ -15,8 +17,14 @@ export type Page = {
   cover: string | null;
   kind: PageKind;
   favorite: boolean;
-  /** Ancho completo de la página (RF-10.3, spec 002). Ausente = ancho normal. */
-  fullWidth?: boolean;
+  /** Estilo de la página (spec 005, plan §4.1); `{}` = todo predeterminado. */
+  style: PageStyle;
+  /** Descripción bajo el título (RF-1.2). */
+  description: string | null;
+  /** Bloqueada contra ediciones accidentales (RF-8.1). */
+  locked: boolean;
+  /** Crédito de la portada de Unsplash (RF-2.5). */
+  coverCredit: CoverCredit | null;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;
@@ -27,12 +35,20 @@ export type PageNode = { page: Page; children: PageNode[] };
 
 type Row = {
   id: string; parent_id: string | null; position: string; title: string; icon: string | null; cover: string | null;
-  kind: PageKind; favorite: number; full_width?: number; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
+  kind: PageKind; favorite: number; style?: string | null; description?: string | null; locked?: number; cover_credit?: string | null; created_at: number; updated_at: number; deleted_at: number | null; deleted_root_id: string | null;
 };
 const toPage = (r: Row): Page => ({
   id: r.id, parentId: r.parent_id, position: r.position, title: r.title, icon: r.icon, cover: r.cover, kind: r.kind,
-  favorite: r.favorite === 1, fullWidth: r.full_width === 1, createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id,
+  favorite: r.favorite === 1,
+  style: parseStyle(r.style), description: r.description ?? null, locked: r.locked === 1, coverCredit: parseCoverCredit(r.cover_credit ?? null),
+  createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, deletedRootId: r.deleted_root_id,
 });
+
+/** Largo máximo de la descripción (plan 005, §4.2). */
+export const MAX_DESCRIPTION = 280;
+
+/** Columnas que se pueden cambiar con los setters (lista cerrada: nunca se interpola texto del usuario en el SQL). */
+type PageColumn = "favorite" | "icon" | "cover" | "style" | "description" | "locked" | "cover_credit";
 
 /** CL-2: un título vacío o de solo espacios se muestra como "Sin título" (el texto lo pone la interfaz con i18n). */
 export const isUntitled = (title: string): boolean => title.trim() === "";
@@ -163,20 +179,38 @@ export class PagesRepo {
   async setFavorite(id: string, favorite: boolean): Promise<Result<Page>> {
     return this.setField(id, "favorite", favorite ? 1 : 0);
   }
-  /** Ancho completo de la página: se guarda con ella, atómicamente, y viaja en su respaldo. */
-  async setFullWidth(id: string, value: boolean): Promise<Result<Page>> {
-    return this.setField(id, "full_width", value ? 1 : 0);
-  }
   async setIcon(id: string, icon: string | null): Promise<Result<Page>> {
     return this.setField(id, "icon", icon);
   }
-  async setCover(id: string, cover: string | null): Promise<Result<Page>> {
-    return this.setField(id, "cover", cover);
+  /** Portada y, si es una imagen de Unsplash, su crédito: se escriben juntos (el crédito solo acompaña a `asset:`). */
+  async setCover(id: string, cover: string | null, credit: CoverCredit | null = null): Promise<Result<Page>> {
+    const keep = cover?.startsWith("asset:") && credit ? JSON.stringify(credit) : null;
+    return this.setFields(id, { cover, cover_credit: keep });
   }
-  private async setField(id: string, column: "favorite" | "icon" | "cover" | "full_width", value: string | number | null): Promise<Result<Page>> {
+  /** Estilo de la página (spec 005): se guarda normalizado; sin tocar = NULL. */
+  async setStyle(id: string, style: PageStyle): Promise<Result<Page>> {
+    return this.setField(id, "style", styleToText(style));
+  }
+  /** Descripción bajo el título (RF-1.2): una línea de hasta 280 caracteres; vacía = NULL. */
+  async setDescription(id: string, description: string | null): Promise<Result<Page>> {
+    const clean = (description ?? "").replace(/\s*[\r\n]+\s*/g, " ").trim().slice(0, MAX_DESCRIPTION);
+    return this.setField(id, "description", clean || null);
+  }
+  async setLocked(id: string, locked: boolean): Promise<Result<Page>> {
+    return this.setField(id, "locked", locked ? 1 : 0);
+  }
+  private async setField(id: string, column: PageColumn, value: string | number | null): Promise<Result<Page>> {
+    return this.setFields(id, { [column]: value });
+  }
+  /** Escribe varias columnas en una sola sentencia (atómica) y actualiza la fecha de edición. */
+  private async setFields(id: string, values: Partial<Record<PageColumn, string | number | null>>): Promise<Result<Page>> {
     const found = await this.get(id);
     if (!found.ok) return found;
-    await this.db.exec(`UPDATE pages SET ${column} = ?, updated_at = ? WHERE id = ?`, [value, this.clock.now(), id]);
+    const cols = Object.keys(values) as PageColumn[];
+    await this.db.exec(
+      `UPDATE pages SET ${cols.map((c) => `${c} = ?`).join(", ")}, updated_at = ? WHERE id = ?`,
+      [...cols.map((c) => values[c] ?? null), this.clock.now(), id],
+    );
     return this.get(id);
   }
 
@@ -200,8 +234,9 @@ export class PagesRepo {
       const position = positionBetween(siblings[i]?.position ?? null, siblings[i + 1]?.position ?? null);
       const copy = async (from: Page, parentId: string | null, pos: string, copyId: string) => {
         await tx.exec(
-          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, full_width, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)",
-          [copyId, parentId, pos, from.title, from.icon, from.cover, from.kind, from.fullWidth ? 1 : 0, now, now],
+          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, style, description, locked, cover_credit, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)",
+          [copyId, parentId, pos, from.title, from.icon, from.cover, from.kind, styleToText(from.style), from.description, from.locked ? 1 : 0,
+            from.coverCredit ? JSON.stringify(from.coverCredit) : null, now, now],
         );
         if (!opts.withChildren) return;
         const kids = await tx.query<Row>("SELECT * FROM pages WHERE parent_id = ? AND deleted_at IS NULL ORDER BY position", [from.id]);

@@ -17,7 +17,7 @@ describe("ancho completo", () => {
     expect(sw).toHaveAttribute("aria-checked", "false");
     await userEvent.click(sw);
     await controller.refresh();
-    expect(controller.getSnapshot().tree[0]!.page.fullWidth).toBe(true);
+    expect(controller.getSnapshot().tree[0]!.page.style.spacing?.width).toBe("full"); // E-042: vive en el estilo
     expect(screen.getByRole("switch", { name: "Ancho completo" })).toHaveAttribute("aria-checked", "true");
   });
   it("el diseño usa el ancho de lectura o todo el ancho", () => {

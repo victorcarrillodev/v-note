@@ -1,4 +1,5 @@
 // U-116 a U-122 (spec 002, RF-10.3, RNF-11, CL-23): ancho completo por página, con migración, respaldo y restauración compatibles hacia atrás.
+// E-042 (spec 005, DP-6): el ancho completo vive ahora en el estilo de la página (`style.spacing.width = "full"`); la columna full_width ya no se lee ni se escribe.
 import { describe, it, expect, beforeEach } from "vitest";
 import fc from "fast-check";
 import { createNodeSqliteStore } from "../../tests/support/nodeSqliteStore";
@@ -13,6 +14,7 @@ import { PagesRepo } from "./pagesRepo";
 import { serializeWorkspace } from "../backup/serialize";
 import { validateBackup, restoreFromFiles } from "../backup/restore";
 import type { SqlStore } from "../ports/sqlStore";
+import type { Page } from "./pagesRepo";
 
 let db: SqlStore, clock: FakeClock, svc: PageService, repo: PagesRepo;
 beforeEach(async () => {
@@ -22,6 +24,8 @@ beforeEach(async () => {
   svc = new PageService(db, clock);
   repo = new PagesRepo(db, clock);
 });
+const isFull = (p: Page) => p.style.spacing?.width === "full";
+const setFull = (r: PagesRepo, id: string, v: boolean) => r.setStyle(id, v ? { spacing: { width: "full" } } : {});
 const must = <T>(r: { ok: boolean; value?: T; error?: unknown }): T => { if (!r.ok) throw new Error(JSON.stringify(r.error)); return r.value as T; };
 const ser = async (store = db) => serializeWorkspace({ store, assets: new MemoryAssetStore() }, { id: "ws", name: "P" });
 const json = async (id: string, store = db) => JSON.parse(new TextDecoder().decode((await ser(store)).files.get(`data/${id}.json`)!));
@@ -41,7 +45,7 @@ describe("migración (RF-10.3, art. 5)", () => {
     await old.exec("INSERT INTO pages(id, position, title, created_at, updated_at) VALUES ('p1', 'a', 'Vieja', 1, 1)");
     await migrate(old, migrations);
     const r = await new PagesRepo(old, clock).get("p1");
-    expect(r.ok && r.value.fullWidth).toBe(false);
+    expect(r.ok && isFull(r.value)).toBe(false);
   });
   it("es idempotente: migrar de nuevo no cambia nada", async () => {
     expect((await migrate(db, migrations)).ok).toBe(true);
@@ -51,30 +55,36 @@ describe("migración (RF-10.3, art. 5)", () => {
 describe("leer y escribir (RF-10.3)", () => {
   it("una página nueva está en ancho normal", async () => {
     const p = must(await svc.create({ title: "A" }));
-    expect(p.fullWidth).toBe(false);
+    expect(isFull(p)).toBe(false);
   });
   it("activar y desactivar se guarda y se lee, y actualiza la fecha de edición", async () => {
     const p = must(await svc.create({ title: "A" }));
     clock.advance(5_000);
-    const on = must(await repo.setFullWidth(p.id, true));
-    expect(on.fullWidth).toBe(true);
+    const on = must(await setFull(repo, p.id, true));
+    expect(isFull(on)).toBe(true);
     expect(on.updatedAt).toBe(6_000);
-    expect(must(await repo.get(p.id)).fullWidth).toBe(true);
-    expect(must(await repo.setFullWidth(p.id, false)).fullWidth).toBe(false);
+    expect(isFull(must(await repo.get(p.id)))).toBe(true);
+    expect(isFull(must(await setFull(repo, p.id, false)))).toBe(false);
   });
   it("una página inexistente da error", async () => {
-    expect((await repo.setFullWidth("nope", true)).ok).toBe(false);
+    expect((await setFull(repo, "nope", true)).ok).toBe(false);
+  });
+  it("el setter antiguo ya no existe y la columna full_width no se escribe (DP-6)", async () => {
+    expect("setFullWidth" in repo).toBe(false);
+    const p = must(await svc.create({ title: "A" }));
+    await setFull(repo, p.id, true);
+    expect(await db.query("SELECT full_width FROM pages WHERE id = ?", [p.id])).toEqual([{ full_width: 0 }]);
   });
   it("aparece en el árbol", async () => {
     const p = must(await svc.create({ title: "A" }));
-    await repo.setFullWidth(p.id, true);
-    expect((await repo.tree())[0]!.page.fullWidth).toBe(true);
+    await setFull(repo, p.id, true);
+    expect(isFull((await repo.tree())[0]!.page)).toBe(true);
   });
   it("duplicar una página conserva su ancho completo", async () => {
     const p = must(await svc.create({ title: "A" }));
-    await repo.setFullWidth(p.id, true);
+    await setFull(repo, p.id, true);
     const copy = must(await repo.duplicate(p.id, { withChildren: false }));
-    expect(must(await repo.get(copy.id)).fullWidth).toBe(true);
+    expect(isFull(must(await repo.get(copy.id)))).toBe(true);
   });
 });
 
@@ -84,16 +94,16 @@ describe("respaldo determinista (RF-10.3, RNF-11)", () => {
     await svc.saveUpdate(p.id, updateFor([para("x")]));
     const before = (await ser()).files.get(`data/${p.id}.json`)!;
     expect(await json(p.id)).not.toHaveProperty("fullWidth");
-    await repo.setFullWidth(p.id, true);
+    await setFull(repo, p.id, true);
     expect(await json(p.id)).toMatchObject({ fullWidth: true });
-    await repo.setFullWidth(p.id, false);
+    await setFull(repo, p.id, false);
     clock.advance(1);
     const after = (await ser()).files.get(`data/${p.id}.json`)!;
     expect(new TextDecoder().decode(after).replace(/"updatedAt":\d+/, "")).toBe(new TextDecoder().decode(before).replace(/"updatedAt":\d+/, ""));
   });
   it("dos respaldos del mismo contenido dan los mismos bytes", async () => {
     const p = must(await svc.create({ title: "A" }));
-    await repo.setFullWidth(p.id, true);
+    await setFull(repo, p.id, true);
     const a = await ser(), b = await ser();
     expect(new TextDecoder().decode(a.files.get(`data/${p.id}.json`)!)).toBe(new TextDecoder().decode(b.files.get(`data/${p.id}.json`)!));
   });
@@ -109,9 +119,9 @@ describe("restauración (RF-10.3, CL-23)", () => {
   }
   it("un respaldo con ancho completo lo restaura", async () => {
     const p = must(await svc.create({ title: "A" }));
-    await repo.setFullWidth(p.id, true);
+    await setFull(repo, p.id, true);
     const target = await restore((await ser()).files);
-    expect(must(await new PagesRepo(target, clock).get(p.id)).fullWidth).toBe(true);
+    expect(isFull(must(await new PagesRepo(target, clock).get(p.id)))).toBe(true);
   });
   it("un respaldo anterior a esta spec (sin el campo) deja las páginas en ancho normal", async () => {
     const p = must(await svc.create({ title: "A" }));
@@ -121,7 +131,7 @@ describe("restauración (RF-10.3, CL-23)", () => {
     files.set(`data/${p.id}.json`, new TextEncoder().encode(JSON.stringify(j)));
     expect((await validateBackup(files)).ok).toBe(true);
     const target = await restore(files);
-    expect(must(await new PagesRepo(target, clock).get(p.id)).fullWidth).toBe(false);
+    expect(isFull(must(await new PagesRepo(target, clock).get(p.id)))).toBe(false);
   });
   it("un valor que no es booleano verdadero se ignora (queda en ancho normal)", async () => {
     const p = must(await svc.create({ title: "A" }));
@@ -130,7 +140,7 @@ describe("restauración (RF-10.3, CL-23)", () => {
     j.fullWidth = "sí";
     files.set(`data/${p.id}.json`, new TextEncoder().encode(JSON.stringify(j)));
     const target = await restore(files);
-    expect(must(await new PagesRepo(target, clock).get(p.id)).fullWidth).toBe(false);
+    expect(isFull(must(await new PagesRepo(target, clock).get(p.id)))).toBe(false);
   });
 });
 
@@ -139,7 +149,7 @@ describe("propiedad de ida y vuelta con ancho completo (RNF-11)", () => {
     await fc.assert(fc.asyncProperty(fc.array(fc.boolean(), { minLength: 1, maxLength: 6 }), async (flags) => {
       const a = await createNodeSqliteStore(":memory:"); await migrate(a, migrations);
       const sa = new PageService(a, new FakeClock(1_000)); const ra = new PagesRepo(a, new FakeClock(1_000));
-      for (const [i, f] of flags.entries()) { const p = must(await sa.create({ title: `P${i}` })); if (f) await ra.setFullWidth(p.id, true); }
+      for (const [i, f] of flags.entries()) { const p = must(await sa.create({ title: `P${i}` })); if (f) await setFull(ra, p.id, true); }
       const first = await ser(a);
       const b = await createNodeSqliteStore(":memory:"); await migrate(b, migrations);
       expect((await restoreFromFiles(first.files, { store: b, assets: new MemoryAssetStore() })).ok).toBe(true);

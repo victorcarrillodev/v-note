@@ -4,7 +4,7 @@ import type { Page, PageNode } from "@vnote/core";
 import { flattenTree } from "./flatten";
 import { dropTarget, zoneAt } from "./dropTarget";
 
-const page = (id: string): Page => ({ id, parentId: null, position: id, title: id, icon: null, cover: null, kind: "note", favorite: false, createdAt: 0, updatedAt: 0, deletedAt: null, deletedRootId: null });
+const page = (id: string): Page => ({ id, parentId: null, position: id, title: id, icon: null, cover: null, kind: "note", favorite: false, style: {}, description: null, locked: false, coverCredit: null, createdAt: 0, updatedAt: 0, deletedAt: null, deletedRootId: null });
 const node = (id: string, children: PageNode[] = []): PageNode => ({ page: page(id), children });
 // a ─ a1, a2      b      c
 const tree = [node("a", [node("a1"), node("a2")]), node("b"), node("c")];

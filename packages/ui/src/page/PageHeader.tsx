@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
-import type { Page, PageNode } from "@vnote/core";
+import { applyStylePatch, type Page, type PageNode } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
 import { useUndoToast } from "../feedback/useUndoToast";
 import { PageTags } from "../tags/PageTags";
@@ -115,7 +115,7 @@ export function PageHeader({ controller, pageId, onExport }: { controller: Works
           )}
         </div>
 
-        <span className="mx-2 inline-flex text-[var(--c-text-muted)]"><Switch label={t("page.fullWidth")} checked={page.fullWidth === true} onChange={(v) => void controller.setFullWidth(page.id, v)} /></span>
+        <span className="mx-2 inline-flex text-[var(--c-text-muted)]"><Switch label={t("page.fullWidth")} checked={page.style.spacing?.width === "full"} onChange={(v) => void controller.setPageStyle(page.id, applyStylePatch(page.style, { spacing: { width: v ? "full" : undefined } }))} /></span>
 
         {onExport && <button type="button" className={ACTION} onClick={() => onExport(page.id)}><Icon name="export" size={14} />{t("export.action")}</button>}
 

@@ -243,4 +243,17 @@ export const migrations: Migration[] = [
       await tx.exec("CREATE INDEX page_tags_tag ON page_tags(tag_id)");
     },
   },
+  {
+    version: 14,
+    name: "estilo de página",
+    up: async (tx) => {
+      // Spec 005 (plan §4.2): estilo de la página (JSON normalizado), descripción, bloqueo y crédito de la portada.
+      await tx.exec("ALTER TABLE pages ADD COLUMN style TEXT");
+      await tx.exec("ALTER TABLE pages ADD COLUMN description TEXT");
+      await tx.exec("ALTER TABLE pages ADD COLUMN locked INTEGER NOT NULL DEFAULT 0");
+      await tx.exec("ALTER TABLE pages ADD COLUMN cover_credit TEXT");
+      // DP-6: el ancho completo de la spec 002 pasa al estilo; desde aquí full_width deja de leerse y escribirse.
+      await tx.exec(`UPDATE pages SET style = '{"spacing":{"width":"full"}}' WHERE full_width = 1`);
+    },
+  },
 ];
