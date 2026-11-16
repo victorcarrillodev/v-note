@@ -6,7 +6,7 @@
 > **Fases cerradas en orden** (art. 2): no se empieza una fase hasta cerrar la anterior. Dentro de un grupo, el orden de las tareas es el de ejecución; **Requiere** indica de qué grupo depende.
 > **Sin tareas manuales:** cada «Hecho cuando» se comprueba con una prueba, una medición anotada o un documento revisado.
 > **Total:** 184 tareas · Fase 0: 11 · Fase 1: 63 · Fase 2: 40 · Fase 3: 37 · Fase 4: 24 · Fase 5: 9
-> **Estado:** pendiente; ninguna tarea iniciada.
+> **Estado:** Fase 0 cerrada (11 de 184 tareas). Siguiente: Fase 1.
 
 ---
 
@@ -16,17 +16,17 @@
 
 *Requiere: nada. Resultados en `spikes/RESULTS-estilo.md`.*
 
-- [ ] **E-001** Redimensionar una imagen de 20 MB y codificarla a JPEG 0,85 en un *worker* con `OffscreenCanvas` dentro de Tauri en Linux (WebKitGTK) — *Cubre:* RF-2.2, RNF-4 (DP-4). **Hecho cuando:** Tiempo medido y anotado; si `OffscreenCanvas` no existe en el *worker*, la alternativa en el hilo principal (sección 5.1 del plan) probada y medida.
-- [ ] **E-002** Repetir la prueba anterior en Chromium (versión web) — *Cubre:* RF-2.2, RNF-4. **Hecho cuando:** Tiempo medido y anotado en `RESULTS-estilo.md`.
-- [ ] **E-003** Comprobar que `createImageBitmap` con `imageOrientation: "from-image"` respeta la orientación EXIF en Tauri y en la web — *Cubre:* RF-2.2, CL-2. **Hecho cuando:** Foto vertical de prueba con EXIF girado sale derecha en ambos.
-- [ ] **E-004** Llamar a `api.unsplash.com/search/photos` con una clave de prueba desde el webview de Tauri y desde la web — *Cubre:* RF-2.4 (DP-10). **Hecho cuando:** Respuesta 200 en ambos, o el bloqueo de CORS anotado con su alternativa.
-- [ ] **E-005** Descargar una imagen de `images.unsplash.com` como `Blob` desde Tauri y desde la web — *Cubre:* RF-2.4 (DP-11). **Hecho cuando:** Bytes recibidos en ambos, o el problema anotado.
-- [ ] **E-006** Medir el peso de las 7 fuentes nuevas (woff2 variables, subconjunto latino) — *Cubre:* RF-5.1, RNF-6. **Hecho cuando:** Peso total anotado y menor de 5 MB; si no, fuente a sustituir propuesta.
-- [ ] **E-007** Confirmar licencia OFL y versión variable de Geist, Nunito, Lora, Merriweather, Fira Code, Atkinson Hyperlegible Next y Caveat — *Cubre:* RF-5.1 (D-16). **Hecho cuando:** Licencia y origen de cada una anotados.
-- [ ] **E-008** Cambiar `editable` de `BlockNoteView` en vivo y comprobar que no se pierde el estado de Yjs ni la posición del cursor — *Cubre:* RF-8.1 (DP-13). **Hecho cuando:** Spike indica funciona o falla; si falla, alternativa anotada.
-- [ ] **E-009** Confirmar que las vistas de base de datos editan propiedades sin pasar por el editor de la página — *Cubre:* RF-8.1.1 (D-17). **Hecho cuando:** Ruta de escritura de propiedades anotada.
-- [ ] **E-010** Medir la apertura de un `Popover` con cinco secciones y una lista de 11 fuentes con vista previa — *Cubre:* RNF-4. **Hecho cuando:** Tiempo de apertura anotado (objetivo menor de 100 ms).
-- [ ] **E-011** Cerrar la Fase 0: actualizar el plan con los resultados (DP-4, DP-10, DP-11, DP-13, sección 3) — *Cubre:* RNF-4, RNF-6. **Hecho cuando:** Plan actualizado y sin decisiones abiertas.
+- [x] **E-001** Redimensionar una imagen de 20 MB y codificarla a JPEG 0,85 en un *worker* con `OffscreenCanvas` dentro de Tauri en Linux (WebKitGTK) — *Cubre:* RF-2.2, RNF-4 (DP-4). **Hecho cuando:** Tiempo medido y anotado; si `OffscreenCanvas` no existe en el *worker*, la alternativa en el hilo principal (sección 5.1 del plan) probada y medida.
+- [x] **E-002** Repetir la prueba anterior en Chromium (versión web) — *Cubre:* RF-2.2, RNF-4. **Hecho cuando:** Tiempo medido y anotado en `RESULTS-estilo.md`.
+- [x] **E-003** Comprobar que `createImageBitmap` con `imageOrientation: "from-image"` respeta la orientación EXIF en Tauri y en la web — *Cubre:* RF-2.2, CL-2. **Hecho cuando:** Foto vertical de prueba con EXIF girado sale derecha en ambos.
+- [x] **E-004** Llamar a `api.unsplash.com/search/photos` con una clave de prueba desde el webview de Tauri y desde la web — *Cubre:* RF-2.4 (DP-10). **Hecho cuando:** Respuesta 200 en ambos, o el bloqueo de CORS anotado con su alternativa.
+- [x] **E-005** Descargar una imagen de `images.unsplash.com` como `Blob` desde Tauri y desde la web — *Cubre:* RF-2.4 (DP-11). **Hecho cuando:** Bytes recibidos en ambos, o el problema anotado.
+- [x] **E-006** Medir el peso de las 7 fuentes nuevas (woff2 variables, subconjunto latino) — *Cubre:* RF-5.1, RNF-6. **Hecho cuando:** Peso total anotado y menor de 5 MB; si no, fuente a sustituir propuesta.
+- [x] **E-007** Confirmar licencia OFL y versión variable de Geist, Nunito, Lora, Merriweather, Fira Code, Atkinson Hyperlegible Next y Caveat — *Cubre:* RF-5.1 (D-16). **Hecho cuando:** Licencia y origen de cada una anotados.
+- [x] **E-008** Cambiar `editable` de `BlockNoteView` en vivo y comprobar que no se pierde el estado de Yjs ni la posición del cursor — *Cubre:* RF-8.1 (DP-13). **Hecho cuando:** Spike indica funciona o falla; si falla, alternativa anotada.
+- [x] **E-009** Confirmar que las vistas de base de datos editan propiedades sin pasar por el editor de la página — *Cubre:* RF-8.1.1 (D-17). **Hecho cuando:** Ruta de escritura de propiedades anotada.
+- [x] **E-010** Medir la apertura de un `Popover` con cinco secciones y una lista de 11 fuentes con vista previa — *Cubre:* RNF-4. **Hecho cuando:** Tiempo de apertura anotado (objetivo menor de 100 ms).
+- [x] **E-011** Cerrar la Fase 0: actualizar el plan con los resultados (DP-4, DP-10, DP-11, DP-13, sección 3) — *Cubre:* RNF-4, RNF-6. **Hecho cuando:** Plan actualizado y sin decisiones abiertas.
 
 ---
 
@@ -263,7 +263,7 @@
 - [ ] **E-133** Título, descripción y etiqueta de solo lectura; «Cambiar portada», reposicionar y el menú «/» ocultos — *Cubre:* RF-8.1. **Hecho cuando:** Test.
 - [ ] **E-134** Indicador con candado en la cabecera que desbloquea con un clic — *Cubre:* RF-8.1. **Hecho cuando:** Test.
 - [ ] **E-135** Aviso «Página bloqueada» al intentar editar — *Cubre:* CL-11. **Hecho cuando:** Test.
-- [ ] **E-136** Las vistas de base de datos siguen editando las propiedades de una página bloqueada — *Cubre:* RF-8.1.1. **Hecho cuando:** Test con una tabla y un tablero.
+- [ ] **E-136** Las vistas de base de datos siguen editando las propiedades de una página bloqueada; su celda de título queda de solo lectura (E-009) — *Cubre:* RF-8.1.1. **Hecho cuando:** Test con una tabla y un tablero: las propiedades cambian y el título no.
 
 ### Índice
 

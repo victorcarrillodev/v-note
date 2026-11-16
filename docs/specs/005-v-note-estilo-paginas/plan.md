@@ -1,6 +1,6 @@
 # Plan 005 — Estilo de páginas: portadas, cabecera y opciones del archivo
 
-> **Estado:** borrador · **Implementa:** `docs/specs/005-v-note-estilo-paginas/spec.md` (RF-1 a RF-9, RNF-1 a RNF-8, CL-1 a CL-17, D-1 a D-21).
+> **Estado:** Fase 0 cerrada (resultados en `spikes/RESULTS-estilo.md`) · **Implementa:** `docs/specs/005-v-note-estilo-paginas/spec.md` (RF-1 a RF-9, RNF-1 a RNF-8, CL-1 a CL-17, D-1 a D-21).
 > **Marco:** `docs/constitution.md` (incluida la excepción de Unsplash del art. 6). Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, contratos, decisiones con su alternativa descartada, fases y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes lo que cubre, por ejemplo **[RF-3]**. La sección 15 es la matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**
@@ -48,7 +48,7 @@
 | **DP-1** | El estilo de la página es **un JSON en la columna `pages.style`** con forma `PageStyle` (sección 4.1), validado y normalizado por el núcleo. Claves ausentes = «Predeterminado». | Una columna por opción: más de 20 columnas y una migración por cada opción futura. Guardarlo en el documento Yjs: mezcla presentación con contenido y obliga a abrir el documento para listar páginas. | RF-1, RF-3 a RF-8 |
 | **DP-2** | `description`, `locked` y `cover_credit` son **columnas propias**, no parte del estilo, porque «Restablecer estilo» (RF-8.4) no debe borrar la descripción, desbloquear ni perder el crédito. | Meterlos en `style`: restablecer borraría contenido. | RF-1.2, RF-2.5, RF-8.1, RF-8.4 |
 | **DP-3** | **Gramática ampliada de `cover`** (texto): `gradient:<nombre>` y `color:#hex` (actuales), `lgrad:<ángulo>:<#hex>,<#hex>[,<#hex>]` (degradado propio) y `asset:<sha256>` (imagen). | Un JSON para la portada: rompe la compatibilidad con los datos y respaldos actuales. | RF-2, CL-14 |
-| **DP-4** | **Optimizar en la interfaz, decidir en el núcleo:** el núcleo valida bytes y formato y calcula las dimensiones de salida; la interfaz decodifica con `createImageBitmap` (respetando la orientación EXIF) y codifica en un *worker* con `OffscreenCanvas` a **JPEG de calidad 0.85**, con 2560 px de ancho como máximo. | WebP: WebKit (Tauri en Linux) no lo codifica en canvas, lo que daría resultados distintos por plataforma. Una librería de imágenes (sharp, wasm): dependencia nueva y pesada. | RF-2.2, RNF-4, RNF-6 |
+| **DP-4** | **Optimizar en la interfaz, decidir en el núcleo:** el núcleo valida bytes y formato y calcula las dimensiones de salida; la interfaz decodifica con `createImageBitmap` (respetando la orientación EXIF) y codifica en un *worker* con `OffscreenCanvas` a **JPEG de calidad 0.85**, con 2560 px de ancho como máximo. | WebP: WebKitGTK 2.52 (Tauri en Linux) no lo codifica en canvas (comprobado en E-001), lo que daría resultados distintos por plataforma. Una librería de imágenes (sharp, wasm): dependencia nueva y pesada. | RF-2.2, RNF-4, RNF-6 |
 | **DP-5** | Las variables de estilo se aplican **en el contenedor de la página** (`--font-content`, `--font-headings`, `--text-reading-size`, `--text-reading-line`, `--block-gap`, `--size-reading-width`, `--c-accent*`) y heredan de la apariencia global cuando la opción está en «Predeterminado». | Atributos en `<html>`: afectarían a toda la app y no permitirían dos páginas con estilos distintos (vista dividida, vista previa). | RF-5, RF-6, RF-8.2, D-11 |
 | **DP-6** | La **anchura de 4 valores** sustituye a `full_width`: la migración 14 copia `full_width = 1` a `style.spacing.width = "full"` y desde entonces el repositorio deja de leer y escribir `full_width`. La columna se conserva sin uso (SQLite no la necesita borrar). | Mantener las dos fuentes sincronizadas: dos verdades que divergen. | RF-6.1, RF-6.2, CL-14 |
 | **DP-7** | **Predeterminado del espacio** en la tabla `meta` con la clave `page.default.style`, igual que `diagram.default.*`, y en el respaldo como `page-defaults.json`. Se **copia** a la página al crearla; nunca se aplica en vivo. | Aplicarlo en vivo como capa: cambiar el predeterminado alteraría páginas existentes (contra RF-8.5). | RF-8.5, D-10 |
@@ -67,7 +67,7 @@
 ## 3. Dependencias nuevas
 **Ninguna dependencia npm ni Rust.** Se reutilizan Radix (popover, tabs, toggle-group), BlockNote, Yjs, el puerto `Keychain` con `keyring` y el almacén de archivos.
 
-Se añaden **siete archivos de fuente** woff2 variables, con subconjunto latino y licencia OFL, a `packages/ui/src/design/fonts/`: Geist, Nunito, Lora, Merriweather, Fira Code, Atkinson Hyperlegible Next y Caveat (Inter, Source Serif 4 y JetBrains Mono ya están). Son recursos, no dependencias, pero se justifican aquí porque cuentan para el tamaño (RNF-6): estimación de 0,9 a 1,6 MB en total, comprobada en la Fase 0. Cada `@font-face` usa `font-display: swap`; el navegador solo carga las fuentes que una página usa.
+Se añaden **siete archivos de fuente** woff2 variables, con subconjunto latino y licencia OFL, a `packages/ui/src/design/fonts/`: Geist, Nunito, Lora, Merriweather, Fira Code, Atkinson Hyperlegible Next y Caveat (Inter, Source Serif 4 y JetBrains Mono ya están). Son recursos, no dependencias, pero se justifican aquí porque cuentan para el tamaño (RNF-6): **349 KB en total, medido en la Fase 0** (E-006), todas OFL-1.1 (E-007). Cada `@font-face` usa `font-display: swap`; el navegador solo carga las fuentes que una página usa.
 
 ---
 
@@ -324,7 +324,7 @@ Las miniaturas se muestran directamente desde `images.unsplash.com` (solo mientr
 ---
 
 ## 10. Bloqueo **[RF-8.1, RF-8.1.1, CL-11, DP-13]**
-Mientras `locked = 1`: `BlockNoteView editable={false}` (cubre teclado, pegar y arrastrar); título, descripción y etiqueta de solo lectura; «Cambiar portada», reposicionar y el menú «/» ocultos; las opciones de estilo **sí** se pueden cambiar desde el menú (no tocan el contenido). Cualquier intento de escribir muestra el indicador con un pequeño aviso «Página bloqueada». Las vistas de base de datos siguen editando propiedades (D-17).
+Mientras `locked = 1`: `BlockNoteView editable={false}` (cubre teclado, pegar y arrastrar); título, descripción y etiqueta de solo lectura; «Cambiar portada», reposicionar y el menú «/» ocultos; las opciones de estilo **sí** se pueden cambiar desde el menú (no tocan el contenido). Cualquier intento de escribir muestra el indicador con un pequeño aviso «Página bloqueada». Las vistas de base de datos siguen editando propiedades (D-17), que se escriben con `setCell` y no pasan por el editor; **la celda de título** de esas vistas sí cambia el título (`DatabaseController.setTitle` → `rename`), así que en una página bloqueada es de solo lectura (E-009).
 
 ---
 
@@ -466,7 +466,7 @@ Sin cambios de interfaz: `Keychain` y `AssetStore` ya cubren lo necesario. `apps
 
 ## 16. Riesgos y fuera de alcance del plan
 - **Riesgo aceptado (D-14):** la copia local de fotos de Unsplash puede no ajustarse del todo a sus condiciones.
-- **Riesgo técnico:** WebKitGTK puede no tener `OffscreenCanvas` en *workers*; la Fase 0 lo verifica y la sección 5.1 define la alternativa.
+- **Riesgo técnico resuelto (Fase 0):** WebKitGTK 2.52 tiene `OffscreenCanvas` en *workers* y codifica JPEG (202 ms con 19 MB, 289 ms con una foto real de 4000 px); la alternativa de la sección 5.1 queda solo como respaldo. Resultados en `spikes/RESULTS-estilo.md`.
 - **Riesgo de datos:** la limpieza de archivos es el único borrado definitivo nuevo; por eso es conservadora (DP-9) y tiene las pruebas más estrictas.
 - **Web sin llavero:** la clave de Unsplash no persiste en la web (9.2).
 - La exportación HTML y PDF conserva su aspecto actual; incluir la cabecera tipo tarjeta en esas exportaciones queda para una spec futura.
