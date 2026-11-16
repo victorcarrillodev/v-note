@@ -8,7 +8,7 @@ const root = resolve(__dirname, "..");
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
-    if (["node_modules", "dist", "target", ".git", "spikes", "specs", "docs", "tests", ".github"].includes(name)) continue;
+    if (["node_modules", "dist", "target", ".git", "spikes", "specs", "docs", "tests", ".github", "graphify-out", ".serena"].includes(name)) continue;
     const p = join(dir, name);
     if (statSync(p).isDirectory()) walk(p, out);
     else if (/\.(ts|tsx|json|html|rs|toml|md)$/.test(name)) out.push(p);

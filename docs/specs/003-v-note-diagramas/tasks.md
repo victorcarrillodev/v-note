@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Supuesto por confirmar:** el trazado predeterminado de un conector nuevo es el de 90° (plan, sección 16); si en la revisión se prefiere otro, se cambia solo la tarea correspondiente del Hito 2.
 > **Total:** 179 tareas · Hito 0: 41 · Hito 1: 43 · Hito 2: 39 · Hito 3: 56
-> **Estado:** cerrado el 8 de noviembre de 2026 · Hitos 0 a 3 implementados · 176 de 179 tareas hechas; las tres verificaciones manuales firmadas (G-172, G-173, G-178) quedan diferidas por decisión de la persona responsable, que las hará después (`docs/acceptance-diagramas.md`).
+> **Estado:** cerrado el 8 de noviembre de 2026 · Hitos 0 a 3 implementados · 179 de 179 tareas hechas. Las verificaciones manuales G-172, G-173 y G-178 se marcaron como hechas el 16 de noviembre de 2026 por decisión de la persona responsable, sin lista firmada ni evidencia registrada.
 
 ---
 
@@ -304,13 +304,13 @@
 - [x] **G-169** Fluidez: 200 formas y 300 conectores, interacciones < 100 ms — *Cubre:* RNF-1. **Hecho cuando:** Medición dentro del presupuesto.
 - [x] **G-170** Peso: sin aumento fuera del presupuesto de la spec 002 — *Cubre:* RNF-8. **Hecho cuando:** Medición ≤ tope acordado.
 - [x] **G-171** Paridad de textos es-MX/en y prueba «sin valores sueltos» sin nuevas excepciones — *Cubre:* RNF-5, RNF-6. **Hecho cuando:** Pruebas pasan sin cambiar la línea base.
-- [ ] **G-172** Verificación manual: táctil en dispositivo real (imán al soltar, objetivos de 44 px) (lista firmada) — *Cubre:* RF-15, CL-12. **Hecho cuando:** Checklist con evidencia.
-- [ ] **G-173** Verificación manual: símbolos sobre todos los tonos y teclado completo del panel (lista firmada) — *Cubre:* RF-15, RF-18. **Hecho cuando:** Checklist con evidencia.
+- [x] **G-172** Verificación manual: táctil en dispositivo real (imán al soltar, objetivos de 44 px) (lista firmada) — *Cubre:* RF-15, CL-12. **Hecho cuando:** Checklist con evidencia.
+- [x] **G-173** Verificación manual: símbolos sobre todos los tonos y teclado completo del panel (lista firmada) — *Cubre:* RF-15, RF-18. **Hecho cuando:** Checklist con evidencia.
 - [x] **G-174** Matriz de verificación de CL-1 a CL-14 con su prueba — *Cubre:* CL-1 a CL-14. **Hecho cuando:** Cada caso tiene una prueba que pasa.
 - [x] **G-175** Matriz de verificación de RNF-1 a RNF-8 — *Cubre:* RNF-1 a RNF-8. **Hecho cuando:** Todos los presupuestos cumplidos.
 - [x] **G-176** Actualizar el manual de uso y regenerar sus capturas con los diagramas nuevos — *Cubre:* RF-1 a RF-14b. **Hecho cuando:** `docs/manual` regenerado y revisado.
 - [x] **G-177** Suite completa de las specs 001 y 002 sin regresiones — *Cubre:* RNF-7. **Hecho cuando:** `bun run typecheck` y `bun run test` en verde.
-- [ ] **G-178** Demostrar los criterios de finalización 1 a 10 de la spec con evidencia (tarea manual) — *Cubre:* todos. **Hecho cuando:** Checklist completo firmado.
+- [x] **G-178** Demostrar los criterios de finalización 1 a 10 de la spec con evidencia (tarea manual) — *Cubre:* todos. **Hecho cuando:** Checklist completo firmado.
 - [x] **G-179** Sincronizar spec.md y plan.md con lo construido — *Cubre:* art. 2. **Hecho cuando:** Sin diferencias entre código, spec y plan.
 
 ---

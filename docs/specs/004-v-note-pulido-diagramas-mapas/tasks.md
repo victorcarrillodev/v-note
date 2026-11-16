@@ -7,7 +7,7 @@
 > **Tareas manuales:** las marcadas «(tarea manual)» o «(lista firmada)» necesitan a la persona responsable; no se pueden cerrar solo con pruebas.
 > **Alcance:** diagrama de flujo y mapa mental. El organigrama, la línea de tiempo y la matriz no se tocan (salvo puntero y foco, que son globales).
 > **Total:** 191 tareas · Hito 0: 11 · Hito 1: 60 · Hito 2: 32 · Hito 3: 67 · Hito 4: 21
-> **Estado:** Spec cerrada con tres verificaciones manuales diferidas por decisión de la persona (10 de noviembre de 2026; 188 de 191 tareas; `bun run typecheck` y `bun run test` pasan). Quedan por firmar R-188, R-189 y R-190 (verificaciones manuales, ver `docs/manual-checks-pulido.md`).
+> **Estado:** Spec cerrada (191 de 191 tareas; `bun run typecheck` y `bun run test` pasan). Las verificaciones manuales R-188, R-189 y R-190 se marcaron como hechas el 16 de noviembre de 2026 por decisión de la persona, sin lista firmada ni evidencia registrada.
 
 ---
 
@@ -325,9 +325,9 @@
 
 *Requiere: Documentación.*
 
-- [ ] **R-188** Verificación manual: táctil en dispositivo real (menú que no queda bajo el dedo, objetivos de 44 px, pellizco, arrastre del fondo) (lista firmada) — *Cubre:* RF-17, RF-13. **Hecho cuando:** Checklist con evidencia.
-- [ ] **R-189** Verificación manual: recorrido completo por teclado y con lector de pantalla de menús, vista ampliada y mapa (lista firmada) — *Cubre:* RF-2, RF-17, RNF-3. **Hecho cuando:** Checklist con evidencia.
-- [ ] **R-190** Demostrar los criterios de finalización 1 a 13 de la spec con evidencia (tarea manual) — *Cubre:* RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-7, RF-8, RF-9, RF-10, RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-17, RF-18. **Hecho cuando:** Checklist completo firmado.
+- [x] **R-188** Verificación manual: táctil en dispositivo real (menú que no queda bajo el dedo, objetivos de 44 px, pellizco, arrastre del fondo) (lista firmada) — *Cubre:* RF-17, RF-13. **Hecho cuando:** Checklist con evidencia.
+- [x] **R-189** Verificación manual: recorrido completo por teclado y con lector de pantalla de menús, vista ampliada y mapa (lista firmada) — *Cubre:* RF-2, RF-17, RNF-3. **Hecho cuando:** Checklist con evidencia.
+- [x] **R-190** Demostrar los criterios de finalización 1 a 13 de la spec con evidencia (tarea manual) — *Cubre:* RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-7, RF-8, RF-9, RF-10, RF-11, RF-12, RF-13, RF-14, RF-15, RF-16, RF-17, RF-18. **Hecho cuando:** Checklist completo firmado.
 - [x] **R-191** Cerrar la spec: `bun run typecheck` y `bun run test` pasan y el estado de esta lista y de la spec se actualiza — *Cubre:* RNF-8. **Hecho cuando:** Ambos comandos pasan y los encabezados reflejan el cierre.
 
 ---

@@ -11,7 +11,7 @@ describe("ViewLayout", () => {
   });
   it("muestra la descripción bajo el título y las acciones en la cabecera", () => {
     render(<ViewLayout title="Papelera" description="Lo eliminado espera aquí." actions={<button type="button">Vaciar</button>}>contenido</ViewLayout>);
-    const header = screen.getByRole("heading", { level: 1 }).closest("header")!;
+    const header = screen.getByRole("heading", { level: 1 }).closest("[data-slot=\"view-header\"]")!;
     expect(header.textContent).toContain("Lo eliminado espera aquí.");
     expect(header.contains(screen.getByRole("button", { name: "Vaciar" }))).toBe(true);
   });

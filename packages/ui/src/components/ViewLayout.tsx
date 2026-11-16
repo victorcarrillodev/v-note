@@ -7,13 +7,13 @@ const WIDTH = { reading: "max-w-[var(--size-reading-width)]", wide: "max-w-6xl",
 export function ViewLayout({ title, description, actions, width = "reading", className, children, ...rest }: Omit<HTMLAttributes<HTMLElement>, "title"> & { title: string; description?: ReactNode; actions?: ReactNode; width?: keyof typeof WIDTH }) {
   return (
     <section aria-label={title} {...rest} className={cx("mx-auto flex w-full flex-col gap-6 px-6 py-10", WIDTH[width], className)}>
-      <header className="flex flex-wrap items-start justify-between gap-4">
+      <div data-slot="view-header" className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <h1 className="text-[length:var(--text-h1-size)] font-bold leading-tight tracking-tight">{title}</h1>
           {description && <p className="mt-1 text-[length:var(--text-ui-size)] text-[var(--c-text-muted)]">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
-      </header>
+      </div>
       {children}
     </section>
   );

@@ -5,3 +5,6 @@ target/
 spikes/**/out/
 spikes/**/src-tauri/target/
 *.tsbuildinfo
+
+# Grafo de Graphify (se regenera con «graphify update .»)
+graphify-out/
