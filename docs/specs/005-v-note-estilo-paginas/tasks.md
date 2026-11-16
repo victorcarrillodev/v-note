@@ -36,39 +36,39 @@
 
 *Requiere: Fase 0.*
 
-- [ ] **E-012** Tipos `PageStyle` y `FontId` y constantes de rangos y valores — *Cubre:* RF-1.3, RF-5.1, RF-6.1. **Hecho cuando:** `typecheck` pasa; test: `FONT_IDS` tiene las 10 fuentes de D-16.
-- [ ] **E-013** `parseStyle`: JSON inválido o vacío devuelve `{}` — *Cubre:* RF-4.5. **Hecho cuando:** Test con texto dañado, `null` y `""`.
-- [ ] **E-014** `parseStyle`: recorta al rango `posX`, `posY`, `overlay` y `radius` — *Cubre:* RF-3.1, RF-3.3, RF-3.4. **Hecho cuando:** Test con valores negativos y mayores al máximo.
-- [ ] **E-015** `parseStyle`: descarta claves desconocidas y valores de enumeración inválidos — *Cubre:* RNF-5. **Hecho cuando:** Test: `{"x":1,"spacing":{"width":"huge"}}` → `{}`.
-- [ ] **E-016** `parseStyle`: radio como número o como tupla de cuatro esquinas — *Cubre:* RF-3.4. **Hecho cuando:** Test de ambas formas y de tuplas de longitud incorrecta.
-- [ ] **E-017** `normalizeStyle`: quita los valores predeterminados y los objetos vacíos; `{}` se guarda como `NULL` — *Cubre:* RNF-5. **Hecho cuando:** Test: estilo con solo predeterminados → `null`.
-- [ ] **E-018** `normalizeStyle` es determinista: dos estilos equivalentes dan el mismo texto — *Cubre:* RNF-5. **Hecho cuando:** Test con claves en distinto orden.
-- [ ] **E-019** `applyStylePatch`: mezcla profunda y vuelta a «Predeterminado» al pasar `undefined` — *Cubre:* RF-5.3, RF-6.5. **Hecho cuando:** Test de mezcla y de borrado de una clave.
-- [ ] **E-020** `cssVarsFor`: fuentes del texto y de los títulos — *Cubre:* RF-5.2. **Hecho cuando:** Test: `body` y `headings` producen `--font-content` y `--font-headings`; sin `headings`, este hereda del texto.
-- [ ] **E-021** `cssVarsFor`: tamaño de texto, interlineado y separación entre bloques — *Cubre:* RF-6.3, RF-6.4. **Hecho cuando:** Test de los tres valores de cada opción.
-- [ ] **E-022** `cssVarsFor`: los cuatro anchos de contenido («completo» sin límite) — *Cubre:* RF-6.1. **Hecho cuando:** Test de los cuatro valores.
-- [ ] **E-023** `cssVarsFor`: acento de la paleta — *Cubre:* RF-8.2. **Hecho cuando:** Test: un `accent` produce las variables `--c-accent*`.
-- [ ] **E-024** `cssVarsFor`: una opción ausente no emite variable (hereda el ajuste global) — *Cubre:* RF-5.3, RF-6.5. **Hecho cuando:** Test: estilo `{}` → objeto vacío.
-- [ ] **E-025** Tokens de anchos, tamaños, interlineados, separación y alturas de portada en `design/tokens.ts`, y `tokens.css` regenerado — *Cubre:* RF-3.2, RF-6.1, RF-6.3, RF-6.4. **Hecho cuando:** Prueba de `build-css` actualizada y en verde.
+- [x] **E-012** Tipos `PageStyle` y `FontId` y constantes de rangos y valores — *Cubre:* RF-1.3, RF-5.1, RF-6.1. **Hecho cuando:** `typecheck` pasa; test: `FONT_IDS` tiene las 10 fuentes de D-16.
+- [x] **E-013** `parseStyle`: JSON inválido o vacío devuelve `{}` — *Cubre:* RF-4.5. **Hecho cuando:** Test con texto dañado, `null` y `""`.
+- [x] **E-014** `parseStyle`: recorta al rango `posX`, `posY`, `overlay` y `radius` — *Cubre:* RF-3.1, RF-3.3, RF-3.4. **Hecho cuando:** Test con valores negativos y mayores al máximo.
+- [x] **E-015** `parseStyle`: descarta claves desconocidas y valores de enumeración inválidos — *Cubre:* RNF-5. **Hecho cuando:** Test: `{"x":1,"spacing":{"width":"huge"}}` → `{}`.
+- [x] **E-016** `parseStyle`: radio como número o como tupla de cuatro esquinas — *Cubre:* RF-3.4. **Hecho cuando:** Test de ambas formas y de tuplas de longitud incorrecta.
+- [x] **E-017** `normalizeStyle`: quita los valores predeterminados y los objetos vacíos; `{}` se guarda como `NULL` — *Cubre:* RNF-5. **Hecho cuando:** Test: estilo con solo predeterminados → `null`.
+- [x] **E-018** `normalizeStyle` es determinista: dos estilos equivalentes dan el mismo texto — *Cubre:* RNF-5. **Hecho cuando:** Test con claves en distinto orden.
+- [x] **E-019** `applyStylePatch`: mezcla profunda y vuelta a «Predeterminado» al pasar `undefined` — *Cubre:* RF-5.3, RF-6.5. **Hecho cuando:** Test de mezcla y de borrado de una clave.
+- [x] **E-020** `cssVarsFor`: fuentes del texto y de los títulos — *Cubre:* RF-5.2. **Hecho cuando:** Test: `body` y `headings` producen `--font-content` y `--font-headings`; sin `headings`, este hereda del texto.
+- [x] **E-021** `cssVarsFor`: tamaño de texto, interlineado y separación entre bloques — *Cubre:* RF-6.3, RF-6.4. **Hecho cuando:** Test de los tres valores de cada opción.
+- [x] **E-022** `cssVarsFor`: los cuatro anchos de contenido («completo» sin límite) — *Cubre:* RF-6.1. **Hecho cuando:** Test de los cuatro valores.
+- [x] **E-023** `cssVarsFor`: acento de la paleta — *Cubre:* RF-8.2. **Hecho cuando:** Test: un `accent` produce las variables `--c-accent*`.
+- [x] **E-024** `cssVarsFor`: una opción ausente no emite variable (hereda el ajuste global) — *Cubre:* RF-5.3, RF-6.5. **Hecho cuando:** Test: estilo `{}` → objeto vacío.
+- [x] **E-025** Tokens de anchos, tamaños, interlineados, separación y alturas de portada en `design/tokens.ts`, y `tokens.css` regenerado — *Cubre:* RF-3.2, RF-6.1, RF-6.3, RF-6.4. **Hecho cuando:** Prueba de `build-css` actualizada y en verde.
 
 ### Portada: gramática y crédito (`packages/core/src/pages/cover.ts`)
 
 *Requiere: estilo de página.*
 
-- [ ] **E-026** `parseCover` acepta los valores actuales `gradient:<nombre>` y `color:#hex` — *Cubre:* RF-2.7, CL-14. **Hecho cuando:** Test con cada degradado y un color.
-- [ ] **E-027** `parseCover` acepta `lgrad:<ángulo>:<hex>,<hex>[,<hex>]` y rechaza ángulos o colores inválidos — *Cubre:* RF-2.7. **Hecho cuando:** Test con 2 y 3 colores, ángulo 360 y color sin `#`.
-- [ ] **E-028** `parseCover` acepta `asset:<sha256>` validado con `isValidHash` — *Cubre:* RF-2.2. **Hecho cuando:** Test con hash válido, corto y con mayúsculas.
-- [ ] **E-029** `formatCover` es el inverso de `parseCover` — *Cubre:* RF-2.1. **Hecho cuando:** Test de ida y vuelta de cada forma.
-- [ ] **E-030** `parseCoverCredit`: lista de claves permitidas y solo URLs `https` — *Cubre:* RF-2.5. **Hecho cuando:** Test con claves de más, URL `http` y `javascript:`.
+- [x] **E-026** `parseCover` acepta los valores actuales `gradient:<nombre>` y `color:#hex` — *Cubre:* RF-2.7, CL-14. **Hecho cuando:** Test con cada degradado y un color.
+- [x] **E-027** `parseCover` acepta `lgrad:<ángulo>:<hex>,<hex>[,<hex>]` y rechaza ángulos o colores inválidos — *Cubre:* RF-2.7. **Hecho cuando:** Test con 2 y 3 colores, ángulo 360 y color sin `#`.
+- [x] **E-028** `parseCover` acepta `asset:<sha256>` validado con `isValidHash` — *Cubre:* RF-2.2. **Hecho cuando:** Test con hash válido, corto y con mayúsculas.
+- [x] **E-029** `formatCover` es el inverso de `parseCover` — *Cubre:* RF-2.1. **Hecho cuando:** Test de ida y vuelta de cada forma.
+- [x] **E-030** `parseCoverCredit`: lista de claves permitidas y solo URLs `https` — *Cubre:* RF-2.5. **Hecho cuando:** Test con claves de más, URL `http` y `javascript:`.
 
 ### Imagen de portada (`packages/core/src/pages/coverImage.ts`)
 
 *Requiere: nada.*
 
-- [ ] **E-031** Detección de formato por bytes mágicos (PNG, JPEG, WebP) — *Cubre:* RF-2.2, RF-2.3. **Hecho cuando:** Test con los tres formatos y un GIF.
-- [ ] **E-032** `validateCoverInput`: límite de 20 MB, archivo vacío y extensión engañosa — *Cubre:* RF-2.3, CL-7. **Hecho cuando:** Test: 20 MB exactos pasa, 20 MB + 1 byte falla, `.png` con bytes de PDF falla.
-- [ ] **E-033** `coverOutputSize`: ancho máximo de 2560 px, sin agrandar y conservando la proporción — *Cubre:* RF-2.2, CL-1, CL-2. **Hecho cuando:** Test con 300×200, 2560×1440, 6000×4000 y 1000×4000.
-- [ ] **E-034** `isLowResolution`: aviso por debajo de 1200 px de ancho — *Cubre:* CL-1. **Hecho cuando:** Test en 1199 y 1200.
+- [x] **E-031** Detección de formato por bytes mágicos (PNG, JPEG, WebP) — *Cubre:* RF-2.2, RF-2.3. **Hecho cuando:** Test con los tres formatos y un GIF.
+- [x] **E-032** `validateCoverInput`: límite de 20 MB, archivo vacío y extensión engañosa — *Cubre:* RF-2.3, CL-7. **Hecho cuando:** Test: 20 MB exactos pasa, 20 MB + 1 byte falla, `.png` con bytes de PDF falla.
+- [x] **E-033** `coverOutputSize`: ancho máximo de 2560 px, sin agrandar y conservando la proporción — *Cubre:* RF-2.2, CL-1, CL-2. **Hecho cuando:** Test con 300×200, 2560×1440, 6000×4000 y 1000×4000.
+- [x] **E-034** `isLowResolution`: aviso por debajo de 1200 px de ancho — *Cubre:* CL-1. **Hecho cuando:** Test en 1199 y 1200.
 
 ### Migración 14 y repositorio de páginas
 

@@ -1,7 +1,7 @@
 // Genera `tokens.css` a partir de `tokens.ts` (uso: `bun packages/ui/src/design/build-css.ts`). La prueba `cssTokens.test.ts` comprueba que no divergen.
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { colors, chips, blockColors, typography, spacing, radii, elevation, motion, layers, coverGradients, sizes } from "./tokens";
+import { colors, chips, blockColors, typography, spacing, radii, elevation, motion, layers, coverGradients, sizes, pageStyle } from "./tokens";
 
 const kebab = (s: string) => s.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
 const lines = (...l: string[]) => l.map((x) => "  " + x).join("\n");
@@ -24,12 +24,18 @@ ${lines(
   ...Object.entries(motion).map(([k, ms]) => `--motion-${kebab(k)}: ${ms}ms;`),
   ...Object.entries(layers).map(([k, z]) => `--z-${kebab(k)}: ${z};`),
   ...Object.entries(sizes).map(([k, v]) => `--size-${kebab(k)}: ${v}px;`),
+  ...Object.entries(pageStyle.widths).map(([k, v]) => `--page-width-${k}: ${v}px;`),
+  ...Object.entries(pageStyle.textSizes).map(([k, v]) => `--page-text-${k}: ${v}px;`),
+  ...Object.entries(pageStyle.leadings).map(([k, v]) => `--page-leading-${k}: ${v};`),
+  ...Object.entries(pageStyle.gaps).map(([k, v]) => `--page-gap-${k}: ${v}em;`),
+  ...Object.entries(pageStyle.coverHeights).map(([k, v]) => `--cover-height-${k}: ${v}px;`),
   `--ease-out: cubic-bezier(0.2, 0, 0, 1);`,
   `--ease-in: cubic-bezier(0.4, 0, 1, 1);`,
   `--font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;`,
   `--font-serif: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;`,
   `--font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;`,
   `--font-content: var(--font-sans);`,
+  `--font-headings: var(--font-content);`,
   `--density-pad: 0px;`,
   `color-scheme: light;`,
   // Alias de los nombres anteriores (se retiran al terminar la migración, tarea de cierre del Hito 4).

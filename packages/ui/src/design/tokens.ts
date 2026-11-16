@@ -99,3 +99,15 @@ export const layers = { content: 0, sticky: 10, sidebarOverlay: 30, menu: 40, to
 
 /** Tamaños estructurales (modales, panel lateral, popover). */
 export const sizes = { modalS: 400, modalM: 520, modalL: 720, popoverMax: 360, panelWidth: 380, paletteWidth: 640, sidebarWidth: 240, headerHeight: 44, readingWidth: 720, windowMargin: 24, windowMin: 900 } as const;
+
+
+/** Estilo de página (spec 005, plan §4.1): valores de cada opción del menú. El núcleo solo nombra estas variables (cssVarsFor). */
+export const pageStyle = {
+  widths: { narrow: 600, normal: 720, wide: 960 },
+  textSizes: { small: 14, normal: 16, large: 18 },
+  /** Altura de línea sin unidad: así sigue al tamaño de texto que se elija. */
+  leadings: { compact: 1.45, normal: 1.625, relaxed: 1.85 },
+  /** Separación entre bloques, en em. */
+  gaps: { compact: 0.5, normal: 0.75, relaxed: 1.1 },
+  coverHeights: { low: 160, medium: 240, high: 340 },
+} as const;

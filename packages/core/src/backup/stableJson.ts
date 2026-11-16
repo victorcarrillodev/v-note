@@ -1,4 +1,5 @@
-const sortKeys = (v: unknown): unknown => {
+/** Copia con las claves de cada objeto ordenadas (los arreglos conservan su orden). */
+export const sortKeys = (v: unknown): unknown => {
   if (Array.isArray(v)) return v.map(sortKeys);
   if (v && typeof v === "object" && !(v instanceof Uint8Array)) {
     return Object.fromEntries(
