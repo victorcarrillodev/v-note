@@ -1,7 +1,7 @@
 # Plan 005 — Estilo de páginas: portadas, cabecera y opciones del archivo
 
 > **Estado:** borrador · **Implementa:** `docs/specs/005-v-note-estilo-paginas/spec.md` (RF-1 a RF-9, RNF-1 a RNF-8, CL-1 a CL-17, D-1 a D-21).
-> **Marco:** `docs/constitution.md` (incluida la excepción de Unsplash del art. 6). Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, contratos, decisiones con su alternativa descartada, hitos y pruebas.
+> **Marco:** `docs/constitution.md` (incluida la excepción de Unsplash del art. 6). Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, contratos, decisiones con su alternativa descartada, fases y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes lo que cubre, por ejemplo **[RF-3]**. La sección 15 es la matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**
 > - La tabla `pages` guarda `icon`, `cover` (texto `gradient:<nombre>` o `color:#hex`), `full_width` (migración 11), `created_at` y `updated_at` como columnas; los setters pasan por `setField` en `packages/core/src/pages/pagesRepo.ts`, que lista las columnas permitidas y actualiza `updated_at`. La última migración es la **13**.
@@ -32,7 +32,7 @@
 | Artículo | Cómo lo respeta este plan |
 |---|---|
 | 1 Stack mínimo | **Cero dependencias npm o Rust nuevas.** Solo se añaden siete archivos de fuente woff2 con licencia OFL (sección 3). |
-| 2 La spec manda / hitos | Seis hitos en orden (sección 13). |
+| 2 La spec manda / fases | Seis fases en orden (sección 13). |
 | 3 Lógica separada | Estilo, gramática de portada, dimensiones de imagen, estadísticas, índice, predeterminados, historial, cliente de Unsplash y limpieza de archivos viven en `packages/core` sin DOM; decodificar y codificar imágenes (requiere DOM/Canvas) vive en la interfaz; llavero y almacén siguen en los adaptadores. |
 | 4 Tests | Cada regla de datos lleva prueba (sección 14). |
 | 5 SQLite única fuente de verdad | Estilo, descripción, bloqueo, crédito y predeterminados se guardan en SQLite; las imágenes en el almacén del espacio. Todo funciona sin internet salvo la búsqueda de Unsplash. La limpieza de archivos solo borra lo que ninguna página, ni siquiera en la papelera, usa (DP-9). Migración versionada 14. |
@@ -67,7 +67,7 @@
 ## 3. Dependencias nuevas
 **Ninguna dependencia npm ni Rust.** Se reutilizan Radix (popover, tabs, toggle-group), BlockNote, Yjs, el puerto `Keychain` con `keyring` y el almacén de archivos.
 
-Se añaden **siete archivos de fuente** woff2 variables, con subconjunto latino y licencia OFL, a `packages/ui/src/design/fonts/`: Geist, Nunito, Lora, Merriweather, Fira Code, Atkinson Hyperlegible Next y Caveat (Inter, Source Serif 4 y JetBrains Mono ya están). Son recursos, no dependencias, pero se justifican aquí porque cuentan para el tamaño (RNF-6): estimación de 0,9 a 1,6 MB en total, comprobada en el Hito 0. Cada `@font-face` usa `font-display: swap`; el navegador solo carga las fuentes que una página usa.
+Se añaden **siete archivos de fuente** woff2 variables, con subconjunto latino y licencia OFL, a `packages/ui/src/design/fonts/`: Geist, Nunito, Lora, Merriweather, Fira Code, Atkinson Hyperlegible Next y Caveat (Inter, Source Serif 4 y JetBrains Mono ya están). Son recursos, no dependencias, pero se justifican aquí porque cuentan para el tamaño (RNF-6): estimación de 0,9 a 1,6 MB en total, comprobada en la Fase 0. Cada `@font-face` usa `font-display: swap`; el navegador solo carga las fuentes que una página usa.
 
 ---
 
@@ -174,7 +174,7 @@ coverOutputSize(w, h):
   si w ≤ 2560: devolver (w, h)
   devolver (2560, round(h × 2560 / w))
 ```
-El fondo blanco aplana la transparencia de PNG y WebP (JPEG no la admite). Mientras se procesa, la cabecera muestra un indicador de progreso y la interfaz no se bloquea (RNF-4). Si `OffscreenCanvas` no está disponible en un *worker* (se verifica en el Hito 0), se usa un canvas en el hilo principal tras ceder el turno con `requestIdleCallback` / `setTimeout`.
+El fondo blanco aplana la transparencia de PNG y WebP (JPEG no la admite). Mientras se procesa, la cabecera muestra un indicador de progreso y la interfaz no se bloquea (RNF-4). Si `OffscreenCanvas` no está disponible en un *worker* (se verifica en la Fase 0), se usa un canvas en el hilo principal tras ceder el turno con `requestIdleCallback` / `setTimeout`.
 
 ### 5.2 Colores y degradados **[RF-2.7]**
 Pestaña Colores: la paleta de la app + selector de color propio (`ColorPicker` existente) → `color:#hex`. Pestaña Degradados: los seis degradados actuales + editor con 2 o 3 colores y ángulo (`Segmented` con 0°, 45°, 90°, 135°, 180° y control fino) → `lgrad:…`.
@@ -379,8 +379,8 @@ Sin cambios de interfaz: `Keychain` y `AssetStore` ya cubren lo necesario. `apps
 
 ---
 
-## 13. Hitos de entrega **[art. 2]**
-| Hito | Contenido | Cierre |
+## 13. Fases de entrega **[art. 2]**
+| Fase | Contenido | Cierre |
 |---|---|---|
 | **0 — Verificaciones** | Código desechable en `spikes/`, resultados en `spikes/RESULTS-estilo.md`: (a) redimensionar y codificar a JPEG una imagen de 20 MB en un *worker* con `OffscreenCanvas` en WebKitGTK (Tauri, Linux) y Chromium, medir tiempo; (b) `fetch` a `api.unsplash.com` e `images.unsplash.com` desde el webview de Tauri y desde la web (CORS); (c) peso real de las 7 fuentes; (d) cambiar `editable` de BlockNote en vivo sin perder la posición del cursor ni el estado de Yjs. | Si (a) o (b) fallan sin arreglo, **se detiene y se pregunta** antes de cambiar el diseño. |
 | **1 — Núcleo y datos** | `style.ts`, `cover.ts`, `coverImage.ts`, `pageDefaults.ts`, `pageProps.ts`, `stats.ts`, `toc.ts`, migración 14, repositorio, limpieza de archivos, respaldo v2 y restauración, `backup-format.md`. | Pruebas del núcleo en verde; respaldo v1 → v2 sin pérdida. |
@@ -466,7 +466,7 @@ Sin cambios de interfaz: `Keychain` y `AssetStore` ya cubren lo necesario. `apps
 
 ## 16. Riesgos y fuera de alcance del plan
 - **Riesgo aceptado (D-14):** la copia local de fotos de Unsplash puede no ajustarse del todo a sus condiciones.
-- **Riesgo técnico:** WebKitGTK puede no tener `OffscreenCanvas` en *workers*; el Hito 0 lo verifica y la sección 5.1 define la alternativa.
+- **Riesgo técnico:** WebKitGTK puede no tener `OffscreenCanvas` en *workers*; la Fase 0 lo verifica y la sección 5.1 define la alternativa.
 - **Riesgo de datos:** la limpieza de archivos es el único borrado definitivo nuevo; por eso es conservadora (DP-9) y tiene las pruebas más estrictas.
 - **Web sin llavero:** la clave de Unsplash no persiste en la web (9.2).
 - La exportación HTML y PDF conserva su aspecto actual; incluir la cabecera tipo tarjeta en esas exportaciones queda para una spec futura.
