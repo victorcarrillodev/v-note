@@ -20,11 +20,11 @@ export function Checkbox({ label, checked, onChange }: { label: string; checked:
   );
 }
 
-export function Switch({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+export function Switch({ label, checked, onChange, disabled = false }: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   const id = useId();
   return (
     <div className="inline-flex min-h-6 items-center gap-2 text-[length:var(--text-ui-size)]">
-      <S.Root id={id} checked={checked} onCheckedChange={onChange} className={cx("relative h-5 w-9 rounded-full border", checked ? "border-[var(--c-accent)] bg-[var(--c-accent)]" : "border-[var(--c-border-control)] bg-[var(--c-raised)]")}>
+      <S.Root id={id} checked={checked} disabled={disabled} onCheckedChange={onChange} className={cx("relative h-5 w-9 rounded-full border disabled:cursor-not-allowed disabled:opacity-50", checked ? "border-[var(--c-accent)] bg-[var(--c-accent)]" : "border-[var(--c-border-control)] bg-[var(--c-raised)]")}>
         <S.Thumb className={cx("block h-3.5 w-3.5 rounded-full bg-[var(--c-card)] transition-transform duration-100", checked ? "translate-x-4.5" : "translate-x-0.5")} />
       </S.Root>
       <label htmlFor={id}>{label}</label>

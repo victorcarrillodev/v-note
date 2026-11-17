@@ -94,12 +94,16 @@ describe("ícono y portada (T-115)", () => {
     await user.click(screen.getByRole("button", { name: "Quitar ícono" }));
     expect(current(controller, id).icon).toBeNull();
   });
-  it("añade y quita la portada", async () => {
+  it("«Añadir portada» abre el selector (E-087); se elige un degradado y se quita desde «Cambiar portada»", async () => {
     const { controller, id, user } = await setup();
     await user.click(screen.getByRole("button", { name: "Añadir portada" }));
-    expect(current(controller, id).cover).toMatch(/^gradient:[a-z]+$/);
+    expect(current(controller, id).cover).toBeNull(); // ya no pone un degradado al azar
+    await user.click(await screen.findByRole("tab", { name: "Degradados" }));
+    await user.click(screen.getByRole("button", { name: "Cielo" }));
+    expect(current(controller, id).cover).toBe("gradient:sky");
     expect(screen.getByTestId("cover")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Quitar portada" }));
+    await user.click(screen.getByRole("button", { name: "Cambiar portada" }));
+    await user.click(await screen.findByRole("button", { name: "Quitar portada" }));
     expect(current(controller, id).cover).toBeNull();
   });
 });

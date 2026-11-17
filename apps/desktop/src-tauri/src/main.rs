@@ -188,17 +188,28 @@ fn print_html(app: tauri::AppHandle, html: String) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
-/// Abre en el navegador la página de descarga de una versión nueva. Solo acepta páginas de GitHub Releases.
-#[tauri::command]
-fn open_release_url(url: String) -> Result<(), String> {
-    if !vnote_db::fsutil::is_release_url(&url) { return Err("Dirección no permitida".into()); }
+fn open_in_browser(url: &str) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     let cmd = "xdg-open";
     #[cfg(target_os = "macos")]
     let cmd = "open";
     #[cfg(target_os = "windows")]
     let cmd = "explorer";
-    std::process::Command::new(cmd).arg(&url).spawn().map(|_| ()).map_err(|e| e.to_string())
+    std::process::Command::new(cmd).arg(url).spawn().map(|_| ()).map_err(|e| e.to_string())
+}
+
+/// Abre en el navegador la página de descarga de una versión nueva. Solo acepta páginas de GitHub Releases.
+#[tauri::command]
+fn open_release_url(url: String) -> Result<(), String> {
+    if !vnote_db::fsutil::is_release_url(&url) { return Err("Dirección no permitida".into()); }
+    open_in_browser(&url)
+}
+
+/// Abre en el navegador una dirección de Unsplash (obtener la clave, créditos de las fotos). Nada más.
+#[tauri::command]
+fn open_unsplash_url(url: String) -> Result<(), String> {
+    if !vnote_db::fsutil::is_unsplash_url(&url) { return Err("Dirección no permitida".into()); }
+    open_in_browser(&url)
 }
 
 #[tauri::command]
@@ -402,7 +413,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             db_open, db_exec, db_query, db_begin, db_commit, db_rollback, db_close,
             asset_put, asset_get, asset_has, asset_delete, asset_list,
-            app_dirs, config_read, config_write, path_exists, reveal_path, open_release_url, export_save, show_reminder, open_task, workspace_remove,
+            app_dirs, config_read, config_write, path_exists, reveal_path, open_release_url, open_unsplash_url, export_save, show_reminder, open_task, workspace_remove,
             keychain_set, keychain_get, keychain_delete,
             tick_count, window_visible, open_capture, capture_shortcut_set, exe_path, print_html
         ])

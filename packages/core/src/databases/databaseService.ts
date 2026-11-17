@@ -15,7 +15,8 @@ export type DatabaseInfo = { id: string; name: string; pageId: string | null; ho
 export type Property = { id: string; databaseId: string; name: string; type: PropertyType; position: string; config: PropertyConfig };
 export const ROLLUP_FUNCTIONS = ["count", "sum", "avg", "min", "max"] as const;
 export type RollupFunction = (typeof ROLLUP_FUNCTIONS)[number];
-export type DbRow = { pageId: string; title: string; position: string; values: Record<string, CellValue | ErrorValue | null> };
+/** `locked` solo aparece cuando la página de la fila está bloqueada: su título es de solo lectura, sus propiedades siguen editables (RF-8.1.1). */
+export type DbRow = { pageId: string; title: string; position: string; values: Record<string, CellValue | ErrorValue | null>; locked?: true };
 
 type PropRow = { id: string; database_id: string; name: string; type: PropertyType; position: string; config: string };
 const toProp = (r: PropRow): Property => ({ id: r.id, databaseId: r.database_id, name: r.name, type: r.type, position: r.position, config: JSON.parse(r.config) as PropertyConfig });
@@ -478,8 +479,8 @@ export class DatabaseService {
 
   /** Filas visibles (las de páginas en la papelera no se muestran), en orden, con sus valores guardados y las fechas automáticas. */
   private async loadRows(dbId: string, props: Property[]): Promise<DbRow[]> {
-    const rows = await this.db.query<{ page_id: string; title: string; position: string; row_updated: number; page_created: number; page_updated: number }>(
-      `SELECT r.page_id, p.title, r.position, r.updated_at AS row_updated, p.created_at AS page_created, p.updated_at AS page_updated
+    const rows = await this.db.query<{ page_id: string; title: string; locked: number; position: string; row_updated: number; page_created: number; page_updated: number }>(
+      `SELECT r.page_id, p.title, p.locked, r.position, r.updated_at AS row_updated, p.created_at AS page_created, p.updated_at AS page_updated
          FROM db_rows r JOIN pages p ON p.id = r.page_id WHERE r.database_id = ? AND p.deleted_at IS NULL ORDER BY r.position`,
       [dbId],
     );
@@ -496,7 +497,7 @@ export class DatabaseService {
         if (p.type === "created_time") values[p.id] = new Date(r.page_created).toISOString();
         if (p.type === "last_edited_time") values[p.id] = new Date(Math.max(r.row_updated, r.page_updated)).toISOString();
       }
-      return { pageId: r.page_id, title: r.title, position: r.position, values };
+      return { pageId: r.page_id, title: r.title, position: r.position, values, ...(r.locked === 1 ? { locked: true as const } : {}) };
     });
   }
 

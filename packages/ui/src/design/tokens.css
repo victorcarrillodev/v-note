@@ -146,6 +146,16 @@
   --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-serif: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-inter: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-geist: "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-nunito: "Nunito Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-source-serif: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+  --font-lora: "Lora Variable", Georgia, "Times New Roman", serif;
+  --font-merriweather: "Merriweather Variable", Georgia, "Times New Roman", serif;
+  --font-jetbrains-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-fira-code: "Fira Code Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-atkinson: "Atkinson Hyperlegible Next Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-caveat: "Caveat Variable", "Segoe Print", "Comic Sans MS", cursive;
   --font-content: var(--font-sans);
   --font-headings: var(--font-content);
   --density-pad: 0px;

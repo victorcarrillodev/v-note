@@ -1,6 +1,6 @@
 # Especificación 005 — Estilo de páginas: portadas, cabecera y opciones del archivo
 
-> **Estado:** borrador · **Quinta parte de v-note** (specs 001 MVP, 002 interfaz, 003 diagramas, 004 pulido de diagramas y mapas).
+> **Estado:** implementada (informe de cierre en `informe-cierre.md`) · **Quinta parte de v-note** (specs 001 MVP, 002 interfaz, 003 diagramas, 004 pulido de diagramas y mapas).
 > **Alcance de este documento:** el QUÉ y el POR QUÉ. No define tecnología, arquitectura ni archivos: eso va en el plan.
 > **Relación con otras specs:** amplía el RF de ícono y portada de la spec 001, y el RF-5.1 (cabecera de página) y el RF-10 (apariencia) de la spec 002. **Sustituye** el interruptor de ancho completo del RF-10.3 de la 002 por el ancho de contenido de esta spec. Se apoya en la **excepción de Unsplash** del artículo 6 de la constitución (D-15), que también exceptúa el RF-1.9 de la 002 solo para las portadas de Unsplash.
 > **Notación:** los criterios usan EARS en español (*Cuando… el sistema deberá…*, *Mientras…*, *Si… entonces…*, *Donde…*). Las dudas se marcan con **[NECESITA ACLARACIÓN]**.

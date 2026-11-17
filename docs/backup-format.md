@@ -1,4 +1,4 @@
-# Formato de respaldo v1
+# Formato de respaldo (v2)
 
 Un respaldo es una **carpeta de archivos de texto y binarios** que se sube a un repositorio **privado** de GitHub, un commit por ciclo. Es abierto: se puede leer sin la aplicación (Markdown) y contiene una copia **sin pérdida** (JSON) para restaurar todo.
 
@@ -6,7 +6,7 @@ Un respaldo es una **carpeta de archivos de texto y binarios** que se sube a un 
 - **Determinista:** el mismo contenido produce los mismos bytes (JSON con claves ordenadas, 2 espacios, fin de línea LF, un salto final). Así Git solo muestra diferencias reales.
 - **Sin cifrar:** la privacidad descansa en el repositorio privado.
 - **Sin secretos:** nunca incluye tokens, claves ni ajustes de la aplicación (tema, idioma, atajos).
-- Versión del formato: `formatVersion: 1`. La restauración **rechaza** versiones más nuevas que la soportada.
+- Versión del formato: `formatVersion: 2` (desde la spec 005; ver «Cambios del formato v2»). La restauración acepta la 1 y la 2 y **rechaza** versiones más nuevas que la soportada.
 
 ## Estructura
 | Ruta | Contenido |
@@ -57,10 +57,11 @@ Al restaurar se valida todo antes de escribir: tipos de propiedad y de vista con
 ```
 { id, parentId, position, title, icon, cover, kind, favorite,
   createdAt, updatedAt, deletedAt, deletedRootId,
-  fullWidth?,                      // solo cuando es true (ver abajo)
+  style?, description?, locked?, coverCredit?,   // v2, cada uno solo si no es el predeterminado (ver «Cambios del formato v2»)
+  fullWidth?,                      // solo v1: solo cuando es true (ver abajo)
   blocks: [ { id, type, props, content, children } ] }
 ```
-**`fullWidth` (spec 002, RF-10.3):** la página ocupa todo el ancho. Se escribe **solo cuando es `true`**; ausente significa ancho normal. Así las páginas en ancho normal producen exactamente los mismos bytes que antes de existir el campo (no aparecen commits nuevos por este motivo) y un respaldo anterior a esta spec se restaura con las páginas en ancho normal. El lector de la versión 1 **ignora campos que no conoce** (comprobado en `formatTolerance.test.ts`), por lo que añadirlo es compatible hacia atrás y `formatVersion` sigue en 1. Los ajustes de apariencia del dispositivo (tema, tipografía, densidad) **no** forman parte del respaldo.
+**`fullWidth` (spec 002, RF-10.3; solo en respaldos v1, en la v2 lo reemplaza `style.spacing.width`):** la página ocupa todo el ancho. Se escribe **solo cuando es `true`**; ausente significa ancho normal. Así las páginas en ancho normal producen exactamente los mismos bytes que antes de existir el campo (no aparecen commits nuevos por este motivo) y un respaldo anterior a esta spec se restaura con las páginas en ancho normal. El lector de la versión 1 **ignora campos que no conoce** (comprobado en `formatTolerance.test.ts`), por lo que añadirlo fue compatible hacia atrás y `formatVersion` siguió en 1 hasta la spec 005. Los ajustes de apariencia del dispositivo (tema, tipografía, densidad) **no** forman parte del respaldo.
 
 `blocks` es el **modelo canónico** de bloques (texto con estilos, enlaces, tablas, anidados). No incluye el historial de deshacer.
 
@@ -91,3 +92,20 @@ Sin cambios de formato: `formatVersion` **sigue en 1** y no se añade ningún ar
 - **Mapa mental (`mindmap`):** `view` opcional con `height` en el árbol; en cada globo, `off` opcional (`{x, y}`: desplazamiento respecto a la distribución automática, heredado por los hijos) y `style` opcional (`fill`, `stroke`, `text` y `line`, cada uno `palette:<id>`, hex o `none`). El organigrama comparte el modelo pero ignora estos campos.
 - **Compatibilidad:** un respaldo anterior se restaura sin cambios y se ve igual. Una versión anterior de la aplicación lee un mapa nuevo sin error: conserva los campos de los globos que no conoce y pierde solo el `view` del árbol (el alto vuelve al de por defecto). El Markdown legible y el texto de búsqueda no cambian.
 - **Valores finales:** cuadrícula de 20 px; alto del lienzo entre 240 y 1600 px (por defecto 420 px en el diagrama y entre 320 y 560 px en el mapa, que solo se guarda cuando se cambia); `off` sin campo cuando es (0, 0); colores inválidos se descartan al leer.
+
+## Cambios del formato v2 (spec 005)
+`formatVersion` **sube a 2**. El paso produce un único commit: cambian `workspace.json` y las páginas que tenían `fullWidth`.
+- **`data/<id>.json`:** campos opcionales nuevos, **cada uno solo si no es el predeterminado**, así una página sin tocar da los mismos bytes de siempre:
+  - `style`: objeto normalizado (sin valores predeterminados ni grupos vacíos; claves ordenadas). Incluye portada (altura, posición, oscurecido, esquinas), tipografía, espaciado (con el ancho), índice y acento.
+  - `description`: una línea de hasta 280 caracteres.
+  - `locked: true`: página bloqueada (solo lectura).
+  - `coverCredit`: crédito de una foto de Unsplash (`source`, `photoId`, `author`, `authorUrl`, `photoUrl`); solo con portada de archivo.
+  - `cover` admite además `gradient:<nombre>`, `color:#rrggbb`, `lgrad:<ángulo>:<colores>` y `asset:<sha256>` (la imagen viaja en `assets/<sha256>`).
+  - **`fullWidth` deja de escribirse:** el ancho completo es `style.spacing.width = "full"`.
+- **`page-defaults.json`:** opcional, en la raíz; el estilo predeterminado del espacio (mismo objeto normalizado que `style`). Solo existe si se definió uno; sin él, las páginas nuevas usan el estilo clásico.
+- **Archivos:** las portadas de imagen viajan en `assets/<sha256>` como cualquier otro archivo. Al abrir el espacio se limpian los archivos que ninguna página (ni siquiera en la papelera) usa, así solo viajan los que se usan.
+- **Restaurar un respaldo v1 (anterior a esta spec):** `fullWidth: true` pasa a `style.spacing.width = "full"`; sin los campos nuevos, las páginas quedan en el estilo predeterminado.
+- **Validación al restaurar:** todo se valida antes de escribir, y **un campo dañado se descarta sin abortar** la restauración: `style` y `page-defaults.json` pasan por el mismo saneado que el guardado (valores fuera de rango se corrigen, desconocidos se ignoran); `cover` debe cumplir la gramática o queda sin portada; `coverCredit` solo admite las claves de la lista y URLs `https`; `description` se reduce a una línea de 280 caracteres como máximo; `locked` solo vale si es `true`.
+- **Una aplicación v1 ante un respaldo v2:** rechaza la versión nueva con su aviso (no restaura a medias).
+- **Markdown legible:** debajo del título (el nombre del archivo), la descripción en cursiva. El estilo y el bloqueo no aparecen en el Markdown.
+- **Determinismo:** el mismo estado produce los mismos bytes; un respaldo sin cambios no genera commit.

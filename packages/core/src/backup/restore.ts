@@ -14,7 +14,10 @@ import { FORMAT_VERSION } from "./serialize";
 import { insertTags, validateTags, type TagsFile } from "./tags";
 import { insertDatabases, validateDatabases, type DbFile, type RemindersFile } from "./databases";
 import type { BackupError, CommitSummary, GitHubClient } from "./githubClient";
-import { styleToText } from "../pages/style";
+import { parseStyle, styleToText, type PageStyle } from "../pages/style";
+import { parseCover, parseCoverCredit, type CoverCredit } from "../pages/cover";
+import { cleanDescription } from "../pages/pagesRepo";
+import { savePageDefaultStyle } from "../pages/pageDefaults";
 
 const dec = new TextDecoder();
 const KINDS = new Set(["note", "board", "database"]);
@@ -30,7 +33,7 @@ export async function listBackups(client: GitHubClient, branch: string): Promise
   return r.ok ? ok(r.value) : fromBackupError(r.error);
 }
 
-const NEEDED = (p: string) => p === "workspace.json" || p === "trash.json" || p === "reminders.json" || p === "tags.json" || p === "diagram-defaults.json" || p.startsWith("databases/") || p.startsWith("data/") || p.startsWith("assets/");
+const NEEDED = (p: string) => p === "workspace.json" || p === "page-defaults.json" || p === "trash.json" || p === "reminders.json" || p === "tags.json" || p === "diagram-defaults.json" || p.startsWith("databases/") || p.startsWith("data/") || p.startsWith("assets/");
 
 /** Descarga de un commit los archivos necesarios para restaurar (no los Markdown, que son solo de lectura). */
 export async function readBackup(client: GitHubClient, commitSha: string): Promise<Result<Map<string, Uint8Array>>> {
@@ -49,7 +52,7 @@ export async function readBackup(client: GitHubClient, commitSha: string): Promi
 
 type PageData = {
   id: string; parentId: string | null; position: string; title: string; icon: string | null; cover: string | null; kind: string;
-  favorite: boolean; fullWidth: boolean; createdAt: number; updatedAt: number; deletedAt: number | null; deletedRootId: string | null; blocks: Block[];
+  favorite: boolean; style: PageStyle; description: string | null; locked: boolean; coverCredit: CoverCredit | null; createdAt: number; updatedAt: number; deletedAt: number | null; deletedRootId: string | null; blocks: Block[];
 };
 
 function parseJson(bytes: Uint8Array | undefined, what: string): Result<Record<string, any>> { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -62,12 +65,17 @@ function parseJson(bytes: Uint8Array | undefined, what: string): Result<Record<s
   }
 }
 
-/** Valida TODO el respaldo antes de escribir nada. */
-export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ diagramDefaults: DiagramDefaults; pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null; tags: TagsFile | null }>> {
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+/** Estilo de un respaldo (objeto): pasa por el mismo saneado que el guardado; cualquier otra cosa da `{}`. */
+const styleFrom = (v: unknown): PageStyle => (isRecord(v) ? parseStyle(JSON.stringify(v)) : {});
+
+/** Valida TODO el respaldo antes de escribir nada. Los campos de estilo dañados se descartan sin abortar (RNF-5). */
+export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ diagramDefaults: DiagramDefaults; pageDefaultStyle: PageStyle; pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null; tags: TagsFile | null }>> {
   const ws = parseJson(files.get("workspace.json"), "workspace.json");
   if (!ws.ok) return ws;
   if (typeof ws.value.formatVersion !== "number") return invalid("workspace.json no indica la versión del formato");
-  if (ws.value.formatVersion > FORMAT_VERSION) {
+  const formatVersion = ws.value.formatVersion;
+  if (formatVersion > FORMAT_VERSION) {
     return err(appError("UNSUPPORTED_VERSION", "Este respaldo es de una versión más nueva de la aplicación", { found: ws.value.formatVersion, supported: FORMAT_VERSION }));
   }
 
@@ -81,9 +89,15 @@ export async function validateBackup(files: Map<string, Uint8Array>): Promise<Re
     if (typeof p.title !== "string" || typeof p.position !== "string" || !KINDS.has(p.kind)) return invalid(`La página ${p.id} tiene campos inválidos`);
     if (!Array.isArray(p.blocks)) return invalid(`La página ${p.id} no tiene una lista de bloques`);
     if (typeof p.createdAt !== "number" || typeof p.updatedAt !== "number") return invalid(`La página ${p.id} no tiene fechas válidas`);
+    // v1 guardaba el ancho completo aparte; desde la v2 vive en el estilo (CL-14).
+    const style = styleFrom(p.style);
+    if (formatVersion < 2 && p.fullWidth === true) style.spacing = { ...style.spacing, width: "full" };
+    const cover = typeof p.cover === "string" && parseCover(p.cover) !== null ? p.cover : null;
     pages.push({
-      id: p.id, parentId: p.parentId ?? null, position: p.position, title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, kind: p.kind,
-      favorite: p.favorite === true, fullWidth: p.fullWidth === true, createdAt: p.createdAt, updatedAt: p.updatedAt, deletedAt: p.deletedAt ?? null, deletedRootId: p.deletedRootId ?? null, blocks: p.blocks,
+      id: p.id, parentId: p.parentId ?? null, position: p.position, title: p.title, icon: p.icon ?? null, cover, kind: p.kind,
+      favorite: p.favorite === true, style, description: typeof p.description === "string" ? cleanDescription(p.description) : null,
+      locked: p.locked === true, coverCredit: cover?.startsWith("asset:") ? parseCoverCredit(p.coverCredit) : null,
+      createdAt: p.createdAt, updatedAt: p.updatedAt, deletedAt: p.deletedAt ?? null, deletedRootId: p.deletedRootId ?? null, blocks: p.blocks,
     });
   }
   const byId = new Map(pages.map((p) => [p.id, p]));
@@ -132,7 +146,11 @@ export async function validateBackup(files: Map<string, Uint8Array>): Promise<Re
     if (!dd.ok) return dd;
     diagramDefaults = dd.value;
   }
-  return ok({ pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders, tags: tags.value, diagramDefaults });
+  let pageDefaultStyle: PageStyle = {};
+  if (files.has("page-defaults.json")) {
+    try { pageDefaultStyle = styleFrom(JSON.parse(dec.decode(files.get("page-defaults.json")))); } catch { /* dañado: se ignora */ }
+  }
+  return ok({ pageDefaultStyle, pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders, tags: tags.value, diagramDefaults });
 }
 
 /**
@@ -153,9 +171,8 @@ export async function restoreFromFiles(files: Map<string, Uint8Array>, target: {
       await tx.exec("PRAGMA defer_foreign_keys = ON");
       for (const p of v.value.pages) {
         await tx.exec(
-          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, style, created_at, updated_at, deleted_at, deleted_root_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          // Spec 005 (DP-6): el ancho completo de un respaldo se guarda en el estilo de la página.
-          [p.id, p.parentId, p.position, p.title, p.icon, p.cover, p.kind, p.favorite ? 1 : 0, p.fullWidth ? styleToText({ spacing: { width: "full" } }) : null, p.createdAt, p.updatedAt, p.deletedAt, p.deletedRootId],
+          "INSERT INTO pages(id, parent_id, position, title, icon, cover, kind, favorite, style, description, locked, cover_credit, created_at, updated_at, deleted_at, deleted_root_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          [p.id, p.parentId, p.position, p.title, p.icon, p.cover, p.kind, p.favorite ? 1 : 0, styleToText(p.style), p.description, p.locked ? 1 : 0, p.coverCredit ? JSON.stringify(p.coverCredit) : null, p.createdAt, p.updatedAt, p.deletedAt, p.deletedRootId],
         );
         if (p.blocks.length) {
           const doc = new Y.Doc();
@@ -168,6 +185,7 @@ export async function restoreFromFiles(files: Map<string, Uint8Array>, target: {
       await insertDatabases(tx, v.value.databases, v.value.reminders);
       await insertTags(tx, v.value.tags);
       await restoreDiagramDefaults(tx, v.value.diagramDefaults);
+      await savePageDefaultStyle(tx, v.value.pageDefaultStyle);
     });
     return ok({ pages: v.value.pages.length, assets: v.value.assets.length });
   } catch (e) {

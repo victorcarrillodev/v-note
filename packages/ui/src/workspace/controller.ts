@@ -1,5 +1,5 @@
 import {
-  BoardService, DatabaseService, collectExportPages, databaseViewProvider, exportHtml, GraphService, LinkService, QuickCapture, ViewService, DocSession, DocStore, PagesRepo, PageService, SearchIndex, appError, err, ok,
+  BoardService, DatabaseService, PagePropsHistory, type PageProps, pageStats, applyStylePatch, type StylePatch, fromYjs, savePageDefaultStyle, loadPageDefaultStyle, type PageStats, collectExportPages, databaseViewProvider, exportHtml, GraphService, LinkService, QuickCapture, ViewService, DocSession, DocStore, PagesRepo, PageService, SearchIndex, appError, err, ok,
   type AssetStore, type Backlink, type DocSessionOptions, type Clock, type ExportOutcome, type GraphData, type GraphOptions, type LinkTarget, type Page, type PageKind, type PageStyle, type RecentPage, type SearchHit, type PageNode, type Result, type SqlStore, type TrashEntry, trashWithUndo, TagService, duplicateWithUndo, moveWithUndo } from "@vnote/core";
 
 import { DatabaseController } from "../databases/databaseController";
@@ -21,6 +21,7 @@ export class WorkspaceController {
   private svc: PageService;
   private docs: DocStore;
   private searchIndex: SearchIndex;
+  private propsHistory: PagePropsHistory;
   private links: LinkService;
   private graph: GraphService;
   /** Etiquetas del espacio (RF-5.9). */
@@ -33,6 +34,7 @@ export class WorkspaceController {
     this.svc = new PageService(store, clock);
     this.docs = new DocStore(store, clock);
     this.searchIndex = new SearchIndex(store, clock);
+    this.propsHistory = new PagePropsHistory(this.pages);
     this.links = new LinkService(store);
     this.graph = new GraphService(store);
     this.tags = new TagService(store, clock);
@@ -180,6 +182,60 @@ export class WorkspaceController {
   async renamePage(id: string, title: string) { const r = await this.svc.rename(id, title); await this.refresh(); return r; }
   async setIcon(id: string, icon: string | null) { const r = await this.pages.setIcon(id, icon); await this.refresh(); return r; }
   async setCover(id: string, cover: string | null) { const r = await this.pages.setCover(id, cover); await this.refresh(); return r; }
+
+  /**
+   * Cambia varias propiedades de la página en una sola entrada del historial (spec 005, RF-4.6): portada y crédito,
+   * estilo, descripción o bloqueo. Es la vía de la cabecera, la portada y el menú de opciones.
+   */
+  async setPageProps(id: string, patch: Partial<PageProps>): Promise<Result<Page>> {
+    return this.serialProps(async () => { const r = await this.propsHistory.set(id, patch); await this.refresh(); return r; });
+  }
+  /**
+   * Cambia una parte del estilo sobre el estilo ACTUAL de la página (no sobre el que tenía la pantalla al dibujarse): dos cambios
+   * seguidos se suman en vez de pisarse, aunque el primero aún no haya llegado a la pantalla.
+   */
+  async patchPageStyle(id: string, patch: StylePatch): Promise<Result<Page>> {
+    return this.serialProps(async () => {
+      const cur = await this.pages.get(id);
+      if (!cur.ok) return cur;
+      const r = await this.propsHistory.set(id, { style: applyStylePatch(cur.value.style, patch) });
+      await this.refresh();
+      return r;
+    });
+  }
+  private propsQueue: Promise<unknown> = Promise.resolve();
+  /** Las escrituras de propiedades de página van una tras otra: cada una parte del resultado de la anterior. */
+  private serialProps<T>(run: () => Promise<T>): Promise<T> {
+    const next = this.propsQueue.then(run, run);
+    this.propsQueue = next.catch(() => {});
+    return next;
+  }
+  canUndoPageProps = (id: string): boolean => this.propsHistory.canUndo(id);
+  canRedoPageProps = (id: string): boolean => this.propsHistory.canRedo(id);
+  /** Deshace el último cambio de propiedades; `false` si no había nada. */
+  async undoPageProps(id: string): Promise<boolean> { return this.serialProps(async () => { const r = await this.propsHistory.undo(id); if (r) await this.refresh(); return r !== null; }); }
+  async redoPageProps(id: string): Promise<boolean> { return this.serialProps(async () => { const r = await this.propsHistory.redo(id); if (r) await this.refresh(); return r !== null; }); }
+  async resetPageStyle(id: string): Promise<Result<Page>> { return this.serialProps(async () => { const r = await this.propsHistory.resetStyle(id); await this.refresh(); return r; }); }
+
+  /** Palabras, caracteres y tiempo de lectura de la página (RF-8.3); se calculan al pedirlas, no en cada pulsación. */
+  async pageStats(id: string): Promise<PageStats | null> {
+    const doc = await this.docs.load(id);
+    return doc.ok ? pageStats(fromYjs(doc.value.getXmlFragment("doc"))) : null;
+  }
+  /** Guarda el estilo de la página como el de las páginas nuevas del espacio (RF-8.5). Las existentes no cambian. */
+  async setDefaultStyle(style: PageStyle): Promise<void> { await savePageDefaultStyle(this.store, style); }
+  /**
+   * «Usar como predeterminado»: toma el estilo ACTUAL de la página (después de los cambios que aún estén en cola), no el de la pantalla.
+   */
+  async usePageStyleAsDefault(id: string): Promise<Result<PageStyle>> {
+    return this.serialProps(async () => {
+      const cur = await this.pages.get(id);
+      if (!cur.ok) return cur;
+      await savePageDefaultStyle(this.store, cur.value.style);
+      return ok(cur.value.style);
+    });
+  }
+  defaultStyle(): Promise<PageStyle> { return loadPageDefaultStyle(this.store); }
 
   /** Estilo de la página (spec 005): se guarda normalizado. */
   async setPageStyle(id: string, style: PageStyle) { const r = await this.pages.setStyle(id, style); await this.refresh(); return r; }

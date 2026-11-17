@@ -4,6 +4,7 @@ import type { WorkspaceController } from "../workspace/controller";
 import { useWorkspace } from "../workspace/useController";
 import { HeaderBar } from "./HeaderBar";
 import { saveStatusStore } from "./saveStatusStore";
+import { PageOptionsMenu } from "../page/options/PageOptionsMenu";
 
 function find(tree: readonly PageNode[], id: string): Page | null {
   const stack = [...tree];
@@ -17,5 +18,10 @@ export function AppHeader({ controller, onNavigate, now }: { controller: Workspa
   const status = useSyncExternalStore(saveStatusStore.subscribe, saveStatusStore.getSnapshot);
   const current = snap.selectedId ? find(snap.tree, snap.selectedId) : null;
   const crumbs = current ? [...snap.breadcrumbs, current].map((p) => ({ id: p.id, title: p.title })) : [];
-  return <HeaderBar crumbs={crumbs} onNavigate={onNavigate} status={status} onRetry={() => saveStatusStore.retry()} {...(current ? { lastEditedAt: current.updatedAt, now: now() } : {})} />;
+  return (
+    <>
+      <HeaderBar crumbs={crumbs} onNavigate={onNavigate} status={status} onRetry={() => saveStatusStore.retry()} {...(current ? { lastEditedAt: current.updatedAt, now: now() } : {})} />
+      {current && <PageOptionsMenu controller={controller} pageId={current.id} />}
+    </>
+  );
 }

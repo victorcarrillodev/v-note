@@ -24,6 +24,7 @@ v-note es un cuaderno de notas personal, de un solo usuario, que guarda todo en 
 15. [Ajustes: tema, idioma y atajos](#15-ajustes-tema-idioma-y-atajos)
 16. [Versión de escritorio](#16-versión-de-escritorio)
 17. [Preguntas frecuentes](#17-preguntas-frecuentes)
+18. [Estilo de la página: portada, cabecera, opciones e índice](#18-estilo-de-la-página-portada-cabecera-opciones-e-índice)
 
 ---
 
@@ -388,3 +389,76 @@ La versión web se puede **instalar como PWA** desde el navegador y arranca sin 
 ```bash
 CHROME_BIN=/ruta/a/chrome bun docs/manual/capture.ts
 ```
+
+---
+
+## 18. Estilo de la página: portada, cabecera, opciones e índice
+
+Cada página puede tener su propia apariencia. Todo se cambia desde la propia página y se puede deshacer; nada de esto altera las demás páginas ni la apariencia general de la aplicación (tema, idioma y tipografía del contenido de **Ajustes**).
+
+### 18.1 Portada
+
+Pulsa **Añadir portada** (o **Cambiar portada**, arriba a la derecha de la portada, al pasar el puntero) para abrir el selector. Tiene cuatro pestañas:
+
+| Pestaña | Qué hace |
+|---|---|
+| **Subir** | Elige una imagen PNG, JPEG o WebP de hasta **20 MB**. Se reduce a 2 560 px de ancho como máximo y se guarda como JPEG. También puedes **arrastrar** una imagen sobre la cabecera o **pegarla** desde el portapapeles. Si la imagen es pequeña (menos de 1 200 px) se avisa que puede verse borrosa. |
+| **Unsplash** | Busca fotos y elige una. Solo aparece si activas Unsplash (ver 18.5). |
+| **Colores** | Un color de la paleta de la aplicación o uno propio en hexadecimal. |
+| **Degradados** | Los seis degradados de la aplicación o uno propio de 2 o 3 colores con ángulo. |
+
+**Quitar portada** está en el mismo selector. Si algo falla (formato no admitido, archivo demasiado grande, imagen dañada, sin conexión), la portada anterior **no cambia** y se explica el motivo.
+
+Con una portada puesta, **Ajustes de la portada** permite:
+
+- **Altura:** baja, media o alta.
+- **Reposicionar:** arrastra la imagen o usa las flechas (±1 %; con Mayús, ±10 %) y pulsa **Guardar** (**Cancelar** o Esc descartan).
+- **Oscurecido:** de 0 a 100. Si el título va sobre la portada y el valor es menor de 55, se avisa que puede costar leerlo.
+- **Esquinas:** un valor para las cuatro o **Esquinas por separado**.
+
+### 18.2 Cabecera
+
+Por defecto la cabecera es la clásica: portada arriba y título debajo. Desde el menú de opciones (18.3, sección **Cabecera y portada**) activas cada pieza por separado:
+
+- **Título sobre la portada:** pasa al modo tarjeta; el título, la descripción, la etiqueta y la fecha se escriben sobre la imagen. El título crece con el texto.
+- **Descripción:** una línea de hasta 280 caracteres, editable en el lugar. Fuera de edición se corta en dos líneas.
+- **Etiqueta:** muestra el nombre del espacio o el texto que escribas.
+- **Fecha de actualización:** «Actualizada hoy», «ayer» o «hace 3 días»; la fecha exacta aparece al pasar el puntero o enfocarla.
+- **Ícono sobre el borde**, **Degradado bajo el texto** y **Esquinas redondeadas**.
+
+Sin portada, las piezas que dependen de ella (título sobre la portada, degradado e ícono sobre el borde) no se muestran.
+
+### 18.3 Menú de opciones de la página
+
+El botón **Opciones de la página** (arriba a la derecha) abre un panel con cinco secciones. Funciona con teclado (Esc lo cierra y devuelve el foco al botón) y cada cambio muestra el aviso **Deshacer**. Ctrl+Z, fuera del editor, deshace el último cambio de estilo.
+
+| Sección | Opciones |
+|---|---|
+| **Tipografía** | Fuente del texto y de los títulos: 10 familias, cada una escrita con su fuente, o **Predeterminado**. |
+| **Espaciado** | Ancho (estrecho, normal, amplio, completo), tamaño del texto e interlineado. Quien tenía «Ancho completo» lo conserva como **Completo**. |
+| **Cabecera y portada** | Las piezas de la cabecera (18.2) y accesos a **Cambiar portada…** y **Ajustes de la portada…**. |
+| **Índice** | Índice flotante (activado por defecto) y niveles: hasta H1, H2 o H3. |
+| **Página** | **Bloquear página**, **Color de acento** (nueve colores), estadísticas (palabras, caracteres y tiempo de lectura), **Restablecer estilo** y **Usar como predeterminado**. |
+
+- **Bloquear:** la página queda de solo lectura (no se puede escribir, pegar ni arrastrar contenido, ni cambiar título, descripción o portada). Un candado en la cabecera la desbloquea con un clic. Las propiedades de una fila dentro de una base de datos siguen editándose, pero su título no.
+- **Color de acento:** cambia enlaces, casillas, selección e índice **solo en esa página**.
+- **Restablecer estilo:** vuelve el estilo a lo predeterminado sin tocar portada, descripción, bloqueo ni contenido.
+- **Usar como predeterminado:** las páginas **nuevas** del espacio nacerán con el estilo actual de esta; las que ya existen no cambian.
+
+### 18.4 Índice
+
+- **Índice flotante:** aparece junto a la página cuando tiene 3 o más encabezados y cabe en el margen; marca la sección que estás viendo. Si no cabe (ventana estrecha, ancho completo) se convierte en el menú **En esta página**.
+- **Bloque Índice:** escribe `/` y elige **Índice**. Muestra la lista de encabezados y se actualiza sola; cada enlace lleva a su encabezado. Sin encabezados dice «Agrega encabezados para ver el índice». Al exportar a Markdown o HTML se convierte en una lista de enlaces.
+
+### 18.5 Fotos de Unsplash
+
+Está **apagado por defecto**. Para usarlo, ve a **Ajustes → Fotos de Unsplash**, enciende **Activar Unsplash** y escribe tu clave de acceso (se obtiene en la página de desarrolladores de Unsplash, enlazada ahí mismo).
+
+- Al buscar, lo que escribes y tu clave se envían a **api.unsplash.com**, y las miniaturas y la foto elegida se descargan de **images.unsplash.com**. **El contenido de tus páginas nunca se envía.** Con Unsplash apagado no sale ninguna petición.
+- La clave se guarda en el **llavero del sistema** (escritorio). En la **versión web** solo vive mientras la página está abierta: al recargar hay que escribirla de nuevo.
+- La foto se guarda en tu equipo con su **crédito** (autor y enlaces a Unsplash), que se ve abajo a la derecha de la portada. Si apagas Unsplash más tarde, las fotos ya elegidas siguen viéndose con su crédito.
+- Si la clave se borra o Unsplash la rechaza, la pestaña vuelve a pedirla; si se pierde la conexión o se alcanza el límite de búsquedas, se avisa y la portada anterior no cambia.
+
+### 18.6 Respaldo
+
+Las portadas (como archivos), los estilos, las descripciones, el bloqueo y el estilo predeterminado del espacio se respaldan y se restauran sin pérdida. El formato pasa a la **versión 2** (ver `docs/backup-format.md`): un respaldo anterior se restaura con las páginas en el estilo clásico (y con ancho «completo» las que lo tenían), y un respaldo de una versión más nueva que la de la aplicación se rechaza con un aviso, sin modificar nada.

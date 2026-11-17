@@ -1,6 +1,6 @@
 # Plan 005 — Estilo de páginas: portadas, cabecera y opciones del archivo
 
-> **Estado:** Fase 0 cerrada (resultados en `spikes/RESULTS-estilo.md`) · **Implementa:** `docs/specs/005-v-note-estilo-paginas/spec.md` (RF-1 a RF-9, RNF-1 a RNF-8, CL-1 a CL-17, D-1 a D-21).
+> **Estado:** implementado: Fases 0 a 5 cerradas (resultados de la Fase 0 en `spikes/RESULTS-estilo.md`; informe de cierre en `informe-cierre.md`) · **Implementa:** `docs/specs/005-v-note-estilo-paginas/spec.md` (RF-1 a RF-9, RNF-1 a RNF-8, CL-1 a CL-17, D-1 a D-21).
 > **Marco:** `docs/constitution.md` (incluida la excepción de Unsplash del art. 6). Este plan no contiene código de producción; fija el **cómo**: módulos, modelo de datos, algoritmos en pseudocódigo, contratos, decisiones con su alternativa descartada, fases y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes lo que cubre, por ejemplo **[RF-3]**. La sección 15 es la matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código):**

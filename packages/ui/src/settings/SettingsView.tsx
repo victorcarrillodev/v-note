@@ -5,6 +5,7 @@ import { useTheme, type PreferenceStore, type ThemeMode } from "../theme/theme";
 import { displayCombo, loadBindings, saveBindings } from "./bindingsStore";
 import { useGlobalShortcutState } from "../capture/globalShortcut";
 import { AppearancePanel } from "./AppearancePanel";
+import { UnsplashPanel } from "./UnsplashPanel";
 import { Button } from "../components/Button";
 import { IconButton } from "../components/IconButton";
 import { ViewLayout, ViewSection } from "../components/ViewLayout";
@@ -67,6 +68,8 @@ export function SettingsView({ preferences }: { preferences: PreferenceStore }) 
       </ViewSection>
 
       <AppearancePanel preferences={preferences} />
+
+      <UnsplashPanel />
 
       {globalShortcut && (
         <section role="region" aria-label={t("capture.globalTitle")}>

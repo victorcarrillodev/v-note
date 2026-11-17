@@ -65,6 +65,8 @@ export class PageService {
   async rename(pageId: string, title: string): Promise<Result<Page>> {
     const found = await this.pages.get(pageId);
     if (!found.ok) return found;
+    // Una página bloqueada es de solo lectura, también el título desde las vistas de base de datos (spec 005, RF-8.1.1).
+    if (found.value.locked) return err(appError("LOCKED", "La página está bloqueada"));
     await this.db.transaction(async (tx) => {
       await tx.exec("UPDATE pages SET title = ?, updated_at = ? WHERE id = ?", [title, this.clock.now(), pageId]);
       const body = (await tx.query<{ body: string }>("SELECT body FROM page_text WHERE page_id = ?", [pageId]))[0]?.body ?? "";

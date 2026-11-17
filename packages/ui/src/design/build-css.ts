@@ -1,7 +1,7 @@
 // Genera `tokens.css` a partir de `tokens.ts` (uso: `bun packages/ui/src/design/build-css.ts`). La prueba `cssTokens.test.ts` comprueba que no divergen.
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { colors, chips, blockColors, typography, spacing, radii, elevation, motion, layers, coverGradients, sizes, pageStyle } from "./tokens";
+import { colors, chips, blockColors, typography, spacing, radii, elevation, motion, layers, coverGradients, sizes, pageStyle, pageFonts } from "./tokens";
 
 const kebab = (s: string) => s.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
 const lines = (...l: string[]) => l.map((x) => "  " + x).join("\n");
@@ -34,6 +34,7 @@ ${lines(
   `--font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;`,
   `--font-serif: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;`,
   `--font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;`,
+  ...Object.entries(pageFonts).map(([id, f]) => `--font-${id}: "${f.family}", ${f.fallback};`),
   `--font-content: var(--font-sans);`,
   `--font-headings: var(--font-content);`,
   `--density-pad: 0px;`,

@@ -5,7 +5,7 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { getVersion } from "@tauri-apps/api/app";
 import { emit, listen } from "@tauri-apps/api/event";
 import { I18nextProvider } from "react-i18next";
-import { BackupService, BackupWorkerClient, GitHubTokenStore, checkForUpdate, RestoreSource, WorkspaceManager, appError, brand, err, ok, systemClock, type FetchLike, type GlobalShortcutService, type SqlStore } from "@vnote/core";
+import { BackupService, BackupWorkerClient, GitHubTokenStore, checkForUpdate, RestoreSource, WorkspaceManager, appError, brand, err, ok, systemClock, type FetchLike, type UnsplashFetch, type GlobalShortcutService, type SqlStore } from "@vnote/core";
 import { TauriNotifier } from "./tauriNotifier";
 import { tauriExportRuntime } from "./tauriExportRuntime";
 import { TauriAppConfigStore, TauriAssetStore, TauriKeychain, TauriWorkspaceStorage } from "@vnote/adapters-tauri";
@@ -13,6 +13,7 @@ import { App, LocalStoragePreferences, PageEditor, QuickCaptureView, ReminderCen
 import "./styles.css";
 
 const fetchLike: FetchLike = (url, init) => fetch(url, init as RequestInit);
+const unsplashFetch: UnsplashFetch = (url, init) => fetch(url, init as RequestInit);
 
 /** Un solo worker de respaldo por aplicación; si el entorno no soporta workers, el servicio trabaja en el hilo principal. */
 let backupWorker: BackupWorkerClient | undefined;
@@ -92,7 +93,7 @@ async function start() {
   };
   createRoot(document.getElementById("root")!).render(
     <I18nextProvider i18n={i18n}>
-      <App services={{ workspaces, clock: systemClock, backup, exporter: { assetsFor, runtime: tauriExportRuntime(invoke) }, reminders: { notifier: new TauriNotifier(), onTick }, updates: { check: async () => { const r = await checkForUpdate({ fetch: fetchLike as never, repo: brand.updateRepo, current: await getVersion() }); return r.ok ? r.value : { available: false as const }; }, openDownload: (url) => void invoke("open_release_url", { url }).catch(() => {}) }, pickFolder: async () => { const r = await openDialog({ directory: true, multiple: false }); return typeof r === "string" ? r : null; }, revealLocation: (location) => void invoke("reveal_path", { path: location }).catch(() => {}), globalShortcut, onCaptured, onOpenTask: (cb) => { const off = listen<{ workspaceId: string; pageId: string }>("vnote://open-task", (e) => cb(e.payload)); return () => void off.then((f) => f()); } }} preferences={preferences} renderPageBody={(id, controller, ws) => <PageEditor controller={controller} pageId={id} assets={assetsFor(ws.location)} />} />
+      <App services={{ workspaces, clock: systemClock, backup, unsplash: { platform: "desktop", keychain, fetch: unsplashFetch }, exporter: { assetsFor, runtime: tauriExportRuntime(invoke) }, reminders: { notifier: new TauriNotifier(), onTick }, updates: { check: async () => { const r = await checkForUpdate({ fetch: fetchLike as never, repo: brand.updateRepo, current: await getVersion() }); return r.ok ? r.value : { available: false as const }; }, openDownload: (url) => void invoke("open_release_url", { url }).catch(() => {}) }, pickFolder: async () => { const r = await openDialog({ directory: true, multiple: false }); return typeof r === "string" ? r : null; }, openExternal: (url) => void invoke("open_unsplash_url", { url }).catch(() => {}), revealLocation: (location) => void invoke("reveal_path", { path: location }).catch(() => {}), globalShortcut, onCaptured, onOpenTask: (cb) => { const off = listen<{ workspaceId: string; pageId: string }>("vnote://open-task", (e) => cb(e.payload)); return () => void off.then((f) => f()); } }} preferences={preferences} renderPageBody={(id, controller, ws) => <PageEditor controller={controller} pageId={id} assets={assetsFor(ws.location)} />} />
     </I18nextProvider>,
   );
 }

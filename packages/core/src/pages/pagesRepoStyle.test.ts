@@ -109,3 +109,17 @@ describe("duplicar copia las columnas nuevas (E-043)", () => {
     }
   });
 });
+
+describe("parche vacío", () => {
+  it("setProps({}) no cambia nada, ni la fecha de edición", async () => {
+    const db = await createNodeSqliteStore(":memory:");
+    await migrate(db, migrations);
+    const clock = new FakeClock(1_000);
+    const repo = new PagesRepo(db, clock);
+    const p = (await repo.create({ title: "A" }));
+    if (!p.ok) throw new Error("x");
+    clock.advance(5_000);
+    const r = await repo.setProps(p.value.id, {});
+    expect(r.ok && r.value.updatedAt).toBe(p.value.updatedAt);
+  });
+});

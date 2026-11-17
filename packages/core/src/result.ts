@@ -7,6 +7,7 @@ export const ERROR_CODES = [
   "UNSUPPORTED_VERSION",
   "STORAGE",
   "CANCELLED",
+  "LOCKED",
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 

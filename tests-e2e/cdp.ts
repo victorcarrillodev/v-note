@@ -7,6 +7,9 @@ import { join } from "node:path";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export const CHROME = process.env.CHROME_BIN ?? "/usr/bin/google-chrome-stable";
 
+type RouteReply = { status: number; body: string | Buffer; contentType: string };
+export type RouteHandler = (url: URL, req: { method: string; headers: Record<string, string>; body: string | undefined }) => RouteReply | Promise<RouteReply>;
+
 export class Page {
   private id = 0;
   /** Errores de la página (excepciones y console.error), para diagnosticar y para exigir que no haya. */
@@ -19,8 +22,25 @@ export class Page {
     this.fakes.push({ host, status, body });
     await this.send("Fetch.enable", { patterns: [{ urlPattern: "*" }] });
   }
+  /** Peticiones que `route` atendió, con sus cabeceras y cuerpo (para comprobar qué sale de la aplicación). */
+  seen: { url: string; method: string; headers: Record<string, string>; body: string | undefined }[] = [];
+  private routes: { host: string; handler: RouteHandler }[] = [];
+  /** Atiende con `handler` las peticiones a `host` (la petición real nunca sale): respuestas de cualquier tipo, también binarias. Las de comprobación previa (CORS) se aceptan solas. */
+  async route(host: string, handler: RouteHandler) {
+    this.routes.push({ host, handler });
+    await this.send("Fetch.enable", { patterns: [{ urlPattern: "*" }] });
+  }
   private async onPaused(params: any) {
     const url = new URL(params.request.url);
+    const route = this.routes.find((x) => x.host === url.host);
+    if (route) {
+      const cors = [{ name: "access-control-allow-origin", value: "*" }, { name: "access-control-allow-headers", value: "*" }, { name: "access-control-allow-methods", value: "GET, POST, PATCH, PUT, DELETE, OPTIONS" }, { name: "access-control-expose-headers", value: "*" }];
+      if (params.request.method === "OPTIONS") { await this.send("Fetch.fulfillRequest", { requestId: params.requestId, responseCode: 204, responseHeaders: cors }).catch(() => {}); return; }
+      this.seen.push({ url: params.request.url, method: params.request.method, headers: params.request.headers ?? {}, body: params.request.postData });
+      const r = await route.handler(url, { method: params.request.method, headers: params.request.headers ?? {}, body: params.request.postData });
+      await this.send("Fetch.fulfillRequest", { requestId: params.requestId, responseCode: r.status, responseHeaders: [{ name: "content-type", value: r.contentType }, ...cors], body: Buffer.from(r.body).toString("base64") }).catch(() => {});
+      return;
+    }
     const f = this.fakes.find((x) => x.host === url.host);
     if (!f) { await this.send("Fetch.continueRequest", { requestId: params.requestId }).catch(() => {}); return; }
     await this.send("Fetch.fulfillRequest", {

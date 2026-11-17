@@ -1,5 +1,5 @@
 // U-169 y U-170 (RF-5.8, RF-14.8): tabla de contenidos lateral y menú «En esta página».
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../tests/renderWithI18n";
@@ -7,7 +7,10 @@ import { TableOfContents } from "./TableOfContents";
 
 const hs = [{ id: "a", level: 1, text: "Introducción" }, { id: "b", level: 2, text: "Detalles" }, { id: "c", level: 1, text: "Cierre" }];
 const setWidth = (w: number) => { Object.defineProperty(window, "innerWidth", { configurable: true, value: w }); };
-afterEach(() => { setWidth(1400); });
+// Una ventana lo bastante ancha para que la columna lateral quepa en el margen del contenido (E-141); el resto de pruebas ajusta el ancho a su caso.
+const WIDE = 2000;
+beforeEach(() => { setWidth(WIDE); });
+afterEach(() => { setWidth(WIDE); });
 
 describe("TableOfContents", () => {
   it("con menos de 3 encabezados no se muestra", async () => {

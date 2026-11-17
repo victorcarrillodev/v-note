@@ -11,6 +11,7 @@ import { DiagramEditor } from "../diagram/DiagramEditor";
 import { MentionView } from "./MentionView";
 import { MatrixEditor, TimelineEditor, TreeEditor } from "../diagram/Organizers";
 import { MindMapEditor } from "../diagram/MindMapEditor";
+import { useToc } from "./TocContext";
 
 export const CALLOUT_VARIANTS = ["info", "success", "warning", "danger"] as const;
 type Variant = (typeof CALLOUT_VARIANTS)[number];
@@ -157,7 +158,33 @@ export const mentionInline = createReactInlineContentSpec(
   { render: ({ inlineContent }) => <MentionView pageId={inlineContent.props.pageId} title={inlineContent.props.title} /> },
 );
 
+/** Vista del bloque «Índice» (RF-7.3 a RF-7.6): la lista viva de encabezados de la página, con un enlace a cada uno. */
+export function TocBlockView() {
+  const { t } = useTranslation();
+  const { headings, jump } = useToc();
+  const reduced = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return (
+    <nav aria-label={t("toc.block")} data-testid="toc-block" contentEditable={false} className="w-full rounded-[var(--radius-md)] bg-[var(--c-raised)] p-3">
+      {headings.length === 0 ? (
+        <p className="text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("toc.empty")}</p>
+      ) : (
+        <ul className="flex flex-col gap-1">
+          {headings.map((h) => (
+            <li key={h.id} style={{ paddingInlineStart: `calc(${Math.max(0, h.level - 1)} * var(--space-3))` }}>
+              <a href={`#${h.id}`} onClick={(e) => { e.preventDefault(); jump(h.id, reduced ? "auto" : "smooth"); }}
+                className="text-[length:var(--text-ui-size)] text-[var(--c-accent)] underline-offset-2 hover:underline">{h.text}</a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </nav>
+  );
+}
+
+/** Bloque «Índice»: sin propiedades ni contenido propio; se rehace solo con los encabezados de la página. */
+export const tocBlock = createReactBlockSpec({ type: "toc", propSchema: {}, content: "none" }, { render: () => <TocBlockView /> });
+
 export const schema = BlockNoteSchema.create({
   inlineContentSpecs: { ...defaultInlineContentSpecs, mention: mentionInline },
-  blockSpecs: { ...defaultBlockSpecs, codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock() },
+  blockSpecs: { ...defaultBlockSpecs, codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock(), toc: tocBlock() },
 });

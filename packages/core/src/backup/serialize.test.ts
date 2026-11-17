@@ -45,7 +45,7 @@ describe("workspace.json (T-168)", () => {
     expect(JSON.parse(text(files, "workspace.json"))).toEqual({ formatVersion: FORMAT_VERSION, id: "ws-1", name: "Personal", pageCount: 1 });
     expect(text(files, "workspace.json").endsWith("}\n")).toBe(true);
   });
-  it("la versión del formato es 1", () => expect(FORMAT_VERSION).toBe(1));
+  it("la versión del formato es 2", () => expect(FORMAT_VERSION).toBe(2));
 });
 
 describe("JSON sin pérdida por página (T-170)", () => {
@@ -124,9 +124,11 @@ describe("archivo dorado (T-175)", () => {
     await addPage("4e5f6a7b-2", "Ideas & Notas", "0a1b2c3d-1", "a0", [{ id: "b3", type: "checkListItem", props: { ...defaultProps("checkListItem"), checked: true }, content: [{ type: "text", text: "Hecho", styles: { bold: true } }], children: [] }]);
     await addPage("8c9d0e1f-3", "Vieja", null, "a1", [para("b4", "borrada")], { deletedAt: 9000, deletedRootId: "8c9d0e1f-3" });
     await assets.put(new TextEncoder().encode("adjunto de ejemplo"));
+    // Spec 005: la página de inicio lleva descripción, bloqueo y estilo (el v1 de referencia, `backup-v1.json`, se conserva para probar la restauración).
+    await db.exec("UPDATE pages SET description = 'Punto de partida', locked = 1, style = ? WHERE id = '0a1b2c3d-1'", ['{"accent":"blue","spacing":{"width":"full"}}']);
     const { files } = await ser("Ejemplo");
     const snapshot = Object.fromEntries([...files.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => [k, k.startsWith("assets/") ? `base64:${btoa(String.fromCharCode(...v))}` : new TextDecoder().decode(v)]));
-    await expect(JSON.stringify(snapshot, null, 2) + "\n").toMatchFileSnapshot("../../tests/golden/backup-v1.json");
+    await expect(JSON.stringify(snapshot, null, 2) + "\n").toMatchFileSnapshot("../../tests/golden/backup-v2.json");
   });
 });
 

@@ -9,7 +9,9 @@ import { useTranslation } from "react-i18next";
 import type { PageNode } from "@vnote/core";
 import type { BackupService, InstanceLockHandle, RestoreSource, Workspace } from "@vnote/core";
 import { AppServicesProvider, useServices, type AppServices } from "./services";
+import { UnsplashProvider } from "../unsplash/UnsplashContext";
 import { PageBody } from "../page/PageBody";
+import { PageStyleScope } from "../page/PageStyleScope";
 import { AppErrorBoundary } from "../feedback/ErrorScreen";
 import { ToastProvider } from "../feedback/ToastContext";
 import { AppShell } from "../layout/AppShell";
@@ -29,7 +31,7 @@ import { ReminderCenter } from "../reminders/reminderCenter";
 import { RemindersView } from "../reminders/RemindersView";
 import { SettingsView } from "../settings/SettingsView";
 import { loadBindings } from "../settings/bindingsStore";
-import { comboFromEvent } from "@vnote/core";
+import { comboFromEvent, gcAssets } from "@vnote/core";
 import { Sidebar } from "../sidebar/Sidebar";
 import { PageHeader } from "../page/PageHeader";
 import { ExportDialog } from "../page/ExportDialog";
@@ -55,7 +57,9 @@ export function App({ services, preferences, renderPageBody }: AppProps) {
   return (
     <ThemeProvider preferences={preferences}>
       <AppServicesProvider services={services}>
-        <ToastProvider><AppErrorBoundary><Main renderPageBody={renderPageBody} preferences={preferences} /></AppErrorBoundary></ToastProvider>
+        <UnsplashProvider runtime={services.unsplash} preferences={preferences}>
+          <ToastProvider><AppErrorBoundary><Main renderPageBody={renderPageBody} preferences={preferences} /></AppErrorBoundary></ToastProvider>
+        </UnsplashProvider>
       </AppServicesProvider>
     </ThemeProvider>
   );
@@ -171,8 +175,11 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
     await controller.refresh();
     setOpened({ workspace: r.value.workspace, controller });
     setView("page");
+    // Archivos sin uso (RF-2.8): en segundo plano, solo al abrir; un fallo nunca estorba (no borra nada si algo falla, DP-9).
+    // En escritorio y en la web el almacén llega por `backup.assetsFor`; sin él no hay almacén que limpiar.
+    if (backup) void gcAssets({ store: r.value.store, assets: backup.assetsFor(r.value.workspace.location) }).catch(() => {});
     return controller;
-  }, [workspaces, clock, ensureLock]);
+  }, [workspaces, clock, ensureLock, backup]);
 
   // La ventana de recordatorio pide abrir una tarea: se abre su espacio y su página (RF-11).
   const openedRef = useRef(opened);
@@ -350,6 +357,11 @@ function findKind(nodes: readonly { page: { id: string; kind: string }; children
 function PageArea({ controller, workspace, renderPageBody, exporter }: { controller: WorkspaceController; workspace: Workspace; renderPageBody: AppProps["renderPageBody"]; exporter?: NonNullable<ReturnType<typeof useServices>["exporter"]> }) {
   const { t } = useTranslation();
   const snap = useWorkspace(controller);
+  const { backup, exporter: exporterSvc } = useServices();
+  // Los archivos de la portada viven en el almacén del espacio (escritorio y web los aportan por el respaldo o la exportación).
+  // Una sola instancia por espacio: si cambiara en cada render, la imagen de la portada se volvería a cargar (parpadeo).
+  const assetsRuntime = backup ?? exporterSvc;
+  const assets = useMemo(() => assetsRuntime?.assetsFor(workspace.location), [assetsRuntime, workspace.location]);
   const [exporting, setExporting] = useState<string | null>(null);
   // Sin página abierta (espacio nuevo, o tras eliminar la que se veía) se dice qué hacer en vez de dejar el área en blanco.
   if (!snap.selectedId) return (
@@ -358,23 +370,23 @@ function PageArea({ controller, workspace, renderPageBody, exporter }: { control
     </div>
   );
   const kind = findKind(snap.tree, snap.selectedId);
-  const fullWidth = findPage(snap.tree, snap.selectedId)?.style.spacing?.width === "full";
+  const pageStyle = findPage(snap.tree, snap.selectedId)?.style ?? {};
   const dialog = exporting && exporter ? (
     <ExportDialog key={exporting} controller={controller} pageId={exporting} assets={exporter.assetsFor(workspace.location)} runtime={exporter.runtime} onClose={() => setExporting(null)} />
   ) : null;
   const onExport = exporter ? (id: string) => setExporting(id) : undefined;
   if (kind === "database" || kind === "board") {
     return (
-      <article className="mx-auto max-w-6xl p-6">
-        <PageHeader controller={controller} pageId={snap.selectedId} {...(onExport ? { onExport } : {})} />
+      <PageStyleScope as="article" style={pageStyle} className="mx-auto max-w-6xl p-6">
+        <PageHeader controller={controller} pageId={snap.selectedId} assets={assets} workspaceName={workspace.name} {...(onExport ? { onExport } : {})} />
         <DatabasePage key={snap.selectedId} controller={controller} pageId={snap.selectedId} />
         {dialog}
-      </article>
+      </PageStyleScope>
     );
   }
   return (
-    <PageBody fullWidth={fullWidth}>
-      <PageHeader controller={controller} pageId={snap.selectedId} {...(onExport ? { onExport } : {})} />
+    <PageBody style={pageStyle}>
+      <PageHeader controller={controller} pageId={snap.selectedId} assets={assets} workspaceName={workspace.name} {...(onExport ? { onExport } : {})} />
       {renderPageBody?.(snap.selectedId, controller, workspace)}
       {dialog}
     </PageBody>

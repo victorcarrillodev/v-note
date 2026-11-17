@@ -2,7 +2,7 @@ import type { Property } from "./databaseService";
 import type { ErrorValue } from "../formulas/engine";
 import type { CellValue, DateValue, SelectOption } from "./values";
 
-export type QueryRow = { pageId: string; title: string; position: string; values: Record<string, CellValue | ErrorValue | null> };
+export type QueryRow = { pageId: string; title: string; position: string; values: Record<string, CellValue | ErrorValue | null>; locked?: true };
 export type Condition = { type: "condition"; property: string; op: string; value?: unknown };
 export type FilterGroup = { type: "group"; op: "and" | "or"; filters: Filter[] };
 export type Filter = Condition | FilterGroup;

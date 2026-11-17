@@ -83,7 +83,8 @@ export function TableView({ controller, height = 480, onOpenRow, onNewProperty }
                       defaultValue={r.title}
                       key={`${r.pageId}:${r.title}`}
                       placeholder={t("databases.untitled")}
-                      onBlur={(e) => { if (e.target.value !== r.title) void controller.setTitle(r.pageId, e.target.value); }}
+                      readOnly={r.locked === true}
+                      onBlur={(e) => { if (r.locked !== true && e.target.value !== r.title) void controller.setTitle(r.pageId, e.target.value); }}
                       onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
                       className="min-w-0 flex-1 bg-transparent"
                     />

@@ -1,6 +1,6 @@
 // T-105 (pruebas primero): utilidades de archivos del espacio de trabajo (configuración atómica y borrado acotado).
 use std::path::PathBuf;
-use vnote_db::fsutil::{atomic_write, read_text, remove_workspace_files, standard_data_dir, is_release_url, write_new_unique, DataDirEnv, Os};
+use vnote_db::fsutil::{atomic_write, read_text, remove_workspace_files, standard_data_dir, is_release_url, is_unsplash_url, write_new_unique, DataDirEnv, Os};
 
 #[test]
 fn escribe_de_forma_atomica_y_lee_de_vuelta() {
@@ -159,4 +159,13 @@ fn rechaza_nombres_con_ruta_o_que_no_son_html() {
         assert!(write_new_unique(t.path(), bad, "x").is_err(), "debería rechazar {bad:?}");
     }
     assert_eq!(std::fs::read_dir(t.path()).unwrap().count(), 0);
+}
+
+#[test]
+fn solo_abre_direcciones_de_unsplash() {
+    assert!(is_unsplash_url("https://unsplash.com/developers"));
+    assert!(is_unsplash_url("https://unsplash.com/photos/abc?utm_source=v-note"));
+    for bad in ["http://unsplash.com/developers", "https://unsplash.com.evil.com/x", "https://evil.com/https://unsplash.com/", "https://unsplash.com/a b", "file:///etc/passwd", ""] {
+        assert!(!is_unsplash_url(bad), "debería rechazar {bad}");
+    }
 }

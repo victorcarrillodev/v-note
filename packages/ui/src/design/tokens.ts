@@ -57,6 +57,26 @@ export const coverGradients: Record<string, Record<Theme, [string, string]>> = {
   graphite: { light: ["#E4E3DF", "#C9C7C0"], dark: ["#3A3A39", "#2A2A29"] },
 };
 
+/**
+ * Fuentes que se pueden elegir para una página (spec 005, RF-5, D-16): familia declarada en `fonts.css`, archivo y pila de respaldo.
+ * `id` es el `FontId` del núcleo; la variable CSS de cada una es `--font-<id>`.
+ */
+export const pageFonts: Record<string, { family: string; file: string; fallback: string; label: string }> = {
+  inter: { family: "Inter Variable", file: "inter-latin-wght-normal.woff2", fallback: "system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif", label: "Inter" },
+  geist: { family: "Geist Variable", file: "geist-latin-wght-normal.woff2", fallback: "system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif", label: "Geist" },
+  nunito: { family: "Nunito Variable", file: "nunito-latin-wght-normal.woff2", fallback: "system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif", label: "Nunito" },
+  "source-serif": { family: "Source Serif 4 Variable", file: "source-serif-4-latin-wght-normal.woff2", fallback: "Georgia, \"Times New Roman\", serif", label: "Source Serif" },
+  lora: { family: "Lora Variable", file: "lora-latin-wght-normal.woff2", fallback: "Georgia, \"Times New Roman\", serif", label: "Lora" },
+  merriweather: { family: "Merriweather Variable", file: "merriweather-latin-wght-normal.woff2", fallback: "Georgia, \"Times New Roman\", serif", label: "Merriweather" },
+  "jetbrains-mono": { family: "JetBrains Mono Variable", file: "jetbrains-mono-latin-wght-normal.woff2", fallback: "ui-monospace, \"SF Mono\", Menlo, Consolas, monospace", label: "JetBrains Mono" },
+  "fira-code": { family: "Fira Code Variable", file: "fira-code-latin-wght-normal.woff2", fallback: "ui-monospace, \"SF Mono\", Menlo, Consolas, monospace", label: "Fira Code" },
+  atkinson: { family: "Atkinson Hyperlegible Next Variable", file: "atkinson-hyperlegible-next-latin-wght-normal.woff2", fallback: "system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif", label: "Atkinson Hyperlegible" },
+  caveat: { family: "Caveat Variable", file: "caveat-latin-wght-normal.woff2", fallback: "\"Segoe Print\", \"Comic Sans MS\", cursive", label: "Caveat" },
+};
+
+/** Valores de partida del editor de portadas (selector de color y degradado propio), fijos para cualquier tema. */
+export const coverEditor = { neutral: "#808080", gradientStart: "#f3e7d3", gradientEnd: "#b9d6f2", gradientThird: "#e9d4b5" } as const;
+
 type Level = { size: number; line: number; weight: 400 | 500 | 600 | 700 };
 export const typography: Record<"pageTitle" | "h1" | "h2" | "h3" | "reading" | "dialogTitle" | "component" | "ui" | "uiSmall" | "note" | "label", Level> = {
   pageTitle: { size: 36, line: 44, weight: 700 },

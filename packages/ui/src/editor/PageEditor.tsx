@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { TableOfContents, type JumpBehavior } from "../page/TableOfContents";
-import { extractHeadings, activeHeading, type Heading } from "../page/toc";
+import { extractHeadings, type Heading } from "@vnote/core";
+import { useActiveHeading } from "../page/useActiveHeading";
+import { contentWidthOf } from "../page/tocLayout";
+import { TocProvider } from "./TocContext";
 import { buildSlashItems } from "./slashItems";
 import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
+import { useWorkspace } from "../workspace/useController";
 import { SuggestionMenuController, useCreateBlockNote } from "@blocknote/react";
 import { schema } from "./schema";
 import { DatabaseEmbedProvider } from "../databases/EmbeddedDatabase";
@@ -17,7 +21,7 @@ import { LinkProvider, type LinkApi } from "./LinkContext";
 import { DiagramDefaultsProvider, type DiagramDefaultsApi } from "../diagram/DiagramDefaults";
 import { Backlinks } from "./Backlinks";
 import { InboxTriage } from "./InboxTriage";
-import type { AssetStore } from "@vnote/core";
+import type { AssetStore, Page, PageNode } from "@vnote/core";
 import { createFileHandlers } from "./fileHandlers";
 import type { WorkspaceController } from "../workspace/controller";
 import { useTheme } from "../theme/theme";
@@ -27,6 +31,12 @@ import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import "./editor.css";
 
+function findPage(tree: readonly PageNode[], id: string): Page | null {
+  const stack = [...tree];
+  while (stack.length) { const n = stack.pop()!; if (n.page.id === id) return n.page; stack.push(...n.children); }
+  return null;
+}
+
 /** Editor de bloques de una página. El documento vive en Yjs y se guarda solo (DocSession). */
 export function PageEditor({ controller, pageId, assets }: { controller: WorkspaceController; pageId: string; assets?: AssetStore }) {
   const { t } = useTranslation();
@@ -34,16 +44,27 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
   const [saveError, setSaveError] = useState<string | null>(null);
   const [blocks, setBlocks] = useState(0);
   const [headings, setHeadings] = useState<Heading[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [notes, setNotes] = useState<string[]>([]);
-  useEffect(() => {
-    if (headings.length === 0) return;
-    const tops = () => Object.fromEntries(headings.map((h) => [h.id, document.querySelector(`[data-id="${h.id}"]`)?.getBoundingClientRect().top ?? Infinity]));
-    const onScroll = () => setActiveId(activeHeading(headings, tops(), 96));
-    onScroll();
-    window.addEventListener("scroll", onScroll, true);
-    return () => window.removeEventListener("scroll", onScroll, true);
-  }, [headings]);
+  const snap = useWorkspace(controller);
+  const page = findPage(snap.tree, pageId);
+  const locked = page?.locked === true;
+  const toc = page?.style.toc;
+  const maxLevel = toc?.maxLevel ?? 3;
+  const floating = toc?.floating !== false;
+  const contentWidth = contentWidthOf(page?.style.spacing?.width);
+  // Un intento de editar una página bloqueada muestra un aviso breve (CL-11).
+  const [lockedNotice, setLockedNotice] = useState(false);
+  useEffect(() => { if (!lockedNotice) return; const id = setTimeout(() => setLockedNotice(false), 4000); return () => clearTimeout(id); }, [lockedNotice]);
+  useEffect(() => { if (!locked) setLockedNotice(false); }, [locked]);
+  const editAttempt = (e: { key?: string; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean; type: string }) => {
+    if (!locked) return;
+    if (e.type === "keydown") {
+      const k = e.key ?? "";
+      const edits = (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) || k === "Enter" || k === "Backspace" || k === "Delete" || k === "Tab" || ((e.ctrlKey || e.metaKey) && (k === "v" || k === "x"));
+      if (!edits) return;
+    }
+    setLockedNotice(true);
+  };
   const jumpTo = (id: string, behavior: JumpBehavior) => document.querySelector(`[data-id="${id}"]`)?.scrollIntoView?.({ behavior, block: "start" });
   const handlers = useMemo(
     () => (assets ? createFileHandlers(assets, {
@@ -67,6 +88,19 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
     reset: () => clearDiagramDefaults(controller.store),
   }), [controller]);
 
+  // Lista de encabezados del índice (flotante y bloque): se actualiza con el mismo retardo de 800 ms y respeta los niveles elegidos (RF-7.8).
+  useEffect(() => {
+    if (!session) { setHeadings([]); return; }
+    const frag = session.doc.getXmlFragment("doc");
+    const refresh = () => setHeadings(extractHeadings(fromYjs(frag), maxLevel as 1 | 2 | 3));
+    refresh();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onUpdate = () => { clearTimeout(timer); timer = setTimeout(refresh, 800); };
+    session.doc.on("update", onUpdate);
+    return () => { clearTimeout(timer); session.doc.off("update", onUpdate); };
+  }, [session, maxLevel]);
+  const activeId = useActiveHeading(headings);
+
   useEffect(() => {
     let cancelled = false;
     let opened: DocSession | null = null;
@@ -82,11 +116,9 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
         saveStatusStore.setRetry(() => void s.flush());
         const frag = s.doc.getXmlFragment("doc");
         setBlocks(countBlocks(frag));
-        const refreshHeadings = () => setHeadings(extractHeadings(fromYjs(frag)));
-        refreshHeadings();
         // Se recuenta con retardo para no frenar la escritura en páginas enormes.
         let timer: ReturnType<typeof setTimeout> | undefined;
-        const onUpdate = () => { clearTimeout(timer); timer = setTimeout(() => { setBlocks(countBlocks(frag)); refreshHeadings(); }, 800); };
+        const onUpdate = () => { clearTimeout(timer); timer = setTimeout(() => { setBlocks(countBlocks(frag)); }, 800); };
         s.doc.on("update", onUpdate);
         stopCounting = () => { clearTimeout(timer); s.doc.off("update", onUpdate); };
         setSession(s);
@@ -105,13 +137,14 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
   }, [controller, pageId]);
 
   return (
-    <div className="relative mt-4">
-      <TableOfContents headings={headings} activeId={activeId} onJump={jumpTo} />
+    <div className="relative mt-4" onKeyDownCapture={editAttempt} onPasteCapture={editAttempt} onDropCapture={editAttempt}>
+      {floating && <TableOfContents headings={headings} activeId={activeId} onJump={jumpTo} contentWidth={contentWidth} />}
       {saveError && (
         <InlineAlert tone="error">
           {t("editor.saveFailed", { message: saveError })}
         </InlineAlert>
       )}
+      {lockedNotice && <p role="status" data-testid="locked-notice" className="mb-2 rounded border border-[var(--c-border)] bg-[var(--c-raised)] p-2 text-[length:var(--text-ui-small-size)]">{t("pageHeader.lockedNotice")}</p>}
       <InboxTriage controller={controller} pageId={pageId} />
       <LargePageNotice blocks={blocks} />
       {notes.map((n, i) => (
@@ -119,13 +152,13 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
           {n} <button type="button" onClick={() => setNotes((all) => all.filter((_, j) => j !== i))}>{t("editor.dismiss")}</button>
         </p>
       ))}
-      {session ? <DatabaseEmbedProvider value={{ list: () => controller.listDatabases(), open: (id) => controller.openDatabaseById(id), openRow: (id) => void controller.select(id) }}><LinkProvider value={links}><DiagramDefaultsProvider value={diagramDefaults}><Editor key={pageId} session={session} handlers={handlers} findPages={(q) => controller.findPages(q)} /></DiagramDefaultsProvider></LinkProvider></DatabaseEmbedProvider> : <p role="status" className="opacity-70">{t("app.loading")}</p>}
+      {session ? <DatabaseEmbedProvider value={{ list: () => controller.listDatabases(), open: (id) => controller.openDatabaseById(id), openRow: (id) => void controller.select(id) }}><LinkProvider value={links}><DiagramDefaultsProvider value={diagramDefaults}><TocProvider value={{ headings, jump: jumpTo }}><Editor key={pageId} session={session} locked={locked} handlers={handlers} findPages={(q) => controller.findPages(q)} /></TocProvider></DiagramDefaultsProvider></LinkProvider></DatabaseEmbedProvider> : <p role="status" className="opacity-70">{t("app.loading")}</p>}
       {session ? <Backlinks controller={controller} pageId={pageId} /> : null}
     </div>
   );
 }
 
-function Editor({ session, handlers, findPages }: { session: DocSession; handlers: ReturnType<typeof createFileHandlers> | null; findPages: (query: string) => Promise<{ id: string; title: string }[]> }) {
+function Editor({ session, locked, handlers, findPages }: { session: DocSession; locked: boolean; handlers: ReturnType<typeof createFileHandlers> | null; findPages: (query: string) => Promise<{ id: string; title: string }[]> }) {
   const { i18n, t } = useTranslation();
   const { resolved } = useTheme();
   const collaboration = useMemo(
@@ -147,10 +180,10 @@ function Editor({ session, handlers, findPages }: { session: DocSession; handler
   };
   const items = async (query: string) => buildSlashItems(editor, t, query);
   return (
-    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false}>
-      <SuggestionMenuController triggerCharacter="/" getItems={items} />
-      <SuggestionMenuController triggerCharacter="@" getItems={mentionItems} />
-      <SuggestionMenuController triggerCharacter="[[" getItems={mentionItems} />
+    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false} editable={!locked}>
+      {!locked && <SuggestionMenuController triggerCharacter="/" getItems={items} />}
+      {!locked && <SuggestionMenuController triggerCharacter="@" getItems={mentionItems} />}
+      {!locked && <SuggestionMenuController triggerCharacter="[[" getItems={mentionItems} />}
     </BlockNoteView>
   );
 }

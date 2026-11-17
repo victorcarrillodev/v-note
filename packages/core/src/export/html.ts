@@ -7,6 +7,7 @@ import { parseTree } from "../diagrams/tree";
 import type { Property } from "../databases/databaseService";
 import type { QueryRow } from "../databases/query";
 import { diagramToSvg, escapeXml, matrixToSvg, timelineToSvg, treeToSvg } from "./svg";
+import { hasTocBlock, tocEntries, type TocEntry } from "../pages/toc";
 
 // Bloques → HTML autocontenido (RF-24). Solo produce texto: todo valor se escapa, los enlaces pasan por una lista de esquemas permitidos
 // y los colores/variantes por listas cerradas de nombres, de modo que un contenido malicioso no puede inyectar etiquetas ni atributos.
@@ -23,6 +24,8 @@ export type RenderContext = {
   /** Páginas que también se exportan: id → ancla, para que sus menciones sean enlaces internos. */
   pageAnchors: Map<string, string>;
   report: ExportReport;
+  /** Entradas del índice del documento (solo si tiene un bloque `toc`): cada encabezado lleva el `id` de su ancla. */
+  toc?: { entries: readonly TocEntry[]; byBlock: Map<string, string> };
 };
 export const newReport = (): ExportReport => ({ missing: [], warnings: [] });
 
@@ -115,7 +118,12 @@ function renderOne(b: Block, ctx: RenderContext): string {
   const kids = b.children.length ? blocksToHtml(b.children, ctx) : "";
   switch (b.type) {
     case "paragraph": return `<p${alignAttr(b)}>${inner}</p>${kids}`;
-    case "heading": { const l = Math.min(3, Math.max(1, Number(b.props.level) || 1)); return `<h${l}${alignAttr(b)}>${inner}</h${l}>${kids}`; }
+    case "heading": {
+      const l = Math.min(3, Math.max(1, Number(b.props.level) || 1));
+      const anchor = ctx.toc?.byBlock.get(b.id);
+      return `<h${l}${anchor ? ` id="${esc(anchor)}"` : ""}${alignAttr(b)}>${inner}</h${l}>${kids}`;
+    }
+    case "toc": return tocHtml(ctx.toc?.entries ?? []);
     case "quote": return `<blockquote>${inner}</blockquote>${kids}`;
     case "divider": return "<hr>";
     case "toggleListItem": return `<details><summary>${inner}</summary>${kids}</details>`;
@@ -169,8 +177,29 @@ function renderOne(b: Block, ctx: RenderContext): string {
   }
 }
 
+/** Índice del bloque `toc` (RF-7.4): lista anidada de enlaces a los encabezados. */
+function tocHtml(entries: readonly TocEntry[]): string {
+  if (entries.length === 0) return '<nav class="toc" aria-label="Índice"></nav>';
+  const top = Math.min(...entries.map((e) => e.level));
+  let html = "<ul>", depth = 0;
+  entries.forEach((e, i) => {
+    if (i > 0) {
+      const level = Math.min(e.level - top, depth + 1); // un salto de dos niveles se anida un solo nivel: nunca hay <ul> sin <li>
+      if (level > depth) { html += "<ul>"; depth++; }
+      else { html += "</li>"; while (depth > level) { html += "</ul></li>"; depth--; } }
+    }
+    html += `<li><a href="#${esc(e.anchor)}">${esc(e.text)}</a>`;
+  });
+  return `<nav class="toc" aria-label="Índice">${html}</li>${"</ul></li>".repeat(depth)}</ul></nav>`;
+}
+
 /** Convierte bloques a HTML (sin documento envolvente). Las listas consecutivas se agrupan y los hijos se anidan. */
 export function blocksToHtml(blocks: Block[], ctx: RenderContext): string {
+  // Con un bloque de índice, los encabezados llevan su ancla; sin él la salida es la de siempre.
+  if (ctx.toc === undefined && hasTocBlock(blocks)) {
+    const entries = tocEntries(blocks);
+    ctx = { ...ctx, toc: { entries, byBlock: new Map(entries.map((e) => [e.id, e.anchor])) } };
+  }
   const out: string[] = [];
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!;

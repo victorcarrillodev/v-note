@@ -7,6 +7,7 @@ const ANCHOR_ES: Record<Anchor, string> = { n: "arriba", ne: "arriba a la derech
 import { parseMatrix } from "../diagrams/matrix";
 import { sortedEvents, parseTimeline } from "../diagrams/timeline";
 import { parseTree, type TNode } from "../diagrams/tree";
+import { hasTocBlock, tocEntries, type TocEntry } from "../pages/toc";
 
 const esc = (s: string) => s.replace(/([\\`*_#[\]])/g, "\\$1");
 
@@ -30,7 +31,7 @@ const plain = inlineToText;
 const text = (b: Block) => (Array.isArray(b.content) ? inline(b.content) : "");
 const LISTS = new Set(["bulletListItem", "numberedListItem", "checkListItem", "toggleListItem"]);
 
-function render(blocks: Block[], indent: string): string[] {
+function render(blocks: Block[], indent: string, toc: readonly TocEntry[]): string[] {
   const out: string[] = [];
   let n = 0;
   let prev: string | null = null;
@@ -38,6 +39,12 @@ function render(blocks: Block[], indent: string): string[] {
     n = b.type === "numberedListItem" ? n + 1 : 0;
     const lines: string[] = [];
     switch (b.type) {
+      // Bloque «Índice» (RF-7.4): lista anidada de enlaces a los encabezados; sin encabezados no escribe nada.
+      case "toc": {
+        const top = Math.min(...toc.map((e) => e.level));
+        for (const e of toc) lines.push(`${"  ".repeat(e.level - top)}- [${esc(e.text)}](#${e.anchor})`);
+        break;
+      }
       case "heading": lines.push(`${"#".repeat(Number(b.props.level) || 1)} ${text(b)}`); break;
       case "bulletListItem": case "toggleListItem": lines.push(`- ${text(b)}`); break;
       case "numberedListItem": lines.push(`${n}. ${text(b)}`); break;
@@ -106,17 +113,21 @@ function render(blocks: Block[], indent: string): string[] {
       }
       default: lines.push(text(b));
     }
+    if (lines.length === 0) continue; // p. ej. un índice sin encabezados
     const family = LISTS.has(b.type) ? "list" : b.type;
     if (prev !== null && !(family === "list" && prev === "list")) out.push("");
     out.push(...lines.map((l) => (l === "" ? l : indent + l)));
-    if (b.children.length) out.push(...render(b.children, indent + "  ").filter((l, i, a) => !(l === "" && (i === 0 || a[i - 1] === ""))));
+    if (b.children.length) out.push(...render(b.children, indent + "  ", toc).filter((l, i, a) => !(l === "" && (i === 0 || a[i - 1] === ""))));
     prev = family;
   }
   return out;
 }
 
 /** Markdown legible de una página (RF-15). El detalle sin pérdida (colores, diagramas...) va en el JSON. */
-export function blocksToMarkdown(blocks: Block[]): string {
-  const lines = render(blocks, "");
-  return lines.length ? lines.join("\n") + "\n" : "";
+export function blocksToMarkdown(blocks: Block[], description: string | null = null): string {
+  const lines = render(blocks, "", hasTocBlock(blocks) ? tocEntries(blocks) : []);
+  // La descripción de la página (spec 005, RNF-8) va en cursiva al principio, bajo el título que ya da el nombre del archivo.
+  const intro = description ? [`*${description.replace(/\*/g, "\\*")}*`, ...(lines.length ? [""] : [])] : [];
+  const all = [...intro, ...lines];
+  return all.length ? all.join("\n") + "\n" : "";
 }

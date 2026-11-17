@@ -6,6 +6,7 @@ import { positionBetween } from "./positions";
 import { DAY_MS, TRASH_RETENTION_DAYS } from "./trash";
 import { parseStyle, styleToText, type PageStyle } from "./style";
 import { parseCoverCredit, type CoverCredit } from "./cover";
+import { loadPageDefaultStyle } from "./pageDefaults";
 
 export type PageKind = "note" | "board" | "database";
 export type Page = {
@@ -47,6 +48,9 @@ const toPage = (r: Row): Page => ({
 /** Largo máximo de la descripción (plan 005, §4.2). */
 export const MAX_DESCRIPTION = 280;
 
+/** Una línea de hasta 280 caracteres; vacía = null. */
+export const cleanDescription = (d: string | null): string | null => (d ?? "").replace(/\s*[\r\n]+\s*/g, " ").trim().slice(0, MAX_DESCRIPTION) || null;
+
 /** Columnas que se pueden cambiar con los setters (lista cerrada: nunca se interpola texto del usuario en el SQL). */
 type PageColumn = "favorite" | "icon" | "cover" | "style" | "description" | "locked" | "cover_credit";
 
@@ -75,9 +79,11 @@ export class PagesRepo {
         [parentId],
       );
       const position = positionBetween(last[0]?.position ?? null, null);
+      // Spec 005 (DP-7): la página nace con una COPIA del estilo predeterminado del espacio.
+      const style = styleToText(await loadPageDefaultStyle(tx));
       await tx.exec(
-        "INSERT INTO pages(id, parent_id, position, title, kind, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [id, parentId, position, input.title ?? "", input.kind ?? "note", now, now],
+        "INSERT INTO pages(id, parent_id, position, title, kind, style, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, parentId, position, input.title ?? "", input.kind ?? "note", style, now, now],
       );
     });
     return this.get(id);
@@ -193,11 +199,25 @@ export class PagesRepo {
   }
   /** Descripción bajo el título (RF-1.2): una línea de hasta 280 caracteres; vacía = NULL. */
   async setDescription(id: string, description: string | null): Promise<Result<Page>> {
-    const clean = (description ?? "").replace(/\s*[\r\n]+\s*/g, " ").trim().slice(0, MAX_DESCRIPTION);
-    return this.setField(id, "description", clean || null);
+    return this.setField(id, "description", cleanDescription(description));
   }
   async setLocked(id: string, locked: boolean): Promise<Result<Page>> {
     return this.setField(id, "locked", locked ? 1 : 0);
+  }
+  /**
+   * Cambia varias propiedades de presentación en UNA sentencia (atómica): portada y crédito, estilo, descripción y
+   * bloqueo. Lo ausente no se toca. Base del historial de propiedades (spec 005, DP-8).
+   */
+  async setProps(id: string, patch: { cover?: string | null; coverCredit?: CoverCredit | null; style?: PageStyle; description?: string | null; locked?: boolean }): Promise<Result<Page>> {
+    const values: Partial<Record<PageColumn, string | number | null>> = {};
+    if (patch.cover !== undefined) {
+      values.cover = patch.cover;
+      values.cover_credit = patch.cover?.startsWith("asset:") && patch.coverCredit ? JSON.stringify(patch.coverCredit) : null;
+    } else if (patch.coverCredit !== undefined) values.cover_credit = patch.coverCredit ? JSON.stringify(patch.coverCredit) : null;
+    if (patch.style !== undefined) values.style = styleToText(patch.style);
+    if (patch.description !== undefined) values.description = cleanDescription(patch.description);
+    if (patch.locked !== undefined) values.locked = patch.locked ? 1 : 0;
+    return this.setFields(id, values);
   }
   private async setField(id: string, column: PageColumn, value: string | number | null): Promise<Result<Page>> {
     return this.setFields(id, { [column]: value });
@@ -207,6 +227,7 @@ export class PagesRepo {
     const found = await this.get(id);
     if (!found.ok) return found;
     const cols = Object.keys(values) as PageColumn[];
+    if (cols.length === 0) return found; // un parche vacío no cambia nada (ni la fecha de edición)
     await this.db.exec(
       `UPDATE pages SET ${cols.map((c) => `${c} = ?`).join(", ")}, updated_at = ? WHERE id = ?`,
       [...cols.map((c) => values[c] ?? null), this.clock.now(), id],

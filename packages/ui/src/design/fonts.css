@@ -20,3 +20,52 @@
   font-weight: 200 900;
   src: url("./fonts/source-serif-4-latin-wght-normal.woff2") format("woff2-variations");
 }
+@font-face {
+  font-family: "Geist Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("./fonts/geist-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Nunito Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 1000;
+  src: url("./fonts/nunito-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Lora Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url("./fonts/lora-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Merriweather Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 900;
+  src: url("./fonts/merriweather-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Fira Code Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("./fonts/fira-code-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("./fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Caveat Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url("./fonts/caveat-latin-wght-normal.woff2") format("woff2-variations");
+}

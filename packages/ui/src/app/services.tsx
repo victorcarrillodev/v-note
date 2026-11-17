@@ -2,6 +2,7 @@ import { createContext, useContext, type ReactNode } from "react";
 import { create } from "zustand";
 import type { Notifier } from "../reminders/notifier";
 import type { ExportRuntime } from "../page/ExportDialog";
+import type { UnsplashRuntime } from "../unsplash/UnsplashContext";
 import type { UpdateInfo, AssetStore, GlobalShortcutService, InstanceLock, BackupService, Clock, RestoreSource, SqlStore, Workspace, WorkspaceManager } from "@vnote/core";
 
 /** Servicios del núcleo y de la plataforma que la interfaz necesita; se inyectan desde cada cascarón (web o escritorio). */
@@ -27,11 +28,15 @@ export type AppServices = {
   workspaces: WorkspaceManager;
   clock: Clock;
   backup?: BackupRuntime;
+  /** Fotos de portada de Unsplash (RF-2.4, RF-9): el llavero y el `fetch` de cada cascarón. Sin él, la función no existe. */
+  unsplash?: UnsplashRuntime;
   reminders?: RemindersRuntime;
   /** Solo en escritorio: abre una carpeta en el explorador de archivos del sistema. */
   /** Solo en la web: garantiza un único editor por espacio entre pestañas (CL-22). */
   instanceLock?: InstanceLock;
   revealLocation?: (location: string) => void;
+  /** Solo en escritorio: abre una dirección permitida en el navegador (en la ventana de Tauri, `target="_blank"` no hace nada). */
+  openExternal?: (url: string) => void;
   /** Solo en escritorio: diálogo nativo para elegir una carpeta (RF-25); null si se cancela. */
   pickFolder?: () => Promise<string | null>;
   /** Exportar páginas a HTML/PDF (RF-24): de dónde salen los adjuntos de un espacio y cómo entrega cada plataforma el resultado. */
@@ -56,6 +61,11 @@ export function useServices(): AppServices {
   const s = useContext(Ctx);
   if (!s) throw new Error("useServices debe usarse dentro de un AppServicesProvider");
   return s;
+}
+
+/** `openExternal` si hay uno; fuera de un proveedor (o en la web) devuelve `undefined` y el enlace normal funciona. */
+export function useOpenExternal(): ((url: string) => void) | undefined {
+  return useContext(Ctx)?.openExternal;
 }
 
 /** Estado SOLO de interfaz (qué está abierto). Los datos viven en el núcleo, no aquí. */

@@ -93,6 +93,12 @@ pub fn is_release_url(url: &str) -> bool {
     ok(owner) && ok(repo) && kind == "releases" && !tail.is_empty() && !tail.chars().any(|c| c.is_whitespace() || c.is_control())
 }
 
+/// ¿Es una dirección de Unsplash (`https://unsplash.com/...`)? Con las de GitHub Releases, lo único que la app abre en el navegador.
+pub fn is_unsplash_url(url: &str) -> bool {
+    let Some(rest) = url.strip_prefix("https://unsplash.com/") else { return false };
+    !rest.chars().any(|c| c.is_whitespace() || c.is_control())
+}
+
 /// Guarda `content` como `file_name` (solo `.html`, sin rutas) dentro de `dir`, creándola si hace falta.
 /// Nunca sobrescribe: si el nombre existe usa «nombre (2).html», «nombre (3).html»… y crea el archivo de forma exclusiva.
 pub fn write_new_unique(dir: &Path, file_name: &str, content: &str) -> Result<PathBuf, String> {

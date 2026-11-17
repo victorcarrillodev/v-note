@@ -24,6 +24,7 @@ function customItems(editor: BlockNoteEditor<any, any, any>, t: T): Item[] {
     mk(t("organizer.orgchart.slash"), t("organizer.orgchart.hint"), ["organigrama", "orgchart", "jerarquia"], "graph", at("orgchart")),
     mk(t("organizer.timeline.slash"), t("organizer.timeline.hint"), ["linea", "tiempo", "timeline", "cronologia"], "time", at("timeline")),
     mk(t("organizer.matrix.slash"), t("organizer.matrix.hint"), ["matriz", "matrix", "2x2", "cuadrante"], "database", at("matrix", { data: serializeMatrix(template2x2()) })),
+    mk(t("toc.slash"), t("toc.slashHint"), ["indice", "índice", "toc", "contenido", "tabla de contenidos"], "toc", at("toc")),
     mk(t("editor.linkCard"), t("editor.linkCardHint"), ["enlace", "link", "url", "tarjeta"], "link", at("linkCard")),
   ];
 }

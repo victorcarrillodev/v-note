@@ -1,11 +1,12 @@
 import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
-import { BackupService, BackupWorkerClient, GitHubTokenStore, MemoryKeychain, RestoreSource, WorkspaceManager, brand, systemClock, type FetchLike, type SqlStore } from "@vnote/core";
+import { BackupService, BackupWorkerClient, GitHubTokenStore, MemoryKeychain, RestoreSource, WorkspaceManager, brand, systemClock, type FetchLike, type UnsplashFetch, type SqlStore } from "@vnote/core";
 import { LazyAssetStore, LocalStorageConfigStore, OpfsAssetStore, WebInstanceLock, WebWorkspaceStorage } from "@vnote/adapters-web";
 import { App, LocalStoragePreferences, PageEditor, WebNotifier, createI18n, webExportRuntime } from "@vnote/ui";
 import "./styles.css";
 
 const fetchLike: FetchLike = (url, init) => fetch(url, init as RequestInit);
+const unsplashFetch: UnsplashFetch = (url, init) => fetch(url, init as RequestInit);
 
 /** Un solo worker de respaldo por aplicación; si el entorno no soporta workers, el servicio trabaja en el hilo principal. */
 let backupWorker: BackupWorkerClient | undefined;
@@ -44,7 +45,7 @@ async function start() {
   const i18n = await createI18n(preferences.get("language") === "en" ? "en" : undefined);
   createRoot(document.getElementById("root")!).render(
     <I18nextProvider i18n={i18n}>
-      <App services={{ workspaces, clock: systemClock, backup, exporter: { assetsFor, runtime: webExportRuntime }, instanceLock: new WebInstanceLock(), reminders: { notifier: new WebNotifier(), onTick: (cb) => { const t = setInterval(cb, tickMs); return () => clearInterval(t); } } }} preferences={preferences} renderPageBody={(id, controller, ws) => <PageEditor controller={controller} pageId={id} assets={assetsFor(ws.location)} />} />
+      <App services={{ workspaces, clock: systemClock, backup, unsplash: { platform: "web", keychain, fetch: unsplashFetch }, exporter: { assetsFor, runtime: webExportRuntime }, instanceLock: new WebInstanceLock(), reminders: { notifier: new WebNotifier(), onTick: (cb) => { const t = setInterval(cb, tickMs); return () => clearInterval(t); } } }} preferences={preferences} renderPageBody={(id, controller, ws) => <PageEditor controller={controller} pageId={id} assets={assetsFor(ws.location)} />} />
     </I18nextProvider>,
   );
 }

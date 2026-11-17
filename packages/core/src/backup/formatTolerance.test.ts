@@ -1,5 +1,5 @@
-// U-002 (spec 002, plan 16.2): el lector de respaldo v1 tolera campos adicionales en una página, de modo que añadir un campo opcional
-// (como el ancho completo) no obliga a subir la versión del formato.
+// U-002 (spec 002, plan 16.2) y E-072 (spec 005): el lector tolera campos adicionales en una página (el `fullWidth` de la v1 y los
+// campos desconocidos de una versión futura compatible), de modo que añadir un campo opcional no obliga a subir la versión del formato.
 import { describe, it, expect } from "vitest";
 import { createNodeSqliteStore } from "../../tests/support/nodeSqliteStore";
 import { para, updateFor } from "../../tests/support/builders";
@@ -11,7 +11,7 @@ import { PageService } from "../pages/pageService";
 import { serializeWorkspace } from "./serialize";
 import { validateBackup } from "./restore";
 
-describe("tolerancia del lector del formato v1 a campos adicionales", () => {
+describe("tolerancia del lector a campos adicionales (v1 y v2)", () => {
   it("una página con un campo extra se valida y el campo se ignora", async () => {
     const db = await createNodeSqliteStore(":memory:");
     await migrate(db, migrations);
@@ -23,7 +23,8 @@ describe("tolerancia del lector del formato v1 a campos adicionales", () => {
     const files = new Map(out.files);
     const path = `data/${p.value.id}.json`;
     const json = JSON.parse(new TextDecoder().decode(files.get(path)!));
-    json.fullWidth = true;
+    json.fullWidth = true; // campo de la v1: en una v2 se ignora
+    json.style = { accent: "blue", campoFuturo: 1 }; // clave desconocida dentro del estilo
     json.campoFuturo = { a: 1 };
     files.set(path, new TextEncoder().encode(JSON.stringify(json)));
     const v = await validateBackup(files);

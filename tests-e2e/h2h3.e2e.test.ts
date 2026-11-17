@@ -40,26 +40,31 @@ describe("«Deshacer» y papelera (U-144, U-148)", () => {
   }, 90000);
 });
 
-describe("ancho completo (U-171)", () => {
-  it("activar el interruptor persiste tras recargar", async () => {
+describe("ancho completo (U-171, E-121, E-122)", () => {
+  it("elegir «Completo» en las opciones de la página persiste tras recargar", async () => {
     const p = await web.open();
     await ensureSpace(p);
     await newPage(p, "Ancha");
-    await p.waitFor("document.querySelector('[role=switch][aria-label], [role=switch]')");
-    const state = () => p.eval<string>("[...document.querySelectorAll('[role=switch]')].find(s => document.querySelector('label[for=\"' + s.id + '\"]')?.innerText.trim() === 'Ancho completo').getAttribute('aria-checked')");
-    expect(await state()).toBe("false");
-    await p.eval("[...document.querySelectorAll('[role=switch]')].find(s => document.querySelector('label[for=\"' + s.id + '\"]')?.innerText.trim() === 'Ancho completo').setAttribute('data-e2e', '')");
-    await p.click("[data-e2e]");
-    await p.waitFor("document.querySelector('article')?.className.includes('max-w-[var(--size-reading-width)]') === false", 5000);
-    await sleep(600);
+    const width = () => p.eval<string>("document.querySelector('[data-testid=page-style-scope]').style.getPropertyValue('--size-reading-width')");
+    const widthSelect = `(() => { const l = [...document.querySelectorAll('label')].find(l => l.innerText.trim() === 'Ancho de la página'); return document.getElementById(l.htmlFor); })()`;
+    const open = async () => { await p.eval("document.querySelector('button[aria-label=\"Opciones de la página\"]').click()"); await p.waitFor(`!!${widthSelect}`); };
+    expect(await p.eval<boolean>("![...document.querySelectorAll('[role=switch]')].some(s => document.querySelector('label[for=\"' + s.id + '\"]')?.innerText.trim() === 'Ancho completo')")).toBe(true); // ya no hay interruptor en la cabecera
+    expect(await width()).toBe("");
+    await open();
+    await p.eval(`(() => { const s = ${widthSelect}; const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, 'full'); s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    await p.waitFor("document.querySelector('[data-testid=page-style-scope]').style.getPropertyValue('--size-reading-width') === 'none'", 5000);
+    await sleep(2500); // el volcado a OPFS es asíncrono
     await p.reload();
     await p.waitFor("document.querySelector('aside nav')", 20000);
     await p.eval("document.querySelector('[role=treeitem]').click()");
-    await p.waitFor("document.querySelector('[role=switch]')", 15000);
-    expect(await state()).toBe("true");
+    await p.waitFor("document.querySelector('[data-testid=page-style-scope]')", 15000);
+    expect(await width()).toBe("none");
+    await open();
+    expect(await p.eval<string>(`${widthSelect}.value`)).toBe("full");
     await p.close();
-  }, 90000);
+  }, 120000);
 });
+
 
 describe("tabla con palabra clave y calendario semanal (U-197, U-229, U-233)", () => {
   it("la palabra clave filtra filas y el modal de la franja crea una tarea que aparece sin recargar", async () => {

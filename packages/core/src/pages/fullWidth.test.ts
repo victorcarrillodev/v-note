@@ -89,13 +89,14 @@ describe("leer y escribir (RF-10.3)", () => {
 });
 
 describe("respaldo determinista (RF-10.3, RNF-11)", () => {
-  it("solo se escribe cuando es verdadero: las páginas en ancho normal no cambian de bytes", async () => {
+  it("el ancho completo viaja en el estilo; el ancho normal no deja rastro y no cambia de bytes (v2)", async () => {
     const p = must(await svc.create({ title: "A" }));
     await svc.saveUpdate(p.id, updateFor([para("x")]));
     const before = (await ser()).files.get(`data/${p.id}.json`)!;
     expect(await json(p.id)).not.toHaveProperty("fullWidth");
     await setFull(repo, p.id, true);
-    expect(await json(p.id)).toMatchObject({ fullWidth: true });
+    expect(await json(p.id)).toMatchObject({ style: { spacing: { width: "full" } } });
+    expect(await json(p.id)).not.toHaveProperty("fullWidth");
     await setFull(repo, p.id, false);
     clock.advance(1);
     const after = (await ser()).files.get(`data/${p.id}.json`)!;
@@ -166,7 +167,7 @@ describe("documentación del formato (U-122)", () => {
     const doc = readFileSync(resolve(__dirname, "../../../../docs/backup-format.md"), "utf8");
     expect(doc).toContain("fullWidth");
     expect(doc).toMatch(/solo cuando es `true`/);
-    expect(doc).toMatch(/formatVersion` sigue en 1/);
+    expect(doc).toMatch(/Cambios del formato v2/);
     expect(doc).toMatch(/anterior a esta spec/);
   });
 });

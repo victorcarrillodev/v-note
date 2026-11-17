@@ -1,0 +1,18 @@
+/* Estilo de página (spec 005): `PageStyleScope` declara las variables en el contenedor; lo ausente hereda de la apariencia global. */
+
+/* Tipografía del texto y de los títulos (RF-5.2): la del contenido sigue a la apariencia global si la página no elige una. */
+.page-scope { font-family: var(--font-content); }
+.page-scope .bn-container.bn-mantine[data-color-scheme] { --bn-font-family: var(--font-content); }
+.page-scope [data-page-title],
+.page-scope .bn-block-content[data-content-type="heading"] { font-family: var(--font-headings); }
+
+/* Tamaño del texto e interlineado (RF-6.3, RF-6.4): solo cuando la página los elige, para no alterar el aspecto de siempre. */
+.page-scope[data-reading] .bn-editor { font-size: var(--text-reading-size); line-height: var(--text-reading-line); }
+
+/* Separación entre bloques (RF-6.4). */
+.page-scope[data-block-gap] .bn-block-outer:not(:first-child) { margin-top: var(--block-gap); }
+
+/* Color de acento de la página (RF-8.2): enlaces, casillas, resaltado de selección e índice siguen a --c-accent, que el contenedor redeclara. */
+.page-scope { accent-color: var(--c-accent); }
+.page-scope .bn-editor a { color: var(--c-accent); }
+.page-scope [data-content-type="checkListItem"] input[type="checkbox"] { accent-color: var(--c-accent); }
