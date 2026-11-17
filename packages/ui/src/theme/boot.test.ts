@@ -3,9 +3,12 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { themeBootScript, themeBootPlugin } from "./bootPlugin";
+import { applyTheme } from "./applyTheme";
+import { THEMES } from "../design/themes";
 
 const run = (store: Record<string, string>, systemDark: boolean) => {
   document.documentElement.removeAttribute("data-theme");
+  document.documentElement.removeAttribute("data-palette");
   document.documentElement.removeAttribute("data-density");
   document.documentElement.removeAttribute("data-font");
   const fake = { getItem: (k: string) => store[k] ?? null };
@@ -55,5 +58,38 @@ describe("plugin de arranque para las aplicaciones", () => {
     for (const app of ["web", "desktop"]) {
       expect(readFileSync(resolve(__dirname, `../../../../apps/${app}/vite.config.ts`), "utf8"), app).toContain("themeBootPlugin");
     }
+  });
+});
+
+describe("arranque con temas de color (spec 006, T-038 a T-040)", () => {
+  const attrs = () => [document.documentElement.getAttribute("data-theme"), document.documentElement.getAttribute("data-palette")];
+  it("el script se construye desde el catálogo: contiene los diez ids con su variante", () => {
+    for (const t of THEMES) expect(themeBootScript).toContain(`"${t.id}":"${t.variant}"`);
+  });
+  it.each(["system", "light", "dark", ...THEMES.map((t) => t.id), "arcoiris", "", "__proto__", "constructor"])("paridad con applyTheme para «%s» (sistema oscuro y claro)", (value) => {
+    for (const systemDark of [true, false]) {
+      run(value === "" ? {} : { "vnote:theme": value }, systemDark);
+      const fromScript = attrs();
+      document.documentElement.removeAttribute("data-theme"); document.documentElement.removeAttribute("data-palette");
+      applyTheme(document.documentElement, value, systemDark);
+      expect(fromScript, `${value} / sistema oscuro=${systemDark}`).toEqual(attrs());
+    }
+  });
+  it("sin tema válido no deja data-palette de antes", () => {
+    document.documentElement.setAttribute("data-palette", "ambar");
+    run({ "vnote:theme": "dark" }, false);
+    expect(document.documentElement.hasAttribute("data-palette")).toBe(false);
+  });
+  it("con localStorage que lanza error usa el sistema y no pone tema de color", () => {
+    document.documentElement.removeAttribute("data-palette");
+    const bad = { getItem: () => { throw new Error("bloqueado"); } };
+    new Function("localStorage", "matchMedia", themeBootScript)(bad, () => ({ matches: false }));
+    expect(attrs()).toEqual(["light", null]);
+  });
+  it("el HTML de las dos aplicaciones lleva el script primero en <head> y contiene «grafito»", async () => {
+    const { transformIndexHtml } = themeBootPlugin();
+    const [tag] = transformIndexHtml() as { children: string; injectTo: string }[];
+    expect(tag!.injectTo).toBe("head-prepend");
+    expect(tag!.children).toContain('"grafito"');
   });
 });

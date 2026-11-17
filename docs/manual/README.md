@@ -25,6 +25,7 @@ v-note es un cuaderno de notas personal, de un solo usuario, que guarda todo en 
 16. [Versión de escritorio](#16-versión-de-escritorio)
 17. [Preguntas frecuentes](#17-preguntas-frecuentes)
 18. [Estilo de la página: portada, cabecera, opciones e índice](#18-estilo-de-la-página-portada-cabecera-opciones-e-índice)
+19. [Temas de color](#19-temas-de-color)
 
 ---
 
@@ -289,6 +290,7 @@ En la cabecera de la página, **Exportar** abre el diálogo.
 ![Diálogo de exportar](img/09-exportar.png)
 
 1. Elige **HTML** o **PDF**.
+   Elige también el **Aspecto**: **Estándar** (el de siempre, predeterminado) o **Tema actual** (el documento sale con los colores del tema que tienes elegido; ver la [sección 19](#19-temas-de-color)).
 2. Marca **Incluir páginas hijas** si las quieres (el documento lleva un **índice** con enlaces).
 3. En una página de base de datos o tablero, elige la **vista** que se exportará.
 4. Pulsa **Exportar**. Verás una barra de **progreso** y puedes **Cancelar la exportación** (no se guarda nada a medias).
@@ -341,7 +343,7 @@ La versión web y la de escritorio **no comparten datos**; usa respaldo y restau
 
 ![Ajustes](img/15-ajustes.png)
 
-- **Tema:** claro, oscuro o seguir al sistema.
+- **Tema:** claro, oscuro, seguir al sistema o uno de los **diez temas de color** (ver la [sección 19](#19-temas-de-color)).
 - **Idioma:** español (México) o inglés; cambia al instante.
 - **Atajos de teclado:** cada acción tiene un atajo que puedes **reasignar**: pulsa «Cambiar atajo», escribe la nueva combinación (Esc cancela). Si ya lo usa otra acción, se avisa y eliges quién lo conserva. **Restablecer atajos** vuelve a los de fábrica.
 
@@ -462,3 +464,31 @@ Está **apagado por defecto**. Para usarlo, ve a **Ajustes → Fotos de Unsplash
 ### 18.6 Respaldo
 
 Las portadas (como archivos), los estilos, las descripciones, el bloqueo y el estilo predeterminado del espacio se respaldan y se restauran sin pérdida. El formato pasa a la **versión 2** (ver `docs/backup-format.md`): un respaldo anterior se restaura con las páginas en el estilo clásico (y con ancho «completo» las que lo tenían), y un respaldo de una versión más nueva que la de la aplicación se rechaza con un aviso, sin modificar nada.
+
+---
+
+## 19. Temas de color
+
+Además de Claro y Oscuro, v-note trae **diez temas de color** que cambian los fondos, el texto y el color de acento de toda la aplicación: el editor, los diagramas, los mapas mentales y las ventanas de captura y recordatorios.
+
+### 19.1 Elegir un tema
+
+1. Abre **Ajustes** y busca el grupo **Tema**.
+2. Cada opción es una tarjeta con una **vista previa** del tema. Están agrupadas en **Sistema**, **Temas claros** y **Temas oscuros**.
+3. Haz clic en una tarjeta, o entra al grupo con **Tab** y cambia de opción con las **flechas**. El tema se aplica **al instante** y la tarjeta elegida muestra una marca ✓ además del borde.
+
+| Claros | Oscuros |
+|---|---|
+| Océano · Bosque · Atardecer · Lavanda · Blanco y negro | Medianoche · Esmeralda · Rosa nocturna · Ámbar · Grafito |
+
+- **Sistema** sigue al sistema operativo (Claro u Oscuro estándar). Con un tema de color elegido, el cambio del sistema **no** lo altera.
+- El tema es una preferencia **de cada dispositivo**: no viaja en el respaldo y restaurar un respaldo no lo cambia.
+- Si el almacenamiento del dispositivo está bloqueado (por ejemplo, en una ventana privada), el tema se aplica mientras dure la sesión y el selector avisa de que **no se conservará**.
+- **Cambiar tema** (Ctrl+Alt+T) pasa de cualquier tema claro a **Oscuro** y de cualquier oscuro a **Claro**.
+- **Blanco y negro** usa el contraste máximo (21:1) y todos los temas cumplen el nivel AA de contraste.
+
+Tu elección de color de acento, portada y estilo de cada página se conserva en cualquier tema.
+
+### 19.2 Exportar con el tema
+
+En el diálogo de **Exportar** (sección 13), el grupo **Aspecto** ofrece **Estándar** y **Tema actual**. Con «Tema actual» el HTML y el PDF salen con los colores del tema que estés usando (si tienes «Sistema», con el Claro u Oscuro que muestre el sistema en ese momento). En los temas oscuros los diagramas van sobre una tarjeta clara para que se lean, y el PDF conserva el fondo. La elección vale solo para esa exportación: al volver a abrir el diálogo regresa a **Estándar**.

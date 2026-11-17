@@ -1,5 +1,6 @@
 // Catálogo ÚNICO de valores de diseño (spec 002, plan 4). La hoja `tokens.css` se genera de aquí y una prueba comprueba que coinciden.
 // Sin dependencias de React ni del DOM.
+import type { PaletteId, ThemeColors } from "./themes";
 
 export const themes = ["light", "dark"] as const;
 export type Theme = (typeof themes)[number];
@@ -24,6 +25,21 @@ export const colors = {
   danger: { light: "#C0312F", dark: "#EC6A67" },
   scrim: { light: "rgba(0, 0, 0, 0.4)", dark: "rgba(0, 0, 0, 0.6)" },
 } satisfies Record<string, Pair>;
+
+
+/** Valores de los diez temas de color (Apéndice A del plan 006). Solo sobrescriben estos 15 colores; el resto lo hereda de la variante. */
+export const paletteColors: Record<PaletteId, ThemeColors> = {
+  oceano: { canvas: "#F3F8FB", sidebar: "#EAF2F7", card: "#FFFFFF", raised: "#E1ECF3", border: "#D5E3EC", borderControl: "#6F8797", text: "#16303F", textMuted: "#486373", textPlaceholder: "#52697A", textDisabled: "#9DB0BC", accent: "#0A6E8C", onAccent: "#FFFFFF", success: "#17745A", warning: "#9A4F08", danger: "#C0312F" },
+  bosque: { canvas: "#F5F8F1", sidebar: "#ECF2E6", card: "#FFFFFF", raised: "#E3ECDA", border: "#D8E3CD", borderControl: "#7A8A6E", text: "#22301F", textMuted: "#52604B", textPlaceholder: "#5B6955", textDisabled: "#A4B09B", accent: "#2D7A3E", onAccent: "#FFFFFF", success: "#17745A", warning: "#9A4F08", danger: "#C0312F" },
+  atardecer: { canvas: "#FFF8F2", sidebar: "#FBEEE3", card: "#FFFFFF", raised: "#F6E4D4", border: "#EFD9C7", borderControl: "#8E7766", text: "#3A2518", textMuted: "#6A5242", textPlaceholder: "#74594A", textDisabled: "#B9A595", accent: "#BE3F0C", onAccent: "#FFFFFF", success: "#17745A", warning: "#9A4F08", danger: "#C0312F" },
+  lavanda: { canvas: "#F9F7FD", sidebar: "#F0ECF9", card: "#FFFFFF", raised: "#E7E1F5", border: "#DDD5EF", borderControl: "#80779A", text: "#2A2140", textMuted: "#5A5075", textPlaceholder: "#645A80", textDisabled: "#B1A9C6", accent: "#6B3FC2", onAccent: "#FFFFFF", success: "#17745A", warning: "#9A4F08", danger: "#C0312F" },
+  "blanco-y-negro": { canvas: "#FFFFFF", sidebar: "#F5F5F5", card: "#FFFFFF", raised: "#EBEBEB", border: "#C4C4C4", borderControl: "#000000", text: "#000000", textMuted: "#333333", textPlaceholder: "#4D4D4D", textDisabled: "#8C8C8C", accent: "#000000", onAccent: "#FFFFFF", success: "#17745A", warning: "#9A4F08", danger: "#C0312F" },
+  medianoche: { canvas: "#0E1320", sidebar: "#141B2C", card: "#1A2336", raised: "#222D45", border: "#26314A", borderControl: "#7482A3", text: "#E4E9F5", textMuted: "#A2AEC8", textPlaceholder: "#8B97B2", textDisabled: "#56627E", accent: "#8CA8FF", onAccent: "#0B1130", success: "#4DAB9A", warning: "#E08A3C", danger: "#EC6A67" },
+  esmeralda: { canvas: "#0C1512", sidebar: "#121E1A", card: "#182822", raised: "#20352D", border: "#243A31", borderControl: "#6E9183", text: "#E1EEE8", textMuted: "#9DB8AC", textPlaceholder: "#86A295", textDisabled: "#4F6B5F", accent: "#4FD1A1", onAccent: "#06231A", success: "#4DAB9A", warning: "#E08A3C", danger: "#EC6A67" },
+  "rosa-nocturna": { canvas: "#19111A", sidebar: "#211722", card: "#2A1D2C", raised: "#352538", border: "#3A2A3D", borderControl: "#9A7A9E", text: "#F1E4F0", textMuted: "#BBA2BC", textPlaceholder: "#A28BA4", textDisabled: "#6A546C", accent: "#F28BC4", onAccent: "#2B0A1E", success: "#4DAB9A", warning: "#E08A3C", danger: "#EC6A67" },
+  ambar: { canvas: "#17120C", sidebar: "#1F1911", card: "#292117", raised: "#33291C", border: "#3A2F20", borderControl: "#917E62", text: "#F0E6D6", textMuted: "#BCAE96", textPlaceholder: "#A29478", textDisabled: "#665843", accent: "#EBAA3A", onAccent: "#241600", success: "#4DAB9A", warning: "#E08A3C", danger: "#EC6A67" },
+  grafito: { canvas: "#232323", sidebar: "#1C1C1C", card: "#2B2B2B", raised: "#353535", border: "#3E3E3E", borderControl: "#9A9A9A", text: "#EDEDED", textMuted: "#BDBDBD", textPlaceholder: "#ABABAB", textDisabled: "#707070", accent: "#D6D6D6", onAccent: "#1F1F1F", success: "#4DAB9A", warning: "#E08A3C", danger: "#EC6A67" },
+};
 
 type FgBg = { fg: string; bg: string };
 /** Chips y avisos semánticos: texto sobre su propio fondo. */

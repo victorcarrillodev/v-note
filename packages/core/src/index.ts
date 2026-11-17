@@ -105,6 +105,7 @@ export * from "./diagrams/blockText";
 export * from "./updates/updateCheck";
 export * from "./export/svg";
 export * from "./export/html";
+export * from "./export/exportCss";
 export * from "./export/exportDocument";
 export * from "./export/collect";
 export * from "./undo/undo";

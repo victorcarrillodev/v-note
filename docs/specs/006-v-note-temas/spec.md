@@ -1,6 +1,6 @@
 # Especificación 006 — Temas de color
 
-> **Estado:** borrador para revisión (sin dudas abiertas) · **Sexta parte de v-note** (specs 001 MVP, 002 interfaz, 003 diagramas, 004 pulido de diagramas y mapas, 005 estilo de páginas).
+> **Estado:** implementada (sin dudas abiertas) · **Sexta parte de v-note** (specs 001 MVP, 002 interfaz, 003 diagramas, 004 pulido de diagramas y mapas, 005 estilo de páginas).
 > **Alcance de este documento:** el QUÉ y el POR QUÉ. No define tecnología, arquitectura ni archivos: eso va en el plan.
 > **Relación con otras specs:** amplía el RF-10.1 de la spec 002 (elección de **tema**: claro, oscuro, sistema) y respeta su RF-10.2 (los ajustes de apariencia son **del dispositivo**) y su RF-14.1 (contraste). Se apoya en el color de acento por página de la spec 005 (RF-8.2, D-21), que debe seguir leyéndose en cada tema.
 > **Diseño de referencia:** lienzo «Temas de v-note» (16 de noviembre de 2026), con una vista previa de cada tema. Los valores exactos de color se fijan en el plan.

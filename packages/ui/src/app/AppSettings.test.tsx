@@ -26,7 +26,7 @@ describe("ajustes en la aplicación", () => {
     const { user } = await mount();
     await user.click(screen.getByRole("button", { name: "Ajustes" }));
     expect(await screen.findByRole("heading", { name: "Ajustes" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Tema")).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Tema" })).toBeInTheDocument();
   });
 });
 

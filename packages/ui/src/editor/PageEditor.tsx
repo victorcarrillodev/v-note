@@ -158,6 +158,14 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
   );
 }
 
+/** A partir de cuántos bloques de primer nivel una página se considera larga (DP-14 del plan 006). */
+export const LONG_PAGE_BLOCKS = 500;
+
+/** Cuenta los bloques de primer nivel sin construir el documento completo (esto se llama en cada cambio). */
+function isLongPage(editor: { prosemirrorState?: { doc: { firstChild: { childCount: number } | null } } }): boolean {
+  return (editor.prosemirrorState?.doc.firstChild?.childCount ?? 0) >= LONG_PAGE_BLOCKS;
+}
+
 function Editor({ session, locked, handlers, findPages }: { session: DocSession; locked: boolean; handlers: ReturnType<typeof createFileHandlers> | null; findPages: (query: string) => Promise<{ id: string; title: string }[]> }) {
   const { i18n, t } = useTranslation();
   const { resolved } = useTheme();
@@ -179,8 +187,11 @@ function Editor({ session, locked, handlers, findPages }: { session: DocSession;
     }));
   };
   const items = async (query: string) => buildSlashItems(editor, t, query);
+  // Páginas largas (spec 006, DP-14): marca el editor para que `editor.css` omita el trabajo de los bloques de texto fuera de pantalla.
+  const [long, setLong] = useState(() => isLongPage(editor));
+  useEffect(() => { setLong(isLongPage(editor)); }, [editor]);
   return (
-    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false} editable={!locked}>
+    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false} editable={!locked} onChange={() => setLong(isLongPage(editor))} {...(long ? { "data-long-page": "" } : {})}>
       {!locked && <SuggestionMenuController triggerCharacter="/" getItems={items} />}
       {!locked && <SuggestionMenuController triggerCharacter="@" getItems={mentionItems} />}
       {!locked && <SuggestionMenuController triggerCharacter="[[" getItems={mentionItems} />}

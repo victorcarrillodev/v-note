@@ -3,6 +3,7 @@ import { parseAssetUrl } from "../assets/attach";
 import type { Block } from "../blocks/types";
 import { blocksToHtml, collectAssetUrls, newReport, type DatabaseSnapshot, type ExportReport, type RenderContext, type ResolvedAsset } from "./html";
 import { escapeXml } from "./svg";
+import { buildExportCss, type ExportPalette } from "./exportCss";
 
 /** Una página lista para exportar: `depth` 0 es la página elegida y las hijas siguen en orden de lectura. */
 export type ExportPage = { id: string; title: string; depth: number; blocks: Block[] };
@@ -12,7 +13,12 @@ export type ExportDeps = {
   /** Entrega la vista elegida de un bloque de base de datos (RF-24); `null` = no disponible. */
   databaseView?: (block: Block) => Promise<DatabaseSnapshot | null>;
 };
-export type ExportOptions = { signal?: AbortSignal; onProgress?: (done: number, total: number) => void };
+export type ExportOptions = {
+  signal?: AbortSignal;
+  onProgress?: (done: number, total: number) => void;
+  /** Aspecto del documento (datos, no tema). Sin paleta sale la hoja de siempre, byte por byte. */
+  palette?: ExportPalette;
+};
 export type ExportOutcome = { status: "done"; html: string; report: ExportReport } | { status: "cancelled" };
 
 const EXT_MIME: Record<string, string> = {
@@ -42,46 +48,7 @@ function toBase64(bytes: Uint8Array): string {
 
 const yieldNow = () => new Promise<void>((r) => setTimeout(r, 0));
 
-const CSS = `
-:root{color-scheme:light}
-*{box-sizing:border-box}
-body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;color:#0f172a;max-width:48rem;margin:0 auto;padding:2rem 1rem}
-h1,h2,h3{line-height:1.25}
-.page-title{margin-top:0}
-img,svg{max-width:100%;height:auto}
-figure{margin:1rem 0}
-figcaption{font-size:.875rem;color:#475569;text-align:center}
-pre{background:#f1f5f9;padding:.75rem;border-radius:.375rem;overflow:auto}
-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
-blockquote{margin:1rem 0;padding-left:1rem;border-left:4px solid #cbd5e1;color:#334155}
-table{border-collapse:collapse;margin:1rem 0;width:100%}
-th,td{border:1px solid #94a3b8;padding:.35rem .6rem;text-align:left;vertical-align:top}
-th{background:#e2e8f0}
-caption{caption-side:top;text-align:left;font-weight:600;padding-bottom:.25rem}
-ul.todo{list-style:none;padding-left:.5rem}
-.callout{border-radius:.375rem;padding:.75rem 1rem;margin:1rem 0;border:1px solid #93c5fd;background:#eff6ff}
-.callout-warning{border-color:#fcd34d;background:#fffbeb}.callout-success{border-color:#86efac;background:#f0fdf4}.callout-error{border-color:#fca5a5;background:#fef2f2}.callout-note{border-color:#d1d5db;background:#f9fafb}
-.link-card{display:block;border:1px solid #cbd5e1;border-radius:.375rem;padding:.6rem .8rem;margin:1rem 0;text-decoration:none}
-.missing{color:#b91c1c;font-style:italic}
-.mention{color:#1d4ed8}
-.when{color:#475569;font-size:.875em}
-.align-center{text-align:center}.align-right{text-align:right}.align-justify{text-align:justify}
-.c-gray{color:#6b7280}.c-brown{color:#92400e}.c-red{color:#dc2626}.c-orange{color:#ea580c}.c-yellow{color:#ca8a04}.c-green{color:#16a34a}.c-blue{color:#2563eb}.c-purple{color:#9333ea}.c-pink{color:#db2777}
-.bg-gray{background:#e5e7eb}.bg-brown{background:#e7d3c4}.bg-red{background:#fecaca}.bg-orange{background:#fed7aa}.bg-yellow{background:#fef08a}.bg-green{background:#bbf7d0}.bg-blue{background:#bfdbfe}.bg-purple{background:#e9d5ff}.bg-pink{background:#fbcfe8}
-.toc{border:1px solid #cbd5e1;border-radius:.375rem;padding:.75rem 1rem;margin-bottom:2rem}
-.toc ul{list-style:none;margin:0;padding-left:1rem}.toc>ul{padding-left:0}
-section.page{margin-top:2rem}
-@page{margin:18mm}
-@media print{
-body{max-width:none;padding:0;color:#000}
-section.page{page-break-before:always;break-before:page;margin-top:0}
-section.page:first-of-type{page-break-before:auto;break-before:auto}
-pre,table,figure,blockquote,.callout{page-break-inside:avoid;break-inside:avoid}
-h1,h2,h3{page-break-after:avoid;break-after:avoid}
-a{color:inherit;text-decoration:underline}
-.toc{border:0;padding:0}
-details>*{display:block}
-}`.replace(/\n/g, "");
+
 
 function toc(pages: ExportPage[]): string {
   const items = pages.map((p, i) => `<li style="margin-left:${Math.min(p.depth, 6) * 1}rem"><a href="#page-${i}">${escapeXml(p.title.trim() || "Sin título")}</a></li>`);
@@ -144,6 +111,6 @@ export async function exportHtml(input: ExportInput, deps: ExportDeps, opts: Exp
   const docTitle = input.pages[0]?.title.trim() || "Sin título";
   const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`
     + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'">`
-    + `<title>${escapeXml(docTitle)}</title><style>${CSS}</style></head><body>${input.pages.length > 1 ? toc(input.pages) : ""}${sections.join("")}</body></html>`;
+    + `<title>${escapeXml(docTitle)}</title><style>${buildExportCss(opts.palette)}</style></head><body>${input.pages.length > 1 ? toc(input.pages) : ""}${sections.join("")}</body></html>`;
   return { status: "done", html, report };
 }

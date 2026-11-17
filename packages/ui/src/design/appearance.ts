@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { PreferenceStore } from "../theme/theme";
-import { resolveTheme, type ThemeMode } from "../theme/resolveTheme";
+import { applyTheme } from "../theme/applyTheme";
 
 export type FontChoice = "sans" | "serif" | "mono";
 export type DensityChoice = "comfortable" | "compact";
@@ -36,7 +36,7 @@ export function useStorageSync(p: PreferenceStore): void {
       if (!e.key || !e.key.startsWith("vnote:")) return;
       const root = document.documentElement;
       const systemDark = typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
-      root.setAttribute("data-theme", resolveTheme((p.get("theme") as ThemeMode | null) ?? "system", systemDark));
+      applyTheme(root, p.get("theme"), systemDark);
       applyAppearance(root, loadAppearance(p));
     };
     window.addEventListener("storage", onStorage);

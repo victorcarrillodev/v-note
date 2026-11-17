@@ -75,3 +75,11 @@
   color: var(--c-text);
   border-radius: var(--radius-md);
 }
+
+/* Páginas largas (spec 006, RNF-3, DP-14): en una página de 500 bloques o más (`data-long-page`, puesto por PageEditor), los bloques de texto de primer nivel
+   fuera de pantalla no recalculan estilos ni se pintan: cambiar de tema con más de 2000 bloques pasa de 400–1400 ms a ~60 ms. Solo bloques de texto y listas:
+   los bloques propios (diagramas, matrices, vista ampliada) usan posición fija y arrastre, que la contención de `content-visibility` rompería. */
+.bn-container[data-long-page] .bn-editor > .bn-block-group > .bn-block-outer:has(> .bn-block > .bn-block-content:is([data-content-type="paragraph"], [data-content-type="bulletListItem"], [data-content-type="numberedListItem"], [data-content-type="checkListItem"])) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1.75rem;
+}

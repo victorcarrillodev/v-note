@@ -1,6 +1,7 @@
 // Genera `tokens.css` a partir de `tokens.ts` (uso: `bun packages/ui/src/design/build-css.ts`). La prueba `cssTokens.test.ts` comprueba que no divergen.
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { THEMES } from "./themes";
 import { colors, chips, blockColors, typography, spacing, radii, elevation, motion, layers, coverGradients, sizes, pageStyle, pageFonts } from "./tokens";
 
 const kebab = (s: string) => s.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
@@ -13,6 +14,9 @@ const colorVars = (t: "light" | "dark") => [
   ...Object.entries(coverGradients).map(([k, v]) => `--cover-${k}: linear-gradient(135deg, ${v[t][0]}, ${v[t][1]});`),
   ...([1, 2, 3, 4] as const).map((l) => `--elevation-${l}: ${(t === "light" ? elevation.light : elevation.dark)[l].shadow};`),
 ];
+
+/** Un bloque por tema de color, DESPUÉS del oscuro (misma especificidad: gana por orden). Solo los 15 colores del tema; `color-scheme` sale de la variante. */
+const paletteBlocks = THEMES.map((t) => `:root[data-palette="${t.id}"] {\n${lines(...Object.entries(t.colors).map(([k, v]) => `--c-${kebab(k)}: ${v};`))}\n}`).join("\n");
 
 const css = `/* GENERADO por build-css.ts a partir de tokens.ts. No editar a mano. */
 :root, [data-theme="light"] {
@@ -50,6 +54,7 @@ ${lines(
 :root[data-theme="dark"], [data-theme="dark"] {
 ${lines(...colorVars("dark"), "color-scheme: dark;")}
 }
+${paletteBlocks}
 :root[data-density="compact"] {
   --density-pad: -4px;
   --text-reading-size: 15px;

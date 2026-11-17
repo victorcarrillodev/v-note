@@ -126,3 +126,19 @@ describe("ventanas secundarias (U-105)", () => {
     expect(document.documentElement.getAttribute("data-font")).toBe("mono");
   });
 });
+
+describe("sincronización con temas de color (spec 006, T-037)", () => {
+  function Probe({ p }: { p: PreferenceStore }) { useStorageSync(p); return null; }
+  afterEach(() => document.documentElement.removeAttribute("data-palette"));
+  it("un evento storage con un tema de color actualiza data-theme y data-palette", () => {
+    const p = new MemoryPreferences(); p.set("theme", "ambar");
+    render(<Probe p={p} />);
+    act(() => { window.dispatchEvent(new StorageEvent("storage", { key: "vnote:theme", newValue: "ambar" })); });
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.documentElement.getAttribute("data-palette")).toBe("ambar");
+    p.set("theme", "light");
+    act(() => { window.dispatchEvent(new StorageEvent("storage", { key: "vnote:theme", newValue: "light" })); });
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.hasAttribute("data-palette")).toBe(false);
+  });
+});

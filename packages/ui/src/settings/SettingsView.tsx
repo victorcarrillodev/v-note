@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ACTIONS, comboFromEvent, defaultBindings, setBinding, type Bindings } from "@vnote/core";
-import { useTheme, type PreferenceStore, type ThemeMode } from "../theme/theme";
+import type { PreferenceStore } from "../theme/theme";
+import { ThemePicker } from "./ThemePicker";
 import { displayCombo, loadBindings, saveBindings } from "./bindingsStore";
 import { useGlobalShortcutState } from "../capture/globalShortcut";
 import { AppearancePanel } from "./AppearancePanel";
@@ -15,7 +16,6 @@ type Pending = { actionId: string; combo: string; others: string[] };
 
 export function SettingsView({ preferences }: { preferences: PreferenceStore }) {
   const { t, i18n } = useTranslation();
-  const { mode, setMode } = useTheme();
   const [bindings, setBindings] = useState<Bindings>(() => loadBindings(preferences));
   const [capturing, setCapturing] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -48,13 +48,7 @@ export function SettingsView({ preferences }: { preferences: PreferenceStore }) 
   return (
     <ViewLayout title={t("settings.title")}>
       <ViewSection title={t("settings.general")} flush>
-        <label className={SETTING}><span className="font-medium">{t("settings.theme")}</span>
-          <select value={mode} onChange={(e) => setMode(e.target.value as ThemeMode)} className={`${INPUT} max-w-56`}>
-            <option value="system">{t("theme.system")}</option>
-            <option value="light">{t("theme.light")}</option>
-            <option value="dark">{t("theme.dark")}</option>
-          </select>
-        </label>
+        <ThemePicker />
         <label className={SETTING}><span className="font-medium">{t("settings.language")}</span>
           <select
             value={i18n.language === "en" ? "en" : "es-MX"}

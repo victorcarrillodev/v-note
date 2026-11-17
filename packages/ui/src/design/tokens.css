@@ -221,6 +221,176 @@
   --elevation-4: none;
   color-scheme: dark;
 }
+:root[data-palette="oceano"] {
+  --c-canvas: #F3F8FB;
+  --c-sidebar: #EAF2F7;
+  --c-card: #FFFFFF;
+  --c-raised: #E1ECF3;
+  --c-border: #D5E3EC;
+  --c-border-control: #6F8797;
+  --c-text: #16303F;
+  --c-text-muted: #486373;
+  --c-text-placeholder: #52697A;
+  --c-text-disabled: #9DB0BC;
+  --c-accent: #0A6E8C;
+  --c-on-accent: #FFFFFF;
+  --c-success: #17745A;
+  --c-warning: #9A4F08;
+  --c-danger: #C0312F;
+}
+:root[data-palette="bosque"] {
+  --c-canvas: #F5F8F1;
+  --c-sidebar: #ECF2E6;
+  --c-card: #FFFFFF;
+  --c-raised: #E3ECDA;
+  --c-border: #D8E3CD;
+  --c-border-control: #7A8A6E;
+  --c-text: #22301F;
+  --c-text-muted: #52604B;
+  --c-text-placeholder: #5B6955;
+  --c-text-disabled: #A4B09B;
+  --c-accent: #2D7A3E;
+  --c-on-accent: #FFFFFF;
+  --c-success: #17745A;
+  --c-warning: #9A4F08;
+  --c-danger: #C0312F;
+}
+:root[data-palette="atardecer"] {
+  --c-canvas: #FFF8F2;
+  --c-sidebar: #FBEEE3;
+  --c-card: #FFFFFF;
+  --c-raised: #F6E4D4;
+  --c-border: #EFD9C7;
+  --c-border-control: #8E7766;
+  --c-text: #3A2518;
+  --c-text-muted: #6A5242;
+  --c-text-placeholder: #74594A;
+  --c-text-disabled: #B9A595;
+  --c-accent: #BE3F0C;
+  --c-on-accent: #FFFFFF;
+  --c-success: #17745A;
+  --c-warning: #9A4F08;
+  --c-danger: #C0312F;
+}
+:root[data-palette="lavanda"] {
+  --c-canvas: #F9F7FD;
+  --c-sidebar: #F0ECF9;
+  --c-card: #FFFFFF;
+  --c-raised: #E7E1F5;
+  --c-border: #DDD5EF;
+  --c-border-control: #80779A;
+  --c-text: #2A2140;
+  --c-text-muted: #5A5075;
+  --c-text-placeholder: #645A80;
+  --c-text-disabled: #B1A9C6;
+  --c-accent: #6B3FC2;
+  --c-on-accent: #FFFFFF;
+  --c-success: #17745A;
+  --c-warning: #9A4F08;
+  --c-danger: #C0312F;
+}
+:root[data-palette="blanco-y-negro"] {
+  --c-canvas: #FFFFFF;
+  --c-sidebar: #F5F5F5;
+  --c-card: #FFFFFF;
+  --c-raised: #EBEBEB;
+  --c-border: #C4C4C4;
+  --c-border-control: #000000;
+  --c-text: #000000;
+  --c-text-muted: #333333;
+  --c-text-placeholder: #4D4D4D;
+  --c-text-disabled: #8C8C8C;
+  --c-accent: #000000;
+  --c-on-accent: #FFFFFF;
+  --c-success: #17745A;
+  --c-warning: #9A4F08;
+  --c-danger: #C0312F;
+}
+:root[data-palette="medianoche"] {
+  --c-canvas: #0E1320;
+  --c-sidebar: #141B2C;
+  --c-card: #1A2336;
+  --c-raised: #222D45;
+  --c-border: #26314A;
+  --c-border-control: #7482A3;
+  --c-text: #E4E9F5;
+  --c-text-muted: #A2AEC8;
+  --c-text-placeholder: #8B97B2;
+  --c-text-disabled: #56627E;
+  --c-accent: #8CA8FF;
+  --c-on-accent: #0B1130;
+  --c-success: #4DAB9A;
+  --c-warning: #E08A3C;
+  --c-danger: #EC6A67;
+}
+:root[data-palette="esmeralda"] {
+  --c-canvas: #0C1512;
+  --c-sidebar: #121E1A;
+  --c-card: #182822;
+  --c-raised: #20352D;
+  --c-border: #243A31;
+  --c-border-control: #6E9183;
+  --c-text: #E1EEE8;
+  --c-text-muted: #9DB8AC;
+  --c-text-placeholder: #86A295;
+  --c-text-disabled: #4F6B5F;
+  --c-accent: #4FD1A1;
+  --c-on-accent: #06231A;
+  --c-success: #4DAB9A;
+  --c-warning: #E08A3C;
+  --c-danger: #EC6A67;
+}
+:root[data-palette="rosa-nocturna"] {
+  --c-canvas: #19111A;
+  --c-sidebar: #211722;
+  --c-card: #2A1D2C;
+  --c-raised: #352538;
+  --c-border: #3A2A3D;
+  --c-border-control: #9A7A9E;
+  --c-text: #F1E4F0;
+  --c-text-muted: #BBA2BC;
+  --c-text-placeholder: #A28BA4;
+  --c-text-disabled: #6A546C;
+  --c-accent: #F28BC4;
+  --c-on-accent: #2B0A1E;
+  --c-success: #4DAB9A;
+  --c-warning: #E08A3C;
+  --c-danger: #EC6A67;
+}
+:root[data-palette="ambar"] {
+  --c-canvas: #17120C;
+  --c-sidebar: #1F1911;
+  --c-card: #292117;
+  --c-raised: #33291C;
+  --c-border: #3A2F20;
+  --c-border-control: #917E62;
+  --c-text: #F0E6D6;
+  --c-text-muted: #BCAE96;
+  --c-text-placeholder: #A29478;
+  --c-text-disabled: #665843;
+  --c-accent: #EBAA3A;
+  --c-on-accent: #241600;
+  --c-success: #4DAB9A;
+  --c-warning: #E08A3C;
+  --c-danger: #EC6A67;
+}
+:root[data-palette="grafito"] {
+  --c-canvas: #232323;
+  --c-sidebar: #1C1C1C;
+  --c-card: #2B2B2B;
+  --c-raised: #353535;
+  --c-border: #3E3E3E;
+  --c-border-control: #9A9A9A;
+  --c-text: #EDEDED;
+  --c-text-muted: #BDBDBD;
+  --c-text-placeholder: #ABABAB;
+  --c-text-disabled: #707070;
+  --c-accent: #D6D6D6;
+  --c-on-accent: #1F1F1F;
+  --c-success: #4DAB9A;
+  --c-warning: #E08A3C;
+  --c-danger: #EC6A67;
+}
 :root[data-density="compact"] {
   --density-pad: -4px;
   --text-reading-size: 15px;

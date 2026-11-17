@@ -15,6 +15,9 @@ describe("@vnote/core", () => {
       "collectAssetRefs", "gcAssets", "cleanDescription", "PagesRepo",
     ]) expect(pkg, name).toHaveProperty(name);
   });
+  it("exporta lo nuevo de la spec 006: la hoja con paleta", () => {
+    for (const name of ["buildExportCss", "EXPORT_CHIPS", "EXPORT_BLOCK_COLORS"]) expect(pkg, name).toHaveProperty(name);
+  });
 });
 
 // E-074: el núcleo es TypeScript puro; nada de React, DOM, editor ni Tauri.

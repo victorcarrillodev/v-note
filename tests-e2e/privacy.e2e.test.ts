@@ -47,6 +47,30 @@ describe("privacidad (T-223, RNF-5)", () => {
     await p.close();
   }, 120000);
 
+  it("cambiar de tema y exportar con «Tema actual» no genera ninguna petición de red (spec 006, RNF-1)", async () => {
+    const p = await Page.open(CDP_PORT, URL_);
+    await p.waitFor(`document.querySelector('${SPACE_INPUT}') || document.querySelector('aside nav')`, 20000);
+    if (await p.eval<boolean>(`!!document.querySelector('${SPACE_INPUT}')`)) { await setInput(p, SPACE_INPUT, "Personal"); await clickText(p, "Crear espacio"); }
+    await p.waitFor("document.querySelector('aside nav')", 20000);
+    await clickText(p, "Nueva página");
+    await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+    await p.click('[aria-label="Título de la página"]'); await p.typeText("Con tema"); await p.key("Enter", "Enter", 13);
+    await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
+    await clickText(p, "Ajustes");
+    await p.waitFor("document.querySelector('input[name=theme]')", 20000);
+    for (const id of ["oceano", "grafito", "ambar"]) await p.eval(`document.querySelector('input[name=theme][value=${id}]').click()`);
+    expect(await p.eval<string>("document.documentElement.getAttribute('data-palette')")).toBe("ambar");
+    await p.eval("document.querySelector('[role=treeitem]').click()");
+    await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
+    await clickText(p, "Exportar"); await p.waitFor("document.querySelector('[role=alertdialog]')");
+    await p.eval("[...document.querySelectorAll('[role=alertdialog] input[name=export-look]')][1].click()");
+    await p.eval("[...document.querySelectorAll('[role=alertdialog] button')].find(b => b.innerText.trim() === 'Exportar').click()");
+    await p.waitFor("!document.querySelector('[role=alertdialog]')", 20000); // la exportación terminó y el diálogo se cerró
+    expect(p.requests.length).toBeGreaterThan(0);
+    expect(hosts(p)).toEqual([ORIGIN]);
+    await p.close();
+  }, 120000);
+
   it("al conectar y respaldar, lo único que sale es hacia api.github.com (la respuesta se simula; nada real sale)", async () => {
     const p = await Page.open(CDP_PORT, URL_);
     await p.fake("api.github.com", 200, { private: true, default_branch: "main", permissions: { push: true } });

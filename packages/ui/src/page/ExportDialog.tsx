@@ -5,6 +5,8 @@ import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
 import type { AssetStore } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
+import { useOptionalTheme } from "../theme/theme";
+import { exportPaletteFor } from "../design/exportPalette";
 
 /** Lo que cada plataforma aporta para entregar la exportación: guardar el HTML o abrir el diálogo de impresión (para guardar como PDF). */
 export type ExportRuntime = {
@@ -26,6 +28,9 @@ type Phase = "idle" | "running" | "done";
 export function ExportDialog({ controller, pageId, assets, runtime, onClose }: { controller: WorkspaceController; pageId: string; assets: AssetStore; runtime: ExportRuntime; onClose: () => void }) {
   const { t } = useTranslation();
   const [format, setFormat] = useState<"html" | "pdf">("html");
+  const theme = useOptionalTheme();
+  /** Aspecto de ESTA exportación (RF-6.5): no se conserva; al reabrir el diálogo vuelve a «Estándar». */
+  const [look, setLook] = useState<"standard" | "theme">("standard");
   const [withChildren, setWithChildren] = useState(false);
   const [views, setViews] = useState<{ id: string; name: string }[]>([]);
   const [viewId, setViewId] = useState("");
@@ -49,7 +54,7 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
     const controllerAbort = new AbortController();
     ac.current = controllerAbort;
     try {
-      const r = await controller.exportPages(pageId, { withChildren, ...(viewId ? { viewId } : {}), assets, signal: controllerAbort.signal, onProgress: (done, total) => setProgress({ done, total }) });
+      const r = await controller.exportPages(pageId, { withChildren, ...(viewId ? { viewId } : {}), assets, signal: controllerAbort.signal, onProgress: (done, total) => setProgress({ done, total }), ...(theme && look === "theme" ? { palette: exportPaletteFor(theme.mode, theme.resolved === "dark") } : {}) });
       if (!r.ok) { setError(r.error.message); setPhase("idle"); return; }
       if (r.value.status === "cancelled") { setNotice(t("export.cancelled")); setPhase("idle"); return; }
       const { html, report } = r.value;
@@ -79,6 +84,14 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
             <label className="flex items-center gap-1"><input type="radio" name="export-format" checked={format === "pdf"} onChange={() => setFormat("pdf")} /> PDF</label>
           </fieldset>
           {format === "pdf" && <p className="mb-2 text-sm opacity-80">{t("export.pdfHint")}</p>}
+
+          {theme && (
+            <fieldset className="mb-2 flex flex-wrap gap-4" disabled={running}>
+              <legend className="mb-1 text-sm font-medium">{t("export.look")}</legend>
+              <label className="flex items-center gap-1"><input type="radio" name="export-look" checked={look === "standard"} onChange={() => setLook("standard")} /> {t("export.lookStandard")}</label>
+              <label className="flex items-center gap-1"><input type="radio" name="export-look" checked={look === "theme"} onChange={() => setLook("theme")} /> {t("export.lookTheme", { name: t(`theme.${theme.mode}`) })}</label>
+            </fieldset>
+          )}
 
           <label className="mb-2 flex items-center gap-2 text-sm">
             <input type="checkbox" checked={withChildren} disabled={running} onChange={(e) => setWithChildren(e.target.checked)} />

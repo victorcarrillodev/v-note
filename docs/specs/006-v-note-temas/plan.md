@@ -1,6 +1,6 @@
 # Plan 006 — Temas de color
 
-> **Estado:** borrador para revisión · **Implementa:** `docs/specs/006-v-note-temas/spec.md` (RF-1 a RF-6, RNF-1 a RNF-7, CL-1 a CL-12, D-1 a D-10).
+> **Estado:** implementada · **Implementa:** `docs/specs/006-v-note-temas/spec.md` (RF-1 a RF-6, RNF-1 a RNF-7, CL-1 a CL-12, D-1 a D-10).
 > **Marco:** `docs/constitution.md`. Este plan no contiene código de producción; fija el **cómo**: módulos, contratos, algoritmos en pseudocódigo, decisiones con su alternativa descartada, fases y pruebas.
 > **Cómo leerlo:** cada parte indica entre corchetes lo que cubre, por ejemplo **[RF-2]**. La sección 12 es la matriz que comprueba que no queda ningún RF, RNF ni CL sin cubrir.
 > **Punto de partida (estado actual del código, leído antes de escribir este plan):**
@@ -55,6 +55,7 @@
 | **DP-11** | Todo consumidor que **solo** mira `data-theme` y guarda resultados debe volver a leer al cambiar un tema **de la misma variante** (Océano → Bosque no cambia `data-theme`). El contexto de tema expone `themeKey` (el modo elegido) y el grafo lo usa como dependencia de redibujado. Qué otros lo necesitan se decide en V-2. | Observar `MutationObserver` en cada consumidor: disperso y fácil de olvidar. | RF-3.1, RF-3.2, CL-4 |
 | **DP-12** | `theme.toggle` **no cambia de lógica**: `resolved` ya es la variante, así que de cualquier tema claro pasa a `dark` y de cualquiera oscuro a `light` (D-9). Se añade prueba para los 13 valores. | Ciclar o emparejar temas (D-9, D-8). | RF-2.6 |
 | **DP-13** | Las pruebas de contraste se **generan del catálogo** (`it.each` sobre los 10 temas): no se escriben a mano por tema, así que un tema nuevo queda cubierto solo. | Pruebas por tema escritas a mano. | RF-5.1 a RF-5.5, RNF-7 |
+| **DP-14** | **Páginas largas:** si la página tiene 500 bloques de primer nivel o más (`LONG_PAGE_BLOCKS`; `PageEditor` pone `data-long-page`), los bloques de texto y listas de primer nivel llevan `content-visibility:auto` con `contain-intrinsic-size:auto 1.75rem` (`editor/editor.css`). Con 2 050 bloques el cambio de tema pasa de 400–1 400 ms a ~60–80 ms (Chrome, `tests-e2e/themePerf.e2e.test.ts`); el coste anterior ya existía con Claro↔Oscuro y no lo añaden los temas. Se probó primero sobre todos los bloques y rompía la vista ampliada, el arrastre de matrices y los saltos del índice (la contención crea un bloque contenedor para la posición fija), por eso se limita a páginas largas y a bloques de texto. | Aplicarlo siempre; dejar el coste y relajar RNF-3 a ~500 bloques; o recortar el trabajo con `MutationObserver` (no ataca el recálculo de estilos). | RNF-3 |
 
 ---
 
@@ -231,6 +232,8 @@ Si una verificación falla, se detiene el trabajo y se actualiza este plan.
 - **V-6** Medir el cambio de tema en una página larga (RNF-3, objetivo < 100 ms).
 - **V-7** Comprobar con el selector real que un lector de pantalla anuncia nombre, variante y estado de los radios (RF-2.4).
 - **V-8** Ver si hay `theme-color` (PWA) o tema de ventana en Tauri que deban seguir al tema, y comprobar que los temas no impiden el modo de contraste forzado; solo se anota, no se implementa.
+
+**Resultados (2026-11-17, `spikes/RESULTS-temas.md`):** DP-10 confirmada (tarjeta clara). DP-9 confirmada en Chromium; en WebKitGTK la impresión a archivo no se pudo comprobar en este equipo (sin impresora), se mantiene la hoja con `print-color-adjust:exact` y queda como riesgo anotado. DP-11: solo `GraphView` necesita `themeKey`; `MindMapEditor`/`StylePanels` dependen de la variante y no cambian. `theme-color` de la PWA y la ventana de Tauri quedan fuera de alcance; el contraste forzado no se ve afectado. Sin decisiones abiertas.
 
 ### Fase 1 — Catálogo y CSS
 `themes.ts` y los valores del Apéndice A en `tokens.ts`; `build-css.ts` genera los bloques `data-palette`; `cssTokens.test.ts` ampliado; **pruebas de contraste por tema** (DP-13): RF-5.1, RF-5.2, RF-5.3, RF-4.1 y el texto sobre las llamadas de la exportación.

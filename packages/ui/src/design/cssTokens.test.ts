@@ -86,3 +86,13 @@ describe("reglas globales", () => {
     expect(css).toMatch(/transition:\s*background-color var\(--motion-theme\)[^;]*,\s*color var\(--motion-theme\)[^;]*;/);
   });
 });
+
+// Spec 006, T-046 (RF-3.3): `color-scheme` sale de la variante; ningún bloque de tema lo redefine.
+describe("color-scheme y temas de color", () => {
+  it("solo aparece en los bloques claro y oscuro", () => {
+    const css = readFileSync(resolve(__dirname, "tokens.css"), "utf8");
+    const blocks = [...css.matchAll(/^([^\n{]*(?:data-theme|data-palette)[^\n{]*)\{([^}]*)\}/gm)];
+    const withScheme = blocks.filter((b) => /color-scheme:/.test(b[2]!)).map((b) => b[1]!.trim());
+    expect(withScheme).toEqual([':root, [data-theme="light"]', ':root[data-theme="dark"], [data-theme="dark"]']);
+  });
+});

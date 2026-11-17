@@ -18,7 +18,7 @@ async function setup(prefs = new MemoryPreferences()) {
 describe("ajustes de tema e idioma (T-144)", () => {
   it("cambia el tema y lo aplica", async () => {
     const { user, prefs } = await setup();
-    await user.selectOptions(screen.getByLabelText("Tema"), "dark");
+    await user.click(screen.getByRole("radio", { name: "Oscuro" }));
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     expect(prefs.get("theme")).toBe("dark");
   });

@@ -112,3 +112,89 @@ describe("cambio del tema del sistema mientras se trabaja (U-036, RF-2.3, CL-4)"
   });
 });
 
+
+describe("temas de color en el proveedor (spec 006, T-033 a T-036)", () => {
+  function Colors() {
+    const { mode, resolved, palette, themeKey, setMode } = useTheme();
+    return (
+      <div>
+        <p data-testid="s2">{mode}|{resolved}|{String(palette)}|{themeKey}</p>
+        <button onClick={() => { (window as unknown as { __r: boolean }).__r = setMode("esmeralda"); }}>esmeralda</button>
+        <button onClick={() => setMode("oceano")}>oceano</button>
+        <button onClick={() => setMode("bosque")}>bosque</button>
+        <button onClick={() => setMode("dark")}>oscuro</button>
+        <input aria-label="nota" />
+      </div>
+    );
+  }
+  const pal = () => document.documentElement.getAttribute("data-palette");
+  const mount = (prefs: PreferenceStore = new MemoryPreferences()) => render(<ThemeProvider preferences={prefs}><Colors /></ThemeProvider>);
+  beforeEach(() => document.documentElement.removeAttribute("data-palette"));
+
+  it("el contexto expone modo, variante, tema de color y themeKey", async () => {
+    mockMatchMedia(false);
+    mount();
+    await userEvent.setup().click(screen.getByText("esmeralda"));
+    expect(screen.getByTestId("s2").textContent).toBe("esmeralda|dark|esmeralda|esmeralda:dark");
+    expect(attr()).toBe("dark");
+    expect(pal()).toBe("esmeralda");
+  });
+  it("un valor guardado que ya no existe (arcoiris) vuelve a «sistema» sin tema de color", () => {
+    mockMatchMedia(true);
+    const prefs = new MemoryPreferences(); prefs.set("theme", "arcoiris");
+    mount(prefs);
+    expect(screen.getByTestId("s2").textContent).toBe("system|dark|null|system:dark");
+    expect(pal()).toBeNull();
+  });
+  it("themeKey cambia entre temas de la misma variante (Océano → Bosque)", async () => {
+    mockMatchMedia(false);
+    mount();
+    const user = userEvent.setup();
+    await user.click(screen.getByText("oceano"));
+    const a = screen.getByTestId("s2").textContent;
+    await user.click(screen.getByText("bosque"));
+    const b = screen.getByTestId("s2").textContent;
+    expect(a).not.toBe(b);
+    expect(attr()).toBe("light");
+    expect(pal()).toBe("bosque");
+  });
+  it("setMode devuelve false si la preferencia no se pudo guardar, pero el tema se aplica", async () => {
+    mockMatchMedia(false);
+    const blocked: PreferenceStore = { get: () => null, set: () => false };
+    mount(blocked);
+    await userEvent.setup().click(screen.getByText("esmeralda"));
+    expect((window as unknown as { __r: boolean }).__r).toBe(false);
+    expect(pal()).toBe("esmeralda");
+  });
+  it("con un tema fijo, un cambio del sistema no altera los atributos (CL-5)", async () => {
+    const media = mockMatchMedia(false);
+    const prefs = new MemoryPreferences(); prefs.set("theme", "medianoche");
+    mount(prefs);
+    act(() => media.setDark(false));
+    act(() => media.setDark(true));
+    expect(attr()).toBe("dark");
+    expect(pal()).toBe("medianoche");
+    expect(media.listenerCount()).toBe(0);
+  });
+  it("cambiar de tema tres veces no desmonta ni pierde el texto ni el foco de un campo", async () => {
+    mockMatchMedia(false);
+    mount();
+    const user = userEvent.setup();
+    const input = screen.getByLabelText("nota") as HTMLInputElement;
+    await user.type(input, "hola");
+    for (const b of ["oceano", "esmeralda", "bosque"]) {
+      input.focus();
+      await user.click(screen.getByText(b));
+      expect(screen.getByLabelText("nota")).toBe(input);
+      expect(input.value).toBe("hola");
+    }
+  });
+  it("Claro, Oscuro y Sistema no ponen data-palette", async () => {
+    mockMatchMedia(false);
+    mount();
+    const user = userEvent.setup();
+    await user.click(screen.getByText("esmeralda"));
+    await user.click(screen.getByText("oscuro"));
+    expect(pal()).toBeNull();
+  });
+});

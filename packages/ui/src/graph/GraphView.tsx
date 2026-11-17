@@ -7,6 +7,7 @@ import { cx } from "../design/cx";
 import { Illustration } from "../design/Illustration";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "../theme/theme";
 import type { GraphData, PageKind, Positions } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
 import { computeLayout } from "./layoutRunner";
@@ -17,6 +18,7 @@ type Scope = "local" | "all";
 /** Vista de grafo (RF-7): páginas como nodos y enlaces como conexiones, dibujados en canvas con zoom y arrastre. */
 export function GraphView({ controller, currentPageId, onOpen }: { controller: WorkspaceController; currentPageId: string | null; onOpen: (pageId: string) => void }) {
   const { t } = useTranslation();
+  const { themeKey } = useTheme(); // cambia también entre temas de la misma variante: los colores se leen de nuevo
   const [scope, setScope] = useState<Scope>(currentPageId ? "local" : "all");
   const [depth, setDepth] = useState(1);
   const [includeTrashed, setIncludeTrashed] = useState(false);
@@ -105,7 +107,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
     ctx.globalAlpha = 1;
     // Para las pruebas automáticas: posición en pantalla de un nodo.
     (c as unknown as { __graph: unknown }).__graph = { screenPos: (id: string): Pt | null => { const p = live.current.positions.get(id); return p ? toScreen(live.current.tf, p) : null; }, selected, nodes: data.nodes.length, edges: data.edges.length, k: tf.k, tx: tf.x, ty: tf.y };
-  }, [data, positions, tf, size, highlight, selected, currentPageId, t]);
+  }, [data, positions, tf, size, highlight, selected, currentPageId, t, themeKey]);
 
   // Rueda: zoom bajo el cursor (sin pasividad para poder evitar el desplazamiento de la página)
   useEffect(() => {
