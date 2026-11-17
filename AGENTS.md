@@ -35,6 +35,7 @@ bun run tauri build    # AppImage/.deb/.rpm en Linux, .msi/.exe en Windows
 
 ## Reglas
 - Lee `docs/constitution.md` y la spec activa en `specs/` (`spec.md` y `plan.md`) antes de tocar código.
+- Explora con Graphify y Serena según «Flujo obligatorio» (sección *Exploración del código*) antes de redactar un plan o cambiar código.
 - No añadas dependencias, ni cambies el stack o el formato de respaldo, sin actualizar antes el plan.
 - Respeta los hitos del plan: no empieces un hito hasta cerrar el anterior.
 - No modifiques archivos dentro de `specs/` salvo petición explícita.
@@ -57,6 +58,19 @@ Dos herramientas con papeles distintos. **Graphify para orientarse** (qué toca 
 - No abras archivos de código enteros para descubrir qué contienen: primero Graphify o la vista de símbolos de Serena, después solo los cuerpos que necesites.
 - **Puertos del núcleo** (`AssetStore`, `Keychain`, `SqlStore`…): para encontrar sus implementaciones en los adaptadores usa `find_referencing_symbols` de Serena o `graphify affected`. `find_implementations` de Serena **no encuentra las implementaciones de otro paquete** (por ejemplo, `TauriKeychain` en `adapters-tauri`).
 - Tras cambios grandes: `graphify update .` para refrescar el grafo, y `find_referencing_symbols` y `get_diagnostics_for_file` de Serena sobre lo que cambiaste.
+
+### Flujo obligatorio (no es opcional)
+Usar estas herramientas es parte del trabajo, no una sugerencia. Si una tarea no las usa, la respuesta final debe decir por qué (por ejemplo, «solo toqué un archivo Markdown»).
+
+1. **Al empezar la sesión:** llama a `initial_instructions` de Serena (una vez) y comprueba que existe `graphify-out/`. Si no existe, o si hay cambios sin refrescar desde la sesión anterior, ejecuta `graphify update .`. Si Serena aún no hizo el *onboarding* del proyecto, avisa a la persona antes de ejecutarlo.
+2. **Antes de escribir o cambiar una spec, un plan o una lista de tareas:** ejecuta `graphify affected "<símbolo>"` y `graphify explain "<nombre>"` de cada símbolo, módulo o ajuste que la spec vaya a tocar, y anota en el plan los archivos y las specs anteriores que aparecen. El plan no debe afirmar «nadie más usa X» sin haberlo comprobado así.
+3. **Antes de tocar código:** orientación con Graphify (qué archivos y specs toca) y, con Serena, `get_symbols_overview` del archivo y `find_symbol(..., include_body=True)` solo de lo que vayas a cambiar.
+4. **Antes de cambiar una firma, un tipo exportado o una constante compartida:** `find_referencing_symbols` de Serena sobre el símbolo, incluidos los usos en otros paquetes. Un `grep` solo vale como primer candidato, nunca como prueba de que no hay más usos.
+5. **Para editar código:** herramientas de edición de Serena (`replace_symbol_body`, `rename_symbol`, `replace_content`…). `Edit` nativo solo para Markdown, JSON, CSS, configuración y Rust de `apps/desktop/src-tauri`.
+6. **Al terminar un cambio grande:** `graphify update .`, `get_diagnostics_for_file` sobre lo modificado y, después, `bun run typecheck` y `bun run test`.
+7. **Si los hooks de búsqueda te avisan** de que usas demasiado `grep` o `Read`, no es ruido: cambia a Graphify o Serena en lugar de seguir con lo mismo.
+
+**Qué no hace ninguna de las dos:** Graphify solo relaciona a nivel de archivo y de sección (no sabe qué línea ni qué función exacta usa algo), y Serena solo consulta TypeScript (no entiende Markdown, CSS ni el Rust de Tauri). Para esas zonas usa `Read` y `grep`, y dilo en el plan cuando una conclusión dependa de ellos.
 
 ## Herramientas instaladas (nivel usuario)
 
