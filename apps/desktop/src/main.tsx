@@ -9,7 +9,7 @@ import { BackupService, BackupWorkerClient, GitHubTokenStore, checkForUpdate, Re
 import { TauriNotifier } from "./tauriNotifier";
 import { tauriExportRuntime } from "./tauriExportRuntime";
 import { TauriAppConfigStore, TauriAssetStore, TauriKeychain, TauriWorkspaceStorage } from "@vnote/adapters-tauri";
-import { App, LocalStoragePreferences, PageEditor, QuickCaptureView, ReminderCenter, ReminderPopup, SyncedAppearance, createI18n } from "@vnote/ui";
+import { App, LocalStoragePreferences, PageEditor, QuickCaptureView, ReminderCenter, ReminderPopup, SyncedAppearance, createI18n, hideSplash } from "@vnote/ui";
 import "./styles.css";
 
 const fetchLike: FetchLike = (url, init) => fetch(url, init as RequestInit);
@@ -50,6 +50,7 @@ async function start() {
 
   // Ventana mínima de captura rápida (RF-13): la abre el atajo global, la bandeja o `--capture`.
   if (new URLSearchParams(window.location.search).has("capture")) {
+    hideSplash();
     document.title = i18n.t("capture.title");
     const close = () => void getCurrentWindow().close().catch(() => {});
     createRoot(document.getElementById("root")!).render(
@@ -65,6 +66,7 @@ async function start() {
   if (query.has("reminder")) {
     const ws = query.get("ws") ?? "", page = query.get("page") ?? "", task = query.get("task") ?? "";
     const center = new ReminderCenter({ workspaces, clock: systemClock, notifier: new TauriNotifier(), nowLocal: () => new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 16) });
+    hideSplash();
     document.title = i18n.t("reminders.title");
     const close = () => void getCurrentWindow().close().catch(() => {});
     createRoot(document.getElementById("root")!).render(

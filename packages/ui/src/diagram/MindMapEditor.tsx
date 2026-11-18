@@ -60,7 +60,7 @@ const MindNode = memo(function MindNode({ data }: NodeProps<Node<MindData>>) {
         )}
       </div>
       {d.collapsed && !d.editing ? (
-        <span data-mind-hidden="" aria-hidden="true" className="absolute -right-2 -top-2 rounded-[var(--radius-full)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-1.5 text-[length:var(--text-ui-small-size)] leading-4 text-[var(--c-text)] shadow-[var(--elevation-1)]">+{d.hidden}</span>
+        <span data-mind-hidden="" aria-hidden="true" className="absolute -right-2 -top-2 rounded-[var(--radius-full)] bg-[var(--c-raised)] px-1.5 text-[length:var(--text-ui-small-size)] leading-4 text-[var(--c-text)] shadow-[var(--elevation-1)]">+{d.hidden}</span>
       ) : null}
     </div>
     {d.selected ? (
@@ -69,7 +69,7 @@ const MindNode = memo(function MindNode({ data }: NodeProps<Node<MindData>>) {
         onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }} onClick={(e) => { e.stopPropagation(); d.onAdd(d.id); }}
         style={{ pointerEvents: "all" }}
         className={cx(
-          "nodrag nopan absolute top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-[var(--radius-full)] border border-[var(--c-border-control)] bg-[var(--c-card)] text-[var(--c-text-muted)] shadow-[var(--elevation-1)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11",
+          "nodrag nopan absolute top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-[var(--radius-full)] bg-[var(--c-raised)] text-[var(--c-text-muted)] shadow-[var(--elevation-1)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11",
           d.side === "right" ? "left-full ml-2" : "right-full mr-2",
         )}
       ><Icon name="create" size={14} /></button>

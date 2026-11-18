@@ -12,16 +12,17 @@ describe("capa base de controles nativos", () => {
   it("vive en @layer base (las utilidades de Tailwind siempre ganan)", () => {
     expect(start).toBeGreaterThanOrEqual(0);
   });
-  it("los bordes sin color propio usan el borde suave del estándar (no el color del texto) y los controles, el borde de control", () => {
+  it("los bordes sin color propio usan el borde suave del estándar (no el color del texto) y los controles no llevan borde", () => {
     expect(base).toMatch(/\*, ::before, ::after[^{]*\{\s*border-color: var\(--c-border\);/);
-    expect(base).toMatch(/button, input, select, textarea[^{]*\{\s*border-color: var\(--c-border-control\);/);
+    expect(base).toMatch(/button, input, select, textarea[^{]*\{\s*border-width: 0;/);
   });
-  it("un botón nativo sin clase es un botón secundario del estándar (borde, radio, 32 px, hover)", () => {
+  it("un botón nativo sin clase es un botón secundario del estándar (sin borde, relleno, radio, 32 px, hover)", () => {
     const rule = /button:where\(:not\(\[class\]\)[^{]*\{([^}]*)\}/.exec(base)?.[1] ?? "";
     expect(rule).toContain("min-height: 32px");
-    expect(rule).toContain("border: 1px solid var(--c-border-control)");
+    expect(rule).toContain("border: 0");
+    expect(rule).toContain("background: var(--c-raised)");
     expect(rule).toContain("border-radius: var(--radius-base)");
-    expect(base).toMatch(/button:where\(:not\(\[class\]\)[^{]*:hover:not\(:disabled\)[^{]*\{\s*background: var\(--c-raised\)/);
+    expect(base).toMatch(/button:where\(:not\(\[class\]\)[^{]*:hover:not\(:disabled\)[^{]*\{\s*background: var\(--c-border\)/);
   });
   it("no toca los botones con papel propio (pestañas, opciones de menú, interruptores, elementos del árbol)", () => {
     const sel = /button:where\(([^{]*)\) \{/.exec(base)?.[1] ?? "";
@@ -34,10 +35,10 @@ describe("capa base de controles nativos", () => {
     expect(base).toMatch(/\[data-variant="primary"\][^{]*\{[^}]*background: var\(--c-accent\);[^}]*color: var\(--c-on-accent\)/);
     expect(base).toMatch(/\[data-variant="danger"\][^{]*\{[^}]*color: var\(--c-danger\)/);
   });
-  it("campos de texto y selectores sin clase: borde de control, superficie de tarjeta y 32 px", () => {
+  it("campos de texto y selectores sin clase: sin borde, relleno y 32 px", () => {
     const rule = /select:where\(:not\(\[class\]\)\)[^{]*\{([^}]*)\}/.exec(base)?.[1] ?? "";
     expect(rule).toContain("min-height: 32px");
-    expect(rule).toContain("background: var(--c-card)");
+    expect(rule).toContain("background: var(--c-raised)");
     expect(base).toContain('input:where(:not([class]):not([type="checkbox"]):not([type="radio"])');
   });
   it("con puntero grueso los controles miden al menos 44 px", () => {

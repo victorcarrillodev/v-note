@@ -6,15 +6,9 @@ import { Logo, Wordmark } from "./Logo";
 import { monogram } from "../layout/monogram";
 
 describe("Logo", () => {
-  it("el símbolo muestra el monograma derivado del nombre configurado", () => {
-    render(<Logo />);
-    expect(screen.getByText(monogram(brand.name))).toBeInTheDocument();
-  });
-  it("el degradado del acento está SOLO en el símbolo", () => {
-    const { container } = render(<Wordmark />);
-    const symbol = container.querySelector("[data-logo-symbol]")!;
-    expect(symbol.className).toContain("from-[var(--c-accent)]");
-    expect(container.querySelector("[data-logo-name]")!.className).not.toContain("gradient");
+  it("el símbolo es la imagen del logo de la app", () => {
+    const { container } = render(<Logo />);
+    expect(container.querySelector("img[data-logo-symbol]")!.getAttribute("src")).toMatch(/^data:image\/webp;base64,/);
   });
   it("es legible a 16 px: tamaño mínimo soportado y texto del símbolo que escala", () => {
     const { container } = render(<Logo size={16} />);
@@ -22,7 +16,7 @@ describe("Logo", () => {
     expect(el.style.width).toBe("16px");
     expect(el.style.height).toBe("16px");
   });
-  it("el wordmark compone monograma + nombre del producto", () => {
+  it("el wordmark compone logo + nombre del producto", () => {
     render(<Wordmark />);
     expect(screen.getByText(brand.name)).toBeInTheDocument();
   });

@@ -11,10 +11,11 @@ describe("TextField", () => {
     expect(screen.getByLabelText("Título")).toBeInTheDocument();
     expect(screen.getByText("Título")).toBeVisible();
   });
-  it("tiene borde de control, altura de 32 px y radio base", () => {
+  it("sin borde (relleno), altura de 32 px y radio base", () => {
     render(<TextField label="Nombre" value="" onChange={() => {}} />);
     const cls = screen.getByLabelText("Nombre").className;
-    expect(cls).toContain("border-[var(--c-border-control)]");
+    expect(cls).not.toContain("border");
+    expect(cls).toContain("bg-[var(--c-raised)]");
     expect(cls).toContain("h-8");
     expect(cls).toContain("rounded");
   });

@@ -81,9 +81,9 @@ function ColorsPane({ onPick }: { onPick: (hex: string) => void }) {
       </div>
       <div className="flex items-center gap-1.5">
         <input aria-label={t("cover.customHex")} placeholder="#RRGGBB" value={text} aria-invalid={text !== "" && !valid} onChange={(e) => setText(e.target.value.trim())}
-          className="h-8 w-28 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-2 text-[length:var(--text-ui-small-size)]" />
+          className="h-8 w-28 rounded-[var(--radius-md)] bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-small-size)]" />
         <input type="color" aria-label={t("cover.customColor")} value={valid ? text : coverEditor.neutral} onChange={(e) => setText(e.target.value)}
-          className="h-8 w-9 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] p-0.5" />
+          className="h-8 w-9 rounded-[var(--radius-md)] bg-[var(--c-raised)] p-0.5" />
         <Button size="sm" disabled={!valid} onClick={() => onPick(text.toLowerCase())}>{t("cover.customColor")}</Button>
       </div>
       {text !== "" && !valid && <p className="text-[length:var(--text-note-size)] text-[var(--c-danger)]">{t("cover.invalidHex")}</p>}
@@ -106,7 +106,7 @@ function GradientsPane({ onPick }: { onPick: (cover: string) => void }) {
         <div role="group" aria-label={t("cover.gradientColors")} className="flex flex-wrap items-center gap-1.5">
           {colors.map((c, i) => (
             <input key={i} type="color" aria-label={t("cover.gradientColor", { n: i + 1 })} value={HEX.test(c) ? c : coverEditor.neutral} onChange={(e) => setColor(i, e.target.value)}
-              className="h-8 w-9 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] p-0.5" />
+              className="h-8 w-9 rounded-[var(--radius-md)] bg-[var(--c-raised)] p-0.5" />
           ))}
           {colors.length < 3
             ? <Button size="sm" variant="ghost" onClick={() => setColors((cs) => [...cs, coverEditor.gradientThird])}>{t("cover.addStop")}</Button>
@@ -116,7 +116,7 @@ function GradientsPane({ onPick }: { onPick: (cover: string) => void }) {
         <label className="flex items-center gap-2 text-[length:var(--text-ui-small-size)]">
           {t("cover.angleFine")}
           <input type="number" min={0} max={359} value={angle} onChange={(e) => setAngle(Math.min(359, Math.max(0, Math.round(Number(e.target.value) || 0))))}
-            className="h-8 w-20 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-2" />
+            className="h-8 w-20 rounded-[var(--radius-md)] bg-[var(--c-raised)] px-2" />
         </label>
         <div aria-hidden="true" data-testid="gradient-preview" className="h-8 rounded-[var(--radius-md)] border border-[var(--c-border)]" style={{ background: `linear-gradient(${angle}deg, ${colors.join(", ")})` }} />
         <Button disabled={!valid} onClick={() => onPick(`lgrad:${angle}:${colors.map((c) => c.toLowerCase()).join(",")}`)}>{t("cover.gradientEditor")}</Button>

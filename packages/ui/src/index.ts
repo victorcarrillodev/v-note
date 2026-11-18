@@ -25,3 +25,5 @@ export * from "./reminders/ReminderPopup";
 export { ReminderCenter } from "./reminders/reminderCenter";
 export { SyncedAppearance } from "./design/SyncedAppearance";
 export * from "./design/themes";
+
+export { hideSplash } from "./app/splash";

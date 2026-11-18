@@ -1,8 +1,8 @@
 import { useId, type ReactNode } from "react";
 import { cx } from "../design/cx";
 
-const CONTROL = "w-full rounded border bg-[var(--c-card)] px-2 text-[length:var(--text-ui-size)] text-[var(--c-text)] placeholder:text-[var(--c-text-placeholder)] disabled:cursor-not-allowed disabled:opacity-60";
-const border = (error?: string) => (error ? "border-[var(--c-danger)]" : "border-[var(--c-border-control)]");
+const CONTROL = "w-full rounded bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-size)] text-[var(--c-text)] placeholder:text-[var(--c-text-placeholder)] disabled:cursor-not-allowed disabled:opacity-60";
+const border = (error?: string) => (error ? "ring-1 ring-[var(--c-danger)]" : "");
 
 function Field({ id, label, error, children }: { id: string; label: string; error?: string | undefined; children: ReactNode }) {
   return (

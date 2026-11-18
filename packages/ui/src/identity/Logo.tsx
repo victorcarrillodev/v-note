@@ -1,17 +1,20 @@
 import { brand } from "@vnote/core";
-import { monogram } from "../layout/monogram";
+import { LOGO_DATA_URI } from "./logoData";
 
-/** Símbolo del producto: la inicial del nombre configurado sobre un cuadrado con degradado sutil del acento (único lugar con degradado). */
+/** Símbolo del producto: el logo de la app (imagen redondeada). */
 export function Logo({ size = 24, label }: { size?: number; label?: string }) {
   return (
-    <span
+    <img
       data-logo-symbol
-      {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.58), lineHeight: 1 }}
-      className="inline-flex shrink-0 select-none items-center justify-center rounded-md bg-gradient-to-b from-[var(--c-accent)] to-[color-mix(in_srgb,var(--c-accent)_88%,black)] font-semibold text-[var(--c-on-accent)]"
-    >
-      {monogram(brand.name)}
-    </span>
+      src={LOGO_DATA_URI}
+      width={size}
+      height={size}
+      alt={label ?? ""}
+      {...(label ? {} : { "aria-hidden": true })}
+      draggable={false}
+      style={{ width: size, height: size }}
+      className="inline-block shrink-0 select-none"
+    />
   );
 }
 

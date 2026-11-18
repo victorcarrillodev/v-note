@@ -16,7 +16,7 @@ function Shell({ id, label, error, input, picker }: { id: string; label: string;
     </div>
   );
 }
-const pickerButton = "flex h-8 w-8 items-center justify-center rounded-r border border-l-0 border-[var(--c-border-control)] bg-[var(--c-card)] text-[var(--c-text-muted)] hover:bg-[var(--c-raised)]";
+const pickerButton = "flex h-8 w-8 items-center justify-center rounded-r bg-[var(--c-raised)] text-[var(--c-text-muted)] hover:bg-[var(--c-border)]";
 
 /** Hora: se puede ESCRIBIR («930», «9 pm») o elegir de una lista de franjas; al salir del campo se normaliza a HH:mm. */
 export function TimeField({ label, pickLabel, value, onChange, error, inputRef }: { label: string; pickLabel: string; value: string; onChange: (v: string) => void; error?: string | undefined; inputRef?: Ref<HTMLInputElement> }) {

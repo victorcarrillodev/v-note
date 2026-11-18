@@ -65,7 +65,7 @@ export function CalendarView({ controller, today, onOpenRow, now = () => Date.no
         <button type="button" aria-label={t(mode === "month" ? "databases.nextMonth" : "databases.nextWeek")} onClick={() => step(1)}>›</button>
         <button type="button" onClick={() => setAnchor(today)}>{t("databases.today")}</button>
         <span className="flex-1" />
-        <div role="group" aria-label={t("calendar.mode")} className="inline-flex overflow-hidden rounded-md border border-[var(--c-border-control)]">
+        <div role="group" aria-label={t("calendar.mode")} className="inline-flex overflow-hidden rounded-md bg-[var(--c-raised)]">
           {(["month", "week"] as const).map((m) => <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className={`px-3 py-1 ${mode === m ? "bg-[var(--c-accent)] text-[var(--c-on-accent)]" : ""}`}>{t(`calendar.${m}`)}</button>)}
         </div>
       </div>

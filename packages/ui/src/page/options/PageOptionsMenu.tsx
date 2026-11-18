@@ -141,7 +141,7 @@ export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceC
               <input
                 value={tagDraft} maxLength={LIMITS.tagText.max} placeholder={t("pageOptions.header.tagTextHint")}
                 onChange={(e) => setTagDraft(e.target.value)} onBlur={commitTag} onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-                className="h-8 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-2 text-[length:var(--text-ui-size)]"
+                className="h-8 rounded-[var(--radius-md)] bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-size)]"
               />
             </label>
           )}

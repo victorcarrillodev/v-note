@@ -19,7 +19,7 @@ export function DatabaseToolbar({ controller, onEditFilters }: { controller: Dat
         placeholder={t("databases.keywordPlaceholder")}
         value={snap.keyword}
         onChange={(e) => void controller.setKeyword(e.target.value)}
-        className="h-8 w-full max-w-xs rounded-md border border-[var(--c-border-control)] bg-[var(--c-card)] px-2 text-[length:var(--text-ui-size)]"
+        className="h-8 w-full max-w-xs rounded-md bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-size)]"
       />
       {chips.length > 0 && (
         <ul aria-label={t("databases.activeChips")} className="flex flex-wrap gap-1">

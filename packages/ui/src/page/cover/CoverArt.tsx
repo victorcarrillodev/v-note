@@ -6,10 +6,15 @@ import { useCoverImage } from "./useCoverImage";
 /** Radio CSS de las esquinas: un valor o [sup-izq, sup-der, inf-der, inf-izq]. */
 export const radiusCss = (r: CornerRadius | undefined): string => (r === undefined ? "0" : Array.isArray(r) ? r.map((c) => `${c}px`).join(" ") : `${r}px`);
 
-/** Degradado oscuro sobre la imagen: transparente arriba y con la opacidad elegida en el tramo donde va el texto (plan §6.3). */
+/** Degradado oscuro sobre la imagen: transparente arriba y, con una curva suave (sin tramos ni cortes visibles), llega a la opacidad elegida donde va el texto (plan §6.3). */
 export const overlayCss = (overlay: number): string => {
   const a = Math.min(100, Math.max(0, overlay)) / 100;
-  return `linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,${a}) 55%, rgba(0,0,0,${a}) 100%)`;
+  const stops = Array.from({ length: 11 }, (_, i) => {
+    const t = Math.min(1, i / 10 / 0.85); // alcanza el máximo al 85 % de la altura
+    const eased = t * t * (3 - 2 * t); // smoothstep: arranque y final sin quiebres
+    return `rgba(0,0,0,${+(a * eased).toFixed(3)}) ${i * 10}%`;
+  });
+  return `linear-gradient(to bottom, ${stops.join(", ")})`;
 };
 
 /**

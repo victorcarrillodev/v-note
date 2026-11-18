@@ -115,7 +115,7 @@ export function BoardView({ controller, onOpenRow, today = new Date().toISOStrin
                       if (e.key === "Enter") { const v = e.currentTarget.value; void controller.renameColumn(String(g.key), v).then((r) => { if (r.ok) setRenaming(null); }); }
                       if (e.key === "Escape") setRenaming(null);
                     }}
-                    className="min-w-0 flex-1 rounded border border-[var(--c-border-control)] px-1"
+                    className="min-w-0 flex-1 rounded bg-[var(--c-raised)] px-1"
                   />
                 ) : (
                   <span className="flex-1 truncate">{g.label}</span>

@@ -42,6 +42,7 @@ import { WorkspaceController } from "../workspace/controller";
 import { BackupPanel } from "../backup/BackupPanel";
 import { RestoreWizard } from "../restore/RestoreWizard";
 import { useWorkspace } from "../workspace/useController";
+import { hideSplash } from "./splash";
 
 type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "settings" | "locked" | "reminders" | "graph" | "import";
 type Opened = { workspace: Workspace; controller: WorkspaceController };
@@ -70,6 +71,8 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
   const theme = useTheme();
   const { workspaces, clock, backup, updates, exporter, pickFolder, onOpenTask, revealLocation, instanceLock, reminders, globalShortcut, onCaptured } = useServices();
   const [view, setView] = useState<View>("loading");
+  // La pantalla de carga se quita solo cuando la app ya puede usarse (sale de "loading").
+  useEffect(() => { if (view !== "loading") hideSplash(); }, [view]);
   const [opened, setOpened] = useState<Opened | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);

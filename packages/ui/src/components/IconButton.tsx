@@ -13,7 +13,7 @@ export function IconButton({ icon, label, className, ...rest }: Omit<ButtonHTMLA
         type="button"
         {...rest}
         aria-label={label}
-        className={cx("inline-flex h-8 w-8 items-center justify-center rounded border border-transparent text-[var(--c-text-muted)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] disabled:cursor-not-allowed disabled:opacity-50", className)}
+        className={cx("inline-flex h-8 w-8 items-center justify-center rounded text-[var(--c-text-muted)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] disabled:cursor-not-allowed disabled:opacity-50", className)}
       >
         <Icon name={icon} />
       </button>

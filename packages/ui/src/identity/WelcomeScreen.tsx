@@ -15,7 +15,7 @@ export function WelcomeScreen({ onCreate, onRestore }: { onCreate: (name: string
     onCreate(name.trim());
   };
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center gap-6 px-6 py-16 text-center">
+    <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-6 px-6 py-8 text-center min-h-[calc(100vh-var(--size-header-height))]">
       <Wordmark size={48} />
       <h1 className="text-[length:var(--text-h1-size)] font-bold leading-tight">{t("welcome.title")}</h1>
       <p className="text-[length:var(--text-reading-size)] text-[var(--c-text-muted)]">{t("welcome.tagline")}</p>

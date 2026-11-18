@@ -43,7 +43,7 @@ export function ColorPicker({ label, role, value, allowNone = false, recents, on
       )}
       <div className="mt-0.5 flex items-center gap-1.5">
         <input aria-label={`${label}: ${t("diagram.hex")}`} value={text} onChange={(e) => onText(e.target.value)} aria-invalid={invalid} placeholder="#RRGGBB" className={`w-24 ${FIELD_CONTROL}`} />
-        <input type="color" className="h-7 w-8 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] p-0.5 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11" aria-label={`${label}: ${t("diagram.pickColor")}`} value={custom ? toNative(custom) : NATIVE_DEFAULT} onChange={(e) => onChange(e.target.value)} />
+        <input type="color" className="h-7 w-8 rounded-[var(--radius-md)] bg-[var(--c-raised)] p-0.5 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11" aria-label={`${label}: ${t("diagram.pickColor")}`} value={custom ? toNative(custom) : NATIVE_DEFAULT} onChange={(e) => onChange(e.target.value)} />
       </div>
       {invalid && <p className="text-xs text-[var(--c-danger)]">{t("diagram.invalidHex")}</p>}
     </div>
