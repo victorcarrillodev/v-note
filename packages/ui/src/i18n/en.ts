@@ -117,8 +117,15 @@ export const en: Widen<typeof esMX> = {
     overlay: "Darkening", overlayLow: "With little darkening the title may be hard to read over the image.",
     corners: "Corners", cornersTogether: "All four the same", cornersSeparate: "Corners separately",
     cornerNames: { tl: "Top left", tr: "Top right", br: "Bottom right", bl: "Bottom left" },
-    credit: "Photo by {{author}} on Unsplash", creditBy: "Photo by", creditOn: "on", unsplash: "Unsplash",
+    credit: "Photo by {{author}} on Unsplash", creditBy: "Photo by", creditOn: "on", unsplash: "Unsplash", src: { unsplash: "Unsplash", commons: "Wikimedia Commons", picsum: "Picsum" },
     resetUndone: "Change undone", undoChange: "Page change",
+  },
+  freePhotos: {
+    tab: "Free photos", searchLabel: "Search free photos", searchButton: "Search", gallery: "Browse gallery", noResults: "No photos for that search.",
+    results: "Free photo results", more: "More results", downloading: "Downloading the photo…", photoOf: "Photo by {{author}}",
+    privacy: "No key needed. When you search, the text is sent to Wikimedia Commons; the gallery uses Picsum. Nothing is sent until you search or open the gallery.",
+    attribution: "Photos from Wikimedia Commons and Picsum. The credit is saved with the cover.",
+    errors: { offline: "No connection. Check your network and try again.", unauthorized: "The service did not accept the request.", rateLimited: "Request limit reached. Wait a while and try again.", server: "The service did not respond as expected. Try again later." },
   },
   unsplash: {
     tab: "Unsplash", settingsTitle: "Unsplash photos", enable: "Turn on Unsplash",

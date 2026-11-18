@@ -50,7 +50,7 @@ export function formatCover(c: Cover): string {
 }
 
 /** Crédito de una portada de Unsplash (RF-2.5). Se guarda en `pages.cover_credit` como JSON. */
-export type CoverCredit = { source: "unsplash"; photoId: string; author: string; authorUrl: string; photoUrl: string };
+export type CoverCredit = { source: "unsplash" | "commons" | "picsum"; photoId: string; author: string; authorUrl: string; photoUrl: string; license?: string };
 
 const text = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null);
 const httpsUrl = (v: unknown): string | null => {
@@ -65,8 +65,9 @@ export function parseCoverCredit(raw: unknown): CoverCredit | null {
   if (typeof v === "string") { try { v = JSON.parse(v); } catch { return null; } }
   if (typeof v !== "object" || v === null || Array.isArray(v)) return null;
   const o = v as Record<string, unknown>;
-  if (o.source !== "unsplash") return null;
+  if (o.source !== "unsplash" && o.source !== "commons" && o.source !== "picsum") return null;
   const photoId = text(o.photoId), author = text(o.author), authorUrl = httpsUrl(o.authorUrl), photoUrl = httpsUrl(o.photoUrl);
   if (!photoId || !author || !authorUrl || !photoUrl) return null;
-  return { source: "unsplash", photoId, author, authorUrl, photoUrl };
+  const license = text(o.license);
+  return { source: o.source, photoId, author, authorUrl, photoUrl, ...(license ? { license } : {}) };
 }

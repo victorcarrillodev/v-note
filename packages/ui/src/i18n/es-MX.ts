@@ -113,8 +113,15 @@ export const esMX = {
     overlay: "Oscurecido", overlayLow: "Con poco oscurecido el título puede costar leerse sobre la imagen.",
     corners: "Esquinas", cornersTogether: "Las cuatro iguales", cornersSeparate: "Esquinas por separado",
     cornerNames: { tl: "Superior izquierda", tr: "Superior derecha", br: "Inferior derecha", bl: "Inferior izquierda" },
-    credit: "Foto de {{author}} en Unsplash", creditBy: "Foto de", creditOn: "en", unsplash: "Unsplash",
+    credit: "Foto de {{author}} en Unsplash", creditBy: "Foto de", creditOn: "en", unsplash: "Unsplash", src: { unsplash: "Unsplash", commons: "Wikimedia Commons", picsum: "Picsum" },
     resetUndone: "Cambio deshecho", undoChange: "Cambio de la página",
+  },
+  freePhotos: {
+    tab: "Fotos libres", searchLabel: "Buscar fotos libres", searchButton: "Buscar", gallery: "Ver galería", noResults: "No hay fotos para esa búsqueda.",
+    results: "Resultados de fotos libres", more: "Más resultados", downloading: "Descargando la foto…", photoOf: "Foto de {{author}}",
+    privacy: "No necesitas clave. Al buscar, el texto se envía a Wikimedia Commons; la galería usa Picsum. Nada se envía hasta que busques o abras la galería.",
+    attribution: "Fotos de Wikimedia Commons y Picsum. Se guarda el crédito con la portada.",
+    errors: { offline: "No hay conexión. Revisa tu red e inténtalo de nuevo.", unauthorized: "El servicio no aceptó la petición.", rateLimited: "Se alcanzó el límite de peticiones. Espera un rato e inténtalo de nuevo.", server: "El servicio no respondió como se esperaba. Inténtalo más tarde." },
   },
   unsplash: {
     tab: "Unsplash", settingsTitle: "Fotos de Unsplash", enable: "Activar Unsplash",

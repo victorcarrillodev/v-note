@@ -16,6 +16,7 @@ export * from "./pages/pageProps";
 export * from "./pages/stats";
 export * from "./pages/toc";
 export * from "./assets/gc";
+export * from "./freephotos/client";
 export * from "./unsplash/client";
 export * from "./unsplash/keyStore";
 export * from "./docs/docStore";

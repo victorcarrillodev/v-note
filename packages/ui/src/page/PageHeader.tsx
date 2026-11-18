@@ -187,6 +187,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   const picker = (trigger: ReactNode) => (
     <CoverPicker trigger={trigger} open={pickerOpen} onOpenChange={(o) => { setPickerOpen(o); if (!o) imp.clear(); }} hasCover={hasC}
       canUpload={imp.canImport} error={imp.error} onApply={applyCover} onFile={(f) => { void imp.importFile(f); }}
+      onFree={(photo) => { void imp.importFree(photo).then((ok) => { if (ok) setPickerOpen(false); }); }}
       onUnsplash={(photo) => { void imp.importUnsplash(photo).then((ok) => { if (ok) setPickerOpen(false); }); }} unsplashBusy={imp.busy && imp.stage === "download"} unsplashError={imp.unsplashError} />
   );
 
@@ -293,7 +294,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
                 {t("cover.creditBy")}{" "}
                 <ExternalLink href={page.coverCredit.authorUrl} className="underline">{page.coverCredit.author}</ExternalLink>{" "}
                 {t("cover.creditOn")}{" "}
-                <ExternalLink href={page.coverCredit.photoUrl} className="underline">{t("cover.unsplash")}</ExternalLink>
+                <ExternalLink href={page.coverCredit.photoUrl} className="underline">{t(`cover.src.${page.coverCredit.source}`)}</ExternalLink>
               </p>
             )}
             {card && (

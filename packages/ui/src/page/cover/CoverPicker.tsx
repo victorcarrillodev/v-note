@@ -7,9 +7,10 @@ import { Segmented } from "../../components/controls";
 import { blockColors, coverEditor } from "../../design/tokens";
 import { COVER_NAMES } from "../cover";
 import type { CoverImportError } from "./importCoverImage";
-import type { UnsplashErrorKind, UnsplashPhoto } from "@vnote/core";
+import type { FreePhoto, UnsplashErrorKind, UnsplashPhoto } from "@vnote/core";
 import { useUnsplash } from "../../unsplash/UnsplashContext";
 import { UnsplashPane } from "../../unsplash/UnsplashPane";
+import { FreePhotosPane } from "../../unsplash/FreePhotosPane";
 
 const HEX = /^#[0-9a-f]{6}$/i;
 const ANGLES = [0, 45, 90, 135, 180];
@@ -24,19 +25,23 @@ const PALETTE = Object.entries(blockColors).map(([id, v]) => ({ id, hex: v.light
  * Selector de portada (RF-2.1): Subir, Colores y Degradados, y «Quitar portada».
  * Cada elección escribe una sola entrada del historial (portada + crédito).
  */
-export function CoverPicker({ trigger, open, onOpenChange, hasCover, canUpload, error, onApply, onFile, onUnsplash, unsplashBusy = false, unsplashError = null }: {
+export function CoverPicker({ trigger, open, onOpenChange, hasCover, canUpload, error, onApply, onFile, onUnsplash, onFree, unsplashBusy = false, unsplashError = null }: {
   trigger: ReactNode; open: boolean; onOpenChange: (o: boolean) => void; hasCover: boolean;
   canUpload: boolean; error: CoverImportError | null;
   onApply: (patch: CoverApply) => void; onFile: (file: File) => void;
   /** Elegir una foto de Unsplash; sin él (o con Unsplash apagado) la pestaña no existe. */
-  onUnsplash?: (photo: UnsplashPhoto) => void; unsplashBusy?: boolean; unsplashError?: UnsplashErrorKind | null;
+  onUnsplash?: (photo: UnsplashPhoto) => void;
+  /** Elegir una foto libre (sin clave); sin él la pestaña no existe. */
+  onFree?: (photo: FreePhoto) => void; unsplashBusy?: boolean; unsplashError?: UnsplashErrorKind | null;
 }) {
   const { t } = useTranslation();
   const unsplash = useUnsplash();
   const showUnsplash = unsplash.supported && unsplash.enabled && canUpload && onUnsplash !== undefined;
-  const [tab, setTab] = useState<"upload" | "colors" | "gradients" | "unsplash">(canUpload ? "upload" : "colors");
+  const showFree = unsplash.supported && canUpload && onFree !== undefined;
+  const [tab, setTab] = useState<"upload" | "colors" | "gradients" | "unsplash" | "free">(canUpload ? "upload" : "colors");
   const tabs = [
     ...(canUpload ? [{ value: "upload", label: t("cover.tabUpload") }] : []),
+    ...(showFree ? [{ value: "free", label: t("freePhotos.tab") }] : []),
     ...(showUnsplash ? [{ value: "unsplash", label: t("unsplash.tab") }] : []),
     { value: "colors", label: t("cover.tabColors") },
     { value: "gradients", label: t("cover.tabGradients") },
@@ -46,6 +51,7 @@ export function CoverPicker({ trigger, open, onOpenChange, hasCover, canUpload, 
     <Popover open={open} onOpenChange={onOpenChange} align="end" trigger={trigger}>
       <div role="group" aria-label={t("cover.pickerTitle")} className="flex w-[22rem] max-w-full flex-col gap-3">
         <Tabs label={t("cover.tabs")} value={tab} onChange={(v) => setTab(v as typeof tab)} tabs={tabs} />
+        {tab === "free" && showFree && <FreePhotosPane onPick={onFree!} picking={unsplashBusy} pickError={unsplashError} />}
         {tab === "unsplash" && showUnsplash && <UnsplashPane onPick={onUnsplash!} picking={unsplashBusy} pickError={unsplashError} />}
         {tab === "upload" && canUpload && <UploadPane error={error} onFile={onFile} />}
         {tab === "colors" && <ColorsPane onPick={(hex) => apply(`color:${hex}`)} />}
