@@ -36,13 +36,19 @@ const TOOL = cx(
 );
 const FOCUSABLE = "button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex='-1'])";
 
-/** Marca como inertes los elementos hermanos de la cadena de ancestros; devuelve la función que lo deshace. */
+/**
+ * Marca como inertes los elementos hermanos de la cadena de ancestros; devuelve la función que lo deshace.
+ * Dentro del editor (contenteditable) no toca nada: el editor vigila su DOM y, al ver atributos nuevos en otros
+ * bloques, vuelve a dibujar la zona y desmonta el lienzo recién ampliado (con un mapa u organigrama antes del diagrama,
+ * la vista ampliada se cerraba al instante). Ahí basta la trampa de foco del marco; el resto de la app sí queda inerte.
+ */
 function inertRest(el: HTMLElement): () => void {
   const marked: HTMLElement[] = [];
   let node: HTMLElement | null = el;
   while (node && node !== document.documentElement) {
     const parent: HTMLElement | null = node.parentElement;
     if (!parent) break;
+    if (parent.closest("[contenteditable='true']")) { node = parent; continue; }
     for (const sib of Array.from(parent.children) as HTMLElement[]) {
       if (sib === node || sib.hasAttribute("inert") || sib.querySelector("[data-floating-menu]") || sib.matches("script, style, link")) continue;
       sib.setAttribute("inert", ""); marked.push(sib);

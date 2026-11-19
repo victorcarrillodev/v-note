@@ -87,7 +87,7 @@ Familias: sans = Inter, mono = JetBrains Mono, serif = Source Serif 4 (incluidas
 | `h1` | 28 / 36 | 700 |
 | `h2` | 22 / 30 | 600 |
 | `h3` | 18 / 26 | 600 |
-| `reading` | 16 / 26 | 400 |
+| `reading` | 17 / 28 | 400 |
 | `dialogTitle` | 18 / 24 | 600 |
 | `component` | 14 / 20 | 600 |
 | `ui` | 14 / 20 | 400 |
@@ -142,6 +142,7 @@ Con «reducir movimiento» se eliminan desplazamientos y escalas.
 | `modalL` | 720 px |
 | `popoverMax` | 360 px |
 | `panelWidth` | 380 px |
+| `drawerWidth` | 560 px |
 | `paletteWidth` | 640 px |
 | `sidebarWidth` | 240 px |
 | `headerHeight` | 44 px |

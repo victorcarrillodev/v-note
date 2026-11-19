@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest";
 import { FONT_IDS, ACCENT_IDS, COVER_HEIGHTS, CONTENT_WIDTHS, TEXT_SIZES, LEADINGS, TOC_LEVELS, LIMITS, parseStyle, normalizeStyle, styleToText, applyStylePatch, cssVarsFor } from "./style";
 
 describe("tipos y constantes (E-012)", () => {
-  it("el catálogo tiene las 10 fuentes de D-16", () => {
-    expect([...FONT_IDS]).toEqual(["inter", "geist", "nunito", "source-serif", "lora", "merriweather", "jetbrains-mono", "fira-code", "atkinson", "caveat"]);
+  it("el catálogo tiene las 10 fuentes de D-16 y las 4 manuscritas añadidas después", () => {
+    expect([...FONT_IDS]).toEqual(["inter", "geist", "nunito", "source-serif", "lora", "merriweather", "jetbrains-mono", "fira-code", "atkinson", "caveat", "comic-neue", "patrick-hand", "indie-flower", "kalam"]);
   });
   it("los valores de cada opción son los de la spec", () => {
     expect([...COVER_HEIGHTS]).toEqual(["low", "medium", "high"]);

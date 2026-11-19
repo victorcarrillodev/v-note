@@ -40,15 +40,21 @@ export function CoverArt({ cover, style, assets, grow = false, darken, positionO
   const pos = positionOverride ?? { x: c.posX ?? 50, y: c.posY ?? 50 };
   const showOverlay = darken ?? style.header?.gradient ?? style.header?.titleOverCover ?? false;
   const bg = backgroundOf(parsed);
+  // Todo se pinta en UNA sola capa (oscurecido encima de la imagen, del degradado o del color). Con capas separadas,
+  // el navegador suaviza el borde curvo de cada una por su cuenta y, en las esquinas redondeadas, la imagen clara
+  // asoma bajo el oscurecido como un filo de píxeles claros.
+  const base = hash ? (src ? `url("${src}") ${pos.x}% ${pos.y}% / cover no-repeat` : "var(--cover-graphite)") : (bg ?? "var(--cover-graphite)");
+  const overlay = c.overlay ?? 60;
   return (
     <div
       data-testid="cover" data-cover-kind={parsed.kind} data-cover-height={c.height ?? "medium"}
-      className="relative isolate w-full overflow-hidden bg-[var(--cover-graphite)]"
+      className="relative isolate w-full overflow-hidden"
       style={{ [grow ? "minHeight" : "height"]: height, borderRadius: radiusCss(c.radius) }}
     >
-      {bg && <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: bg }} />}
-      {hash && src && <img alt="" src={src} draggable={false} className="absolute inset-0 -z-10 h-full w-full select-none object-cover" style={{ objectPosition: `${pos.x}% ${pos.y}%` }} />}
-      {showOverlay && <div aria-hidden="true" data-testid="cover-overlay" className="pointer-events-none absolute inset-0 -z-10" style={{ background: overlayCss(c.overlay ?? 60) }} />}
+      <div aria-hidden="true" data-testid="cover-paint" data-cover-layer="" {...(showOverlay ? { "data-overlay": overlay } : {})}
+        className="pointer-events-none absolute inset-0 -z-10" style={{ background: showOverlay ? `${overlayCss(overlay)}, ${base}` : base }} />
+      {/* La imagen no se ve (la pinta la capa de arriba): da el tamaño natural para reposicionar y confirma que cargó. */}
+      {hash && src && <img alt="" src={src} draggable={false} className="invisible absolute inset-0 -z-20 h-full w-full select-none object-cover" style={{ objectPosition: `${pos.x}% ${pos.y}%` }} />}
       {children}
     </div>
   );

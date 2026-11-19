@@ -62,6 +62,8 @@ describe("el marco no cambia de lugar entre pantallas (RF-3.2, RF-3.5)", () => {
     const before = rects();
     for (const name of ["Ajustes", "Papelera", "Grafo"]) {
       await user.click(screen.getByRole("button", { name }));
+      // Ajustes se abre como barra lateral modal sobre la pantalla actual: se cierra para seguir navegando.
+      if (name === "Ajustes") await user.keyboard("{Escape}");
       expect(screen.getByRole("complementary", { name: /barra lateral/i })).toBe(side);
       expect(screen.getByRole("banner")).toBe(banner);
       expect(rects()).toEqual(before);

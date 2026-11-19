@@ -1,13 +1,15 @@
 /* Estilo de página (spec 005): `PageStyleScope` declara las variables en el contenedor; lo ausente hereda de la apariencia global. */
 
-/* Tipografía del texto y de los títulos (RF-5.2): la del contenido sigue a la apariencia global si la página no elige una. */
-.page-scope { font-family: var(--font-content); }
-.page-scope .bn-container.bn-mantine[data-color-scheme] { --bn-font-family: var(--font-content); }
+/* Tipografía del texto y de los títulos (RF-5.2): la del contenido sigue a la apariencia global si la página no elige una.
+   Solo el texto escrito cambia de fuente: la cabecera (etiquetas, acciones, descripción) y los menús del editor conservan la de la interfaz.
+   BlockNote fija Inter en `.bn-default-styles` (el propio editor), así que se sobrescribe con más especificidad. */
+.page-scope .bn-default-styles { font-family: var(--font-content); }
 .page-scope [data-page-title],
 .page-scope .bn-block-content[data-content-type="heading"] { font-family: var(--font-headings); }
 
-/* Tamaño del texto e interlineado (RF-6.3, RF-6.4): solo cuando la página los elige, para no alterar el aspecto de siempre. */
-.page-scope[data-reading] .bn-editor { font-size: var(--text-reading-size); line-height: var(--text-reading-line); }
+/* Tamaño del texto e interlineado (RF-6.3, RF-6.4): el editor siempre usa el tamaño de lectura (17 px por defecto, en lugar de los
+   16 px fijos de BlockNote); la página puede cambiarlo y los encabezados, medidos en em, crecen con él. */
+.page-scope .bn-editor { font-size: var(--text-reading-size); line-height: var(--text-reading-line); }
 
 /* Separación entre bloques (RF-6.4). */
 .page-scope[data-block-gap] .bn-block-outer:not(:first-child) { margin-top: var(--block-gap); }

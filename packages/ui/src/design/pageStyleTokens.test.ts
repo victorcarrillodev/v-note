@@ -12,7 +12,7 @@ describe("tokens del estilo de página (E-025)", () => {
   it("valores del plan: anchos, tamaños, interlineados, separaciones y alturas de portada", () => {
     expect(pageStyle).toEqual({
       widths: { narrow: 600, normal: 720, wide: 960 },
-      textSizes: { small: 14, normal: 16, large: 18 },
+      textSizes: { small: 15, normal: 17, large: 19 },
       leadings: { compact: 1.45, normal: 1.625, relaxed: 1.85 },
       gaps: { compact: 0.5, normal: 0.75, relaxed: 1.1 },
       coverHeights: { low: 160, medium: 240, high: 340 },

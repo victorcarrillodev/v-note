@@ -46,8 +46,10 @@ describe("estructura del menú (E-108)", () => {
     await user.click(trigger());
     const m = await menu();
     expect(within(m).getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual(["Tipografía", "Espaciado", "Cabecera y portada", "Índice", "Página"]);
-    expect(m.className).toContain("overflow-y-auto"); // desplazamiento interno
-    expect(m.className).toContain("w-80"); // 320 px
+    // Barra lateral derecha: ancho de panel (380 px) y desplazamiento interno en el cuerpo.
+    const drawer = m.closest("[data-drawer]")!;
+    expect(drawer.className).toContain("w-[var(--size-panel-width)]");
+    expect(drawer.querySelector("[data-drawer-body]")!.className).toContain("overflow-y-auto");
   });
   it("las secciones aún sin controles están vacías; «Cabecera y portada» tiene los suyos", async () => {
     const { user } = await setup();
@@ -114,7 +116,7 @@ describe("sección «Cabecera y portada» (E-110)", () => {
     // Degradado (en modo tarjeta, de serie encendido)
     expect(screen.getByRole("switch", { name: "Degradado bajo el texto" })).toBeChecked();
     await user.click(screen.getByRole("switch", { name: "Degradado bajo el texto" }));
-    expect(screen.queryByTestId("cover-overlay")).toBeNull();
+    expect(document.querySelector("[data-testid=cover-paint][data-overlay]")).toBeNull();
     // apagar vuelve al valor predeterminado
     await user.click(screen.getByRole("switch", { name: "Título sobre la portada" }));
     expect(screen.getByTestId("page-header")).toHaveAttribute("data-mode", "classic");

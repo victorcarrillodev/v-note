@@ -163,6 +163,23 @@ describe("vista ampliada (R-046 a R-051, RF-3)", () => {
     expect(other).not.toHaveAttribute("inert");
     other.remove();
   });
+  it("dentro del editor no marca inertes los otros bloques: el editor redibujaría y desmontaría el lienzo ampliado", async () => {
+    const outside = document.createElement("main"); document.body.appendChild(outside);
+    const props = { testId: "diagram", label: "Lienzo del diagrama", height: undefined, defaultHeight: 420, onHeightChange: vi.fn(), zoom: zoom(), history: hist() };
+    await renderWithI18n(
+      <div contentEditable="true" suppressContentEditableWarning>
+        <div data-testid="other-block">mapa mental</div>
+        <div contentEditable={false}><CanvasFrame {...props}><div>lienzo</div></CanvasFrame></div>
+      </div>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ampliar" }));
+    expect(frame()).toHaveAttribute("data-expanded");
+    expect(screen.getByTestId("other-block")).not.toHaveAttribute("inert");
+    expect(outside).toHaveAttribute("inert");
+    fireEvent.click(screen.getByRole("button", { name: "Salir de la vista ampliada" }));
+    expect(outside).not.toHaveAttribute("inert");
+    outside.remove();
+  });
   it("el foco queda atrapado dentro con Tab y Mayús+Tab", async () => {
     await mount();
     fireEvent.click(screen.getByRole("button", { name: "Ampliar" }));

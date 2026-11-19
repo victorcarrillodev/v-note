@@ -80,7 +80,7 @@ describe("oscurecido (E-091, E-092)", () => {
     fireEvent.change(r, { target: { value: "90" } });
     expect(page().style.cover).toBeUndefined(); // solo vista previa
     expect(page().updatedAt).toBe(before);
-    expect(screen.getByTestId("cover-overlay").style.background).toContain("0.9");
+    expect(screen.getByTestId("cover-paint")).toHaveAttribute("data-overlay", "90");
     fireEvent.pointerUp(r);
     fireEvent.pointerUp(r); // soltar dos veces no duplica
     await waitFor(() => expect(page().style.cover.overlay).toBe(90));

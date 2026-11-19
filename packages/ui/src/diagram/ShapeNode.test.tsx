@@ -1,6 +1,7 @@
 // G-126, G-127, G-132 (prueba primero): la forma dibuja su estilo con los colores del tema (paleta) o fijos (personalizados).
 import { describe, it, expect } from "vitest";
-import { shapeStyle } from "./ShapeNode";
+import { render } from "@testing-library/react";
+import { DecisionOutline, shapeStyle } from "./ShapeNode";
 import { defaultNodeStyle, type NodeStyle } from "@vnote/core";
 
 const st = (over: Partial<NodeStyle> = {}): NodeStyle => ({ ...defaultNodeStyle("process"), ...over });
@@ -40,8 +41,14 @@ describe("contorno", () => {
     const s = shapeStyle("process", st({ strokeWidth: 4, strokeDash: "dotted" }));
     expect(String(s.border)).toBe("4px dotted var(--c-text)");
   });
-  it("la decisión pinta su contorno por dentro con el mismo color y grosor", () => {
+  it("la decisión recorta la caja en rombo y deja el dibujo al SVG (sin borde ni sombra rectangulares)", () => {
     const s = shapeStyle("decision", st({ strokeWidth: 3, stroke: "#112233" }));
-    expect(String(s.boxShadow)).toBe("inset 0 0 0 3px #112233"); expect(s.clipPath).toContain("polygon");
+    expect(s.clipPath).toContain("polygon"); expect(s.border).toBe("none"); expect(s.boxShadow).toBeUndefined(); expect(s.background).toBe("transparent");
+  });
+  it("el contorno del rombo sigue sus cuatro lados con el color, el grosor y el tipo de línea", () => {
+    const { container } = render(<DecisionOutline style={st({ strokeWidth: 3, stroke: "#112233", strokeDash: "dashed" })} />);
+    const p = container.querySelector("polygon")!;
+    expect(p.getAttribute("points")).toBe("50,0 100,50 50,100 0,50");
+    expect(p.getAttribute("stroke")).toBe("#112233"); expect(p.getAttribute("stroke-width")).toBe("6"); expect(p.getAttribute("stroke-dasharray")).toBe("9 6");
   });
 });

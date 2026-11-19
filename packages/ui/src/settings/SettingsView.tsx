@@ -10,11 +10,13 @@ import { UnsplashPanel } from "./UnsplashPanel";
 import { Button } from "../components/Button";
 import { IconButton } from "../components/IconButton";
 import { ViewLayout, ViewSection } from "../components/ViewLayout";
+import { Drawer } from "../components/Drawer";
 import { INPUT, MUTED } from "../components/formStyles";
 
 type Pending = { actionId: string; combo: string; others: string[] };
 
-export function SettingsView({ preferences }: { preferences: PreferenceStore }) {
+/** Secciones de ajustes, sin marco: las usan la vista de página completa y la barra lateral. */
+export function SettingsContent({ preferences }: { preferences: PreferenceStore }) {
   const { t, i18n } = useTranslation();
   const [bindings, setBindings] = useState<Bindings>(() => loadBindings(preferences));
   const [capturing, setCapturing] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function SettingsView({ preferences }: { preferences: PreferenceStore }) 
   const KBD = "inline-flex min-h-6 items-center rounded border border-[var(--c-border)] bg-[var(--c-raised)] px-1.5 font-mono text-[length:var(--text-note-size)]";
 
   return (
-    <ViewLayout title={t("settings.title")}>
+    <>
       <ViewSection title={t("settings.general")} flush>
         <ThemePicker />
         <label className={SETTING}><span className="font-medium">{t("settings.language")}</span>
@@ -111,6 +113,19 @@ export function SettingsView({ preferences }: { preferences: PreferenceStore }) 
           </tbody>
         </table>
       </ViewSection>
-    </ViewLayout>
+    </>
   );
+}
+
+
+/** Ajustes como vista de página completa. */
+export function SettingsView({ preferences }: { preferences: PreferenceStore }) {
+  const { t } = useTranslation();
+  return <ViewLayout title={t("settings.title")}><SettingsContent preferences={preferences} /></ViewLayout>;
+}
+
+/** Ajustes como barra lateral que se desliza desde la derecha (botón «Ajustes» de la app). */
+export function SettingsPanel({ open, onOpenChange, preferences }: { open: boolean; onOpenChange: (o: boolean) => void; preferences: PreferenceStore }) {
+  const { t } = useTranslation();
+  return <Drawer open={open} onOpenChange={onOpenChange} title={t("settings.title")}><SettingsContent preferences={preferences} /></Drawer>;
 }

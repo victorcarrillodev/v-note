@@ -3,7 +3,7 @@
 import { sortKeys } from "../backup/stableJson";
 
 /** Catálogo de fuentes incluidas en la aplicación (D-16). */
-export const FONT_IDS = ["inter", "geist", "nunito", "source-serif", "lora", "merriweather", "jetbrains-mono", "fira-code", "atkinson", "caveat"] as const;
+export const FONT_IDS = ["inter", "geist", "nunito", "source-serif", "lora", "merriweather", "jetbrains-mono", "fira-code", "atkinson", "caveat", "comic-neue", "patrick-hand", "indie-flower", "kalam"] as const;
 export type FontId = (typeof FONT_IDS)[number];
 
 /** Colores de acento: los colores de bloque con tono fuerte de contraste verificado (D-21). */

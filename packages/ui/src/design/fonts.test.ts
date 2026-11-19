@@ -43,7 +43,7 @@ describe("tipografías incluidas", () => {
 });
 
 describe("fuentes de página (E-115, E-116, RF-5.1, RNF-6, CL-16)", () => {
-  const licenseOf = (file: string) => file.replace(/-latin-wght-normal\.woff2$/, "");
+  const licenseOf = (file: string) => file.replace(/-latin-(wght|\d+)-normal\.woff2$/, "");
   it.each([...FONT_IDS])("«%s» tiene su @font-face, su archivo y su licencia", (id) => {
     const f = pageFonts[id]!;
     expect(f, `falta ${id} en pageFonts`).toBeDefined();
@@ -59,10 +59,10 @@ describe("fuentes de página (E-115, E-116, RF-5.1, RNF-6, CL-16)", () => {
   it("el catálogo no tiene fuentes de más ni de menos que los FontId del núcleo", () => {
     expect(Object.keys(pageFonts).sort()).toEqual([...FONT_IDS].sort());
   });
-  it("las 7 fuentes nuevas pesan menos de 5 MB en total (E-116)", () => {
+  it("las fuentes nuevas (7 de E-116 y 4 manuscritas) pesan menos de 5 MB en total", () => {
     const old = new Set(["inter", "source-serif", "jetbrains-mono"]);
     const total = FONT_IDS.filter((id) => !old.has(id)).reduce((n, id) => n + statSync(resolve(dir, "fonts", pageFonts[id]!.file)).size, 0);
-    expect(FONT_IDS.filter((id) => !old.has(id))).toHaveLength(7);
+    expect(FONT_IDS.filter((id) => !old.has(id))).toHaveLength(11);
     expect(total).toBeLessThan(5 * 1024 * 1024);
   });
   it("las fuentes siguen sin cargarse de la red", () => {

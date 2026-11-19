@@ -29,7 +29,7 @@ import { CommandPalette, type PaletteAction } from "../palette/CommandPalette";
 import { DatabasePage } from "../databases/DatabasePage";
 import { ReminderCenter } from "../reminders/reminderCenter";
 import { RemindersView } from "../reminders/RemindersView";
-import { SettingsView } from "../settings/SettingsView";
+import { SettingsPanel } from "../settings/SettingsView";
 import { loadBindings } from "../settings/bindingsStore";
 import { comboFromEvent, gcAssets } from "@vnote/core";
 import { Sidebar } from "../sidebar/Sidebar";
@@ -44,7 +44,7 @@ import { RestoreWizard } from "../restore/RestoreWizard";
 import { useWorkspace } from "../workspace/useController";
 import { hideSplash } from "./splash";
 
-type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "settings" | "locked" | "reminders" | "graph" | "import";
+type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "locked" | "reminders" | "graph" | "import";
 type Opened = { workspace: Workspace; controller: WorkspaceController };
 
 export type AppProps = {
@@ -77,6 +77,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
   const [error, setError] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const shortcutState = useGlobalShortcut(globalShortcut?.service, preferences, globalShortcut?.command ?? "");
 
   // Un solo editor por espacio (CL-22): el bloqueo se toma al abrir y se conserva mientras esta ventana viva.
@@ -157,7 +158,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
     { id: "page.new", label: t("shortcuts.pageNew"), run: () => actions.current["page.new"]?.(), shortcut: shortcutOf("page.new"), ariaShortcut: ariaOf("page.new") },
     { id: "theme.toggle", label: t("shortcuts.themeToggle"), run: () => actions.current["theme.toggle"]?.(), shortcut: shortcutOf("theme.toggle"), ariaShortcut: ariaOf("theme.toggle") },
     { id: "capture.open", label: t("shortcuts.captureOpen"), run: () => setCaptureOpen(true), shortcut: shortcutOf("capture.open"), ariaShortcut: ariaOf("capture.open") },
-    { id: "settings.open", label: t("settings.title"), run: () => setView("settings") },
+    { id: "settings.open", label: t("settings.title"), run: () => setSettingsOpen(true) },
   ].map((a) => (a.shortcut ? a : { id: a.id, label: a.label, run: a.run }));
 
   // `t` cambia al cambiar de idioma; si openWorkspace dependiera de él, el arranque se repetiría y sacaría de la pantalla actual.
@@ -232,7 +233,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
                 { id: "graph", label: t("graph.title"), icon: "graph", onClick: () => setView("graph") },
                 ...(backup ? [{ id: "import", label: t("import.title"), icon: "import" as const, onClick: () => setView("import") }] : []),
                 ...(center ? [{ id: "reminders", label: t("reminders.title"), icon: "reminder" as const, onClick: () => setView("reminders") }] : []),
-                { id: "settings", label: t("app.settings"), icon: "settings", onClick: () => setView("settings") },
+                { id: "settings", label: t("app.settings"), icon: "settings", onClick: () => setSettingsOpen(true) },
               ],
               ...(backup ? [[
                 { id: "backup", label: t("app.backup"), icon: "backup" as const, onClick: () => setView("backup") },
@@ -289,7 +290,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
         <GraphView controller={opened.controller} currentPageId={opened.controller.getSnapshot().selectedId}
           onOpen={(id) => void (async () => { await opened.controller.select(id); setView("page"); })()} />
       )}
-      {view === "settings" && <SettingsView preferences={preferences} />}
+      <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} preferences={preferences} />
       {view === "trash" && opened && <TrashView controller={opened.controller} />}
       {view === "backup" && opened && backup && (
         <BackupPanelFor ws={opened.workspace} workspaces={workspaces} serviceFor={serviceFor} platform={backup.platform} />

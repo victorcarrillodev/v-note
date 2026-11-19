@@ -24,6 +24,7 @@ describe("web (sin servicios de escritorio)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Ajustes" }));
     await screen.findByRole("heading", { name: "Ajustes" });
     expect(screen.queryByRole("region", { name: /atajo global/i })).toBeNull();
+    await userEvent.keyboard("{Escape}");
     await userEvent.click(screen.getByRole("button", { name: /Espacio activo/ }));
     await userEvent.click(await screen.findByRole("menuitem", { name: "Gestionar espacios" }));
     await screen.findByRole("button", { name: /Abrir Personal/ });

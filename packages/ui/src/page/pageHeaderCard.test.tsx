@@ -40,7 +40,7 @@ describe("modo de la cabecera (E-095)", () => {
   it("sin portada las piezas que dependen de ella no se muestran y no quedan huecos (RF-1.6)", async () => {
     await setup({ cover: null, icon: "📓", style: { header: { titleOverCover: true, iconOverlap: true, gradient: true } } });
     expect(screen.queryByTestId("cover")).toBeNull();
-    expect(screen.queryByTestId("cover-overlay")).toBeNull();
+    expect(document.querySelector("[data-testid=cover-paint][data-overlay]")).toBeNull();
     expect(screen.getByTestId("page-icon").className).not.toContain("absolute");
   });
 });
@@ -162,16 +162,16 @@ describe("ícono que sobresale (E-101)", () => {
 describe("degradado y esquinas redondeadas (E-102)", () => {
   it("el degradado sigue al interruptor, y en modo tarjeta está encendido de serie", async () => {
     const a = await setup({ style: over });
-    expect(screen.getByTestId("cover-overlay")).toBeInTheDocument();
+    expect(screen.getByTestId("cover-paint")).toHaveAttribute("data-overlay");
     void a;
   });
   it("apagado explícitamente, no hay degradado", async () => {
     await setup({ style: { header: { titleOverCover: true, gradient: false } } });
-    expect(screen.queryByTestId("cover-overlay")).toBeNull();
+    expect(document.querySelector("[data-testid=cover-paint][data-overlay]")).toBeNull();
   });
   it("en el modo clásico el degradado está apagado de serie y se puede activar", async () => {
     await setup({ style: { header: { gradient: true } } });
-    expect(screen.getByTestId("cover-overlay")).toBeInTheDocument();
+    expect(screen.getByTestId("cover-paint")).toHaveAttribute("data-overlay");
   });
   it("«esquinas redondeadas» redondea la portada, y el ajuste de esquinas manda sobre él", async () => {
     await setup({ style: { header: { rounded: true } } });
@@ -180,6 +180,11 @@ describe("degradado y esquinas redondeadas (E-102)", () => {
   it("con un radio propio se usa ese", async () => {
     await setup({ style: { header: { rounded: true }, cover: { radius: 30 } } });
     expect(screen.getByTestId("cover").style.borderRadius).toBe("30px");
+  });
+  it("la portada se pinta en una sola capa, con el oscurecido incluido (capas separadas dejaban un filo claro en las esquinas)", async () => {
+    await setup({ style: { header: { rounded: true, gradient: true } } });
+    expect(screen.getByTestId("cover").querySelectorAll("[data-cover-layer]")).toHaveLength(1);
+    expect(screen.getByTestId("cover-paint")).toHaveAttribute("data-overlay", "60");
   });
   it("sin nada, las esquinas son rectas", async () => {
     await setup({});

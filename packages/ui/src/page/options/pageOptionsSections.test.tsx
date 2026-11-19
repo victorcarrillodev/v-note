@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { cssVarsFor, DocStore, PageService } from "@vnote/core";
+import { cssVarsFor, DocStore, FONT_IDS, PageService } from "@vnote/core";
 import { renderWithI18n } from "../../../tests/renderWithI18n";
 import { makeController } from "../../../tests/withController";
 import { appendTextUpdate, para, updateFor } from "../../../../core/tests/support/builders";
@@ -22,12 +22,12 @@ async function setup(opts: { props?: object } = {}) {
 const open = async (user: ReturnType<typeof userEvent.setup>) => { await user.click(screen.getByRole("button", { name: "Opciones de la página" })); return screen.findByRole("group", { name: "Opciones de la página" }); };
 
 describe("tipografía (E-120)", () => {
-  it("dos listas, cada una con «Predeterminado» y las 10 fuentes escritas en su fuente", async () => {
+  it("dos listas, cada una con «Predeterminado» y todas las fuentes (14) escritas en su fuente", async () => {
     const { user } = await setup();
     await open(user);
     for (const name of ["Fuente del texto", "Fuente de los títulos"]) {
       const radios = within(screen.getByRole("radiogroup", { name })).getAllByRole("radio");
-      expect(radios).toHaveLength(11);
+      expect(radios).toHaveLength(FONT_IDS.length + 1);
       expect(radios[0]).toHaveTextContent("Predeterminado");
       expect(radios[0]).toBeChecked();
       expect(radios[0]!.style.fontFamily).toBe("");
@@ -176,9 +176,8 @@ describe("ancho en pantallas estrechas (E-129, CL-17)", () => {
   it("el menú ocupa todo el ancho disponible en 360 px", async () => {
     const { user } = await setup();
     const m = await open(user);
-    expect(m.className).toContain("max-sm:w-[calc(100vw-2rem)]");
-    expect(m.className).toContain("max-w-[calc(100vw-2rem)]");
-    expect(m.className).toContain("w-80");
+    // La barra lateral nunca pasa del ancho de la ventana: en 360 px la ocupa entera.
+    expect(m.closest("[data-drawer]")!.className).toContain("max-w-full");
   });
 });
 

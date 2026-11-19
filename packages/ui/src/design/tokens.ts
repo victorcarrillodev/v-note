@@ -88,6 +88,10 @@ export const pageFonts: Record<string, { family: string; file: string; fallback:
   "fira-code": { family: "Fira Code Variable", file: "fira-code-latin-wght-normal.woff2", fallback: "ui-monospace, \"SF Mono\", Menlo, Consolas, monospace", label: "Fira Code" },
   atkinson: { family: "Atkinson Hyperlegible Next Variable", file: "atkinson-hyperlegible-next-latin-wght-normal.woff2", fallback: "system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif", label: "Atkinson Hyperlegible" },
   caveat: { family: "Caveat Variable", file: "caveat-latin-wght-normal.woff2", fallback: "\"Segoe Print\", \"Comic Sans MS\", cursive", label: "Caveat" },
+  "comic-neue": { family: "Comic Neue", file: "comic-neue-latin-400-normal.woff2", fallback: "\"Comic Sans MS\", \"Chalkboard SE\", cursive", label: "Comic Neue" },
+  "patrick-hand": { family: "Patrick Hand", file: "patrick-hand-latin-400-normal.woff2", fallback: "\"Segoe Print\", \"Comic Sans MS\", cursive", label: "Patrick Hand" },
+  "indie-flower": { family: "Indie Flower", file: "indie-flower-latin-400-normal.woff2", fallback: "\"Segoe Print\", \"Comic Sans MS\", cursive", label: "Indie Flower" },
+  kalam: { family: "Kalam", file: "kalam-latin-400-normal.woff2", fallback: "\"Segoe Print\", \"Comic Sans MS\", cursive", label: "Kalam" },
 };
 
 /** Valores de partida del editor de portadas (selector de color y degradado propio), fijos para cualquier tema. */
@@ -99,7 +103,7 @@ export const typography: Record<"pageTitle" | "h1" | "h2" | "h3" | "reading" | "
   h1: { size: 28, line: 36, weight: 700 },
   h2: { size: 22, line: 30, weight: 600 },
   h3: { size: 18, line: 26, weight: 600 },
-  reading: { size: 16, line: 26, weight: 400 },
+  reading: { size: 17, line: 28, weight: 400 },
   dialogTitle: { size: 18, line: 24, weight: 600 },
   component: { size: 14, line: 20, weight: 600 },
   ui: { size: 14, line: 20, weight: 400 },
@@ -134,13 +138,13 @@ export const motion = { instant: 0, fast: 100, base: 150, slow: 220, exit: 120, 
 export const layers = { content: 0, sticky: 10, sidebarOverlay: 30, menu: 40, tooltip: 50, scrim: 55, dialog: 60, toast: 70, skipLink: 100 } as const;
 
 /** Tamaños estructurales (modales, panel lateral, popover). */
-export const sizes = { modalS: 400, modalM: 520, modalL: 720, popoverMax: 360, panelWidth: 380, paletteWidth: 640, sidebarWidth: 240, headerHeight: 44, readingWidth: 720, windowMargin: 24, windowMin: 900 } as const;
+export const sizes = { modalS: 400, modalM: 520, modalL: 720, popoverMax: 360, panelWidth: 380, drawerWidth: 560, paletteWidth: 640, sidebarWidth: 240, headerHeight: 44, readingWidth: 720, windowMargin: 24, windowMin: 900 } as const;
 
 
 /** Estilo de página (spec 005, plan §4.1): valores de cada opción del menú. El núcleo solo nombra estas variables (cssVarsFor). */
 export const pageStyle = {
   widths: { narrow: 600, normal: 720, wide: 960 },
-  textSizes: { small: 14, normal: 16, large: 18 },
+  textSizes: { small: 15, normal: 17, large: 19 },
   /** Altura de línea sin unidad: así sigue al tamaño de texto que se elija. */
   leadings: { compact: 1.45, normal: 1.625, relaxed: 1.85 },
   /** Separación entre bloques, en em. */

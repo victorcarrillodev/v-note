@@ -64,8 +64,8 @@
   --text-h3-size: 18px;
   --text-h3-line: 26px;
   --text-h3-weight: 600;
-  --text-reading-size: 16px;
-  --text-reading-line: 26px;
+  --text-reading-size: 17px;
+  --text-reading-line: 28px;
   --text-reading-weight: 400;
   --text-dialog-title-size: 18px;
   --text-dialog-title-line: 24px;
@@ -120,6 +120,7 @@
   --size-modal-l: 720px;
   --size-popover-max: 360px;
   --size-panel-width: 380px;
+  --size-drawer-width: 560px;
   --size-palette-width: 640px;
   --size-sidebar-width: 240px;
   --size-header-height: 44px;
@@ -129,9 +130,9 @@
   --page-width-narrow: 600px;
   --page-width-normal: 720px;
   --page-width-wide: 960px;
-  --page-text-small: 14px;
-  --page-text-normal: 16px;
-  --page-text-large: 18px;
+  --page-text-small: 15px;
+  --page-text-normal: 17px;
+  --page-text-large: 19px;
   --page-leading-compact: 1.45;
   --page-leading-normal: 1.625;
   --page-leading-relaxed: 1.85;
@@ -156,6 +157,10 @@
   --font-fira-code: "Fira Code Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --font-atkinson: "Atkinson Hyperlegible Next Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-caveat: "Caveat Variable", "Segoe Print", "Comic Sans MS", cursive;
+  --font-comic-neue: "Comic Neue", "Comic Sans MS", "Chalkboard SE", cursive;
+  --font-patrick-hand: "Patrick Hand", "Segoe Print", "Comic Sans MS", cursive;
+  --font-indie-flower: "Indie Flower", "Segoe Print", "Comic Sans MS", cursive;
+  --font-kalam: "Kalam", "Segoe Print", "Comic Sans MS", cursive;
   --font-content: var(--font-sans);
   --font-headings: var(--font-content);
   --density-pad: 0px;
@@ -393,8 +398,8 @@
 }
 :root[data-density="compact"] {
   --density-pad: -4px;
-  --text-reading-size: 15px;
-  --text-reading-line: 22px;
+  --text-reading-size: 16px;
+  --text-reading-line: 24px;
 }
 :root[data-font="serif"] { --font-content: var(--font-serif); }
 :root[data-font="mono"] { --font-content: var(--font-mono); }
@@ -523,6 +528,16 @@ input[type="checkbox"], input[type="radio"], input[type="range"], input[type="co
 body, #root, aside, main, header {
   transition: background-color var(--motion-theme) linear, color var(--motion-theme) linear;
 }
+
+/* Barra lateral (Drawer): entra desde la derecha y sale hacia la derecha; el velo aparece y se desvanece. */
+@keyframes v-drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes v-drawer-out { from { transform: none; } to { transform: translateX(100%); } }
+@keyframes v-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes v-fade-out { from { opacity: 1; } to { opacity: 0; } }
+[data-drawer][data-state="open"] { animation: v-drawer-in var(--motion-slow) var(--ease-out); }
+[data-drawer][data-state="closed"] { animation: v-drawer-out var(--motion-slow) var(--ease-in) forwards; }
+[data-drawer-overlay][data-state="open"] { animation: v-fade-in var(--motion-base) linear; }
+[data-drawer-overlay][data-state="closed"] { animation: v-fade-out var(--motion-slow) linear forwards; }
 
 /* Reducir movimiento: sin desplazamientos ni escalas; como máximo desvanecimientos breves. */
 @media (prefers-reduced-motion: reduce) {

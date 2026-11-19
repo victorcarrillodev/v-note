@@ -49,8 +49,12 @@ describe("fuente de los títulos (E-118)", () => {
     expect(r).toContain("font-family: var(--font-headings)");
     expect(css).toContain('.page-scope .bn-block-content[data-content-type="heading"]');
   });
-  it("el texto del editor sigue a --font-content", () => {
-    expect(ruleFor(".page-scope .bn-container.bn-mantine")).toContain("--bn-font-family: var(--font-content)");
+  it("el texto del editor sigue a --font-content, por encima del Inter fijo de BlockNote", () => {
+    expect(ruleFor(".page-scope .bn-default-styles")).toContain("font-family: var(--font-content)");
+  });
+  it("la cabecera y los menús del editor no heredan la fuente de la página", () => {
+    expect(css).not.toMatch(/\.page-scope\s*\{[^}]*font-family/);
+    expect(css).not.toContain("--bn-font-family");
   });
 });
 
@@ -60,8 +64,8 @@ describe("separación entre bloques (E-119)", () => {
     await renderWithI18n(<PageStyleScope style={{ spacing: { leading: "compact" } }}><p>x</p></PageStyleScope>);
     expect(screen.getByTestId("page-style-scope")).toHaveAttribute("data-block-gap");
   });
-  it("el tamaño y el interlineado del texto se aplican al editor solo cuando la página los elige", () => {
-    expect(ruleFor(".page-scope[data-reading] .bn-editor")).toContain("font-size: var(--text-reading-size)");
-    expect(ruleFor(".page-scope[data-reading] .bn-editor")).toContain("line-height: var(--text-reading-line)");
+  it("el editor siempre usa el tamaño y el interlineado de lectura (la página puede cambiarlos)", () => {
+    expect(ruleFor(".page-scope .bn-editor")).toContain("font-size: var(--text-reading-size)");
+    expect(ruleFor(".page-scope .bn-editor")).toContain("line-height: var(--text-reading-line)");
   });
 });

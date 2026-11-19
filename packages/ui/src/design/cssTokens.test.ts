@@ -55,10 +55,10 @@ describe("variables de tipografía, espaciado, radios, movimiento y capas", () =
 
 describe("densidad compacta (RF-10.4)", () => {
   const compact = block(':root[data-density="compact"] {');
-  it("reduce el espaciado vertical (−4 px) y baja la lectura solo a 15/22, nunca por debajo del mínimo", () => {
+  it("reduce el espaciado vertical (−4 px) y baja la lectura solo a 16/24, nunca por debajo del mínimo", () => {
     expect(compact).toContain("--density-pad: -4px");
-    expect(read(compact, "text-reading-size")).toBe("15px");
-    expect(read(compact, "text-reading-line")).toBe("22px");
+    expect(read(compact, "text-reading-size")).toBe("16px");
+    expect(read(compact, "text-reading-line")).toBe("24px");
     expect(parseInt(read(compact, "text-reading-size") ?? "0")).toBeGreaterThanOrEqual(15);
   });
   it("no toca los tamaños de la interfaz (siguen ≥ 12 px)", () => {

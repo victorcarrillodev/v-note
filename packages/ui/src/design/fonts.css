@@ -69,3 +69,32 @@
   font-weight: 400 700;
   src: url("./fonts/caveat-latin-wght-normal.woff2") format("woff2-variations");
 }
+/* Manuscritas de un solo peso (400): la negrita la sintetiza el navegador. */
+@font-face {
+  font-family: "Comic Neue";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./fonts/comic-neue-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Patrick Hand";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./fonts/patrick-hand-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Indie Flower";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./fonts/indie-flower-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Kalam";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./fonts/kalam-latin-400-normal.woff2") format("woff2");
+}

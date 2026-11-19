@@ -57,8 +57,8 @@ ${lines(...colorVars("dark"), "color-scheme: dark;")}
 ${paletteBlocks}
 :root[data-density="compact"] {
   --density-pad: -4px;
-  --text-reading-size: 15px;
-  --text-reading-line: 22px;
+  --text-reading-size: 16px;
+  --text-reading-line: 24px;
 }
 :root[data-font="serif"] { --font-content: var(--font-serif); }
 :root[data-font="mono"] { --font-content: var(--font-mono); }
@@ -186,6 +186,16 @@ input[type="checkbox"], input[type="radio"], input[type="range"], input[type="co
 body, #root, aside, main, header {
   transition: background-color var(--motion-theme) linear, color var(--motion-theme) linear;
 }
+
+/* Barra lateral (Drawer): entra desde la derecha y sale hacia la derecha; el velo aparece y se desvanece. */
+@keyframes v-drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes v-drawer-out { from { transform: none; } to { transform: translateX(100%); } }
+@keyframes v-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes v-fade-out { from { opacity: 1; } to { opacity: 0; } }
+[data-drawer][data-state="open"] { animation: v-drawer-in var(--motion-slow) var(--ease-out); }
+[data-drawer][data-state="closed"] { animation: v-drawer-out var(--motion-slow) var(--ease-in) forwards; }
+[data-drawer-overlay][data-state="open"] { animation: v-fade-in var(--motion-base) linear; }
+[data-drawer-overlay][data-state="closed"] { animation: v-fade-out var(--motion-slow) linear forwards; }
 
 /* Reducir movimiento: sin desplazamientos ni escalas; como máximo desvanecimientos breves. */
 @media (prefers-reduced-motion: reduce) {

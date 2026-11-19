@@ -5,7 +5,7 @@ import type { WorkspaceController } from "../../workspace/controller";
 import { useWorkspace } from "../../workspace/useController";
 import { useUndoToast } from "../../feedback/useUndoToast";
 import { useToasts } from "../../feedback/ToastContext";
-import { Popover } from "../../components/Popover";
+import { Drawer } from "../../components/Drawer";
 import { IconButton } from "../../components/IconButton";
 import { Button } from "../../components/Button";
 import { Switch } from "../../components/controls";
@@ -69,8 +69,8 @@ function FontList({ label, value, onChange }: { label: string; value: FontId | t
 }
 
 /**
- * Menú «Opciones de la página» (RF-4): un botón en el extremo derecho de la barra superior que abre un panel con cinco secciones.
- * Cada cambio entra al historial y ofrece «Deshacer» (RF-4.6, D-19); Radix aporta teclado, Esc, clic fuera y devolución del foco.
+ * Menú «Opciones de la página» (RF-4): un botón en el extremo derecho de la barra superior que abre una barra lateral derecha con cinco secciones.
+ * La página no se atenúa para ver los cambios en vivo. Cada cambio entra al historial y ofrece «Deshacer» (RF-4.6, D-19); Esc, la X o un clic fuera la cierran.
  */
 export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceController; pageId: string }) {
   const { t, i18n } = useTranslation();
@@ -112,12 +112,16 @@ export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceC
   const defaultOption = { value: DEFAULT, label: t("pageOptions.default") };
 
   return (
-    <Popover
-      open={open} onOpenChange={setOpen} align="end" onCloseAutoFocus={(e) => { if (handoff.current) { e.preventDefault(); handoff.current = false; } }}
-      trigger={<IconButton icon="settings" label={t("pageOptions.open")} aria-haspopup="dialog" aria-expanded={open} />}
+    <>
+    <IconButton icon="settings" label={t("pageOptions.open")} aria-haspopup="dialog" aria-expanded={open} data-page-options-trigger onClick={() => setOpen((o) => !o)} />
+    <Drawer
+      open={open} onOpenChange={setOpen} title={t("pageOptions.title")} size="m" modal={false} keepOpenOn="[data-page-options-trigger]"
+      restoreFocus={() => { const back = !handoff.current; handoff.current = false; return back; }}
     >
-      <div role="group" aria-label={t("pageOptions.title")} className="flex max-h-[70vh] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto pr-1 max-sm:w-[calc(100vw-2rem)]">
+      <div role="group" aria-label={t("pageOptions.title")} className="flex flex-col">
         <Section id="typography" title={t("pageOptions.sections.typography")}>
+          <Select label={t("pageOptions.spacing.textSize")} value={style.spacing?.textSize ?? DEFAULT} onChange={(v) => change({ spacing: { textSize: v === DEFAULT ? undefined : (v as (typeof TEXT_SIZES)[number]) } })}
+            options={[defaultOption, ...TEXT_SIZES.map((s) => ({ value: s, label: t(`pageOptions.spacing.textSizes.${s}`) }))]} />
           <FontList label={t("pageOptions.typography.body")} value={style.typography?.body ?? DEFAULT} onChange={(v) => change({ typography: { body: v === DEFAULT ? undefined : v } })} />
           <FontList label={t("pageOptions.typography.headings")} value={style.typography?.headings ?? DEFAULT} onChange={(v) => change({ typography: { headings: v === DEFAULT ? undefined : v } })} />
         </Section>
@@ -125,8 +129,6 @@ export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceC
         <Section id="spacing" title={t("pageOptions.sections.spacing")}>
           <Select label={t("pageOptions.spacing.width")} value={style.spacing?.width ?? DEFAULT} onChange={(v) => change({ spacing: { width: v === DEFAULT ? undefined : (v as (typeof CONTENT_WIDTHS)[number]) } })}
             options={[defaultOption, ...CONTENT_WIDTHS.map((w) => ({ value: w, label: t(`pageOptions.spacing.widths.${w}`) }))]} />
-          <Select label={t("pageOptions.spacing.textSize")} value={style.spacing?.textSize ?? DEFAULT} onChange={(v) => change({ spacing: { textSize: v === DEFAULT ? undefined : (v as (typeof TEXT_SIZES)[number]) } })}
-            options={[defaultOption, ...TEXT_SIZES.map((s) => ({ value: s, label: t(`pageOptions.spacing.textSizes.${s}`) }))]} />
           <Select label={t("pageOptions.spacing.leading")} value={style.spacing?.leading ?? DEFAULT} onChange={(v) => change({ spacing: { leading: v === DEFAULT ? undefined : (v as (typeof LEADINGS)[number]) } })}
             options={[defaultOption, ...LEADINGS.map((l) => ({ value: l, label: t(`pageOptions.spacing.leadings.${l}`) }))]} />
         </Section>
@@ -189,6 +191,7 @@ export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceC
           </div>
         </Section>
       </div>
-    </Popover>
+    </Drawer>
+    </>
   );
 }
