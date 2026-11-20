@@ -46,6 +46,13 @@ describe("crear, renombrar, recolorear", () => {
     expect(must(await tags.rename(t.id, "B")).name).toBe("B");
     expect(must(await tags.recolor(t.id, "green")).color).toBe("green");
   });
+  it("acepta colores de las paletas de acento (sólido y degradado) y rechaza los inválidos", async () => {
+    const t = must(await tags.create({ name: "A", color: "#FF8800" }));
+    expect(t.color).toBe("#ff8800");
+    expect(must(await tags.recolor(t.id, "#ff8800~#0000ff")).color).toBe("#ff8800~#0000ff");
+    expect((await tags.recolor(t.id, "rojo")).ok).toBe(false);
+    expect((await tags.recolor(t.id, "#12345")).ok).toBe(false);
+  });
   it("renombrar a un nombre que ya existe falla", async () => {
     must(await tags.create({ name: "A", color: "red" }));
     const b = must(await tags.create({ name: "B", color: "red" }));

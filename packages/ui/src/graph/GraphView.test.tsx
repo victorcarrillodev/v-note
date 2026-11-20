@@ -36,4 +36,9 @@ describe("GraphView y el tema", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
     expect(readTokens.mock.calls.length).toBeGreaterThan(before);
   });
+  it("muestra una leyenda con un color por tipo de elemento", async () => {
+    await renderWithI18n(<ThemeProvider preferences={new MemoryPreferences()}><GraphView controller={controller} currentPageId={null} onOpen={() => {}} /></ThemeProvider>);
+    const legend = await screen.findByRole("list", { name: "Tipos de elemento" });
+    expect(Array.from(legend.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["Página", "Subpágina", "Tablero", "Base de datos", "En la papelera"]);
+  });
 });

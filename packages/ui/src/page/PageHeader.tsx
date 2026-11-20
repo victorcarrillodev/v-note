@@ -8,6 +8,7 @@ import { useUndoToast } from "../feedback/useUndoToast";
 import { PageTags } from "../tags/PageTags";
 import { Button } from "../components/Button";
 import { Chip } from "../components/Chip";
+import { useBleedBox } from "./cover/useBleedBox";
 import { InlineAlert } from "../components/InlineAlert";
 import { Tooltip } from "../components/Tooltip";
 import { hasCover } from "./cover";
@@ -87,6 +88,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   const [dropping, setDropping] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const coverRef = useRef<HTMLDivElement>(null);
+  const bleed = useBleedBox(coverRef, [pageId, found?.page.cover]);
   const areaRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ start: Pos; x: number; y: number } | null>(null);
   const untitledOnOpen = found !== null && found.page.title === "";
@@ -147,6 +149,12 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
 
   // Radio efectivo: el ajuste de esquinas manda; si no hay, «Esquinas redondeadas» pone un radio de serie (RF-1.3).
   const radius: CornerRadius | undefined = preview?.radius ?? (coverStyle.radius !== undefined ? coverStyle.radius : header.rounded ? DEFAULT_ROUNDED_RADIUS : undefined);
+  // Con esquinas redondeadas la portada se separa de los lados y de arriba, más cuanto mayor es el radio, para que se vea la curva.
+  const maxRadius = radius === undefined ? 0 : Array.isArray(radius) ? Math.max(...radius) : radius;
+  const inset = Math.min(Math.round(maxRadius * 1.5), 64);
+  // Los botones y el crédito sobre la portada se meten lo justo para no tocar la curva de su esquina.
+  const cornerR = (i: number) => (radius === undefined ? 0 : Array.isArray(radius) ? radius[i]! : radius);
+  const pad = (i: number, base: number) => Math.max(base, Math.round(cornerR(i) * 0.5));
   const artStyle = {
     ...page.style,
     cover: { ...coverStyle, ...(preview?.overlay !== undefined ? { overlay: preview.overlay } : {}), ...(radius !== undefined ? { radius } : {}) },
@@ -187,7 +195,6 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   const picker = (trigger: ReactNode) => (
     <CoverPicker trigger={trigger} open={pickerOpen} onOpenChange={(o) => { setPickerOpen(o); if (!o) imp.clear(); }} hasCover={hasC}
       canUpload={imp.canImport} error={imp.error} onApply={applyCover} onFile={(f) => { void imp.importFile(f); }}
-      onFree={(photo) => { void imp.importFree(photo).then((ok) => { if (ok) setPickerOpen(false); }); }}
       onUnsplash={(photo) => { void imp.importUnsplash(photo).then((ok) => { if (ok) setPickerOpen(false); }); }} unsplashBusy={imp.busy && imp.stage === "download"} unsplashError={imp.unsplashError} />
   );
 
@@ -236,7 +243,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   );
 
   const coverControls = !locked && (
-    <div className="absolute right-3 top-3 z-10 flex gap-2">
+    <div className="absolute z-10 flex gap-2 transition-[top,right] duration-300 ease-out motion-reduce:transition-none" style={{ top: pad(1, 12), right: pad(1, 12) }}>
       {!repositioning && (
         <CoverAdjust trigger={<button type="button" className={COVER_BTN}><Icon name="settings" size={14} />{t("cover.adjust")}</button>}
           open={adjustOpen} onOpenChange={setAdjustOpen} style={page.style} onStyle={setStyle} onPreview={setPreview}
@@ -279,7 +286,10 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
       )}
 
       {hasC && (
-        <div ref={coverRef} className={cx("relative", iconOverlap && page.icon && "mb-7")}>
+        <div ref={coverRef} data-testid="cover-bleed" className={cx("relative transition-[width,margin] duration-300 ease-out motion-reduce:transition-none", iconOverlap && page.icon && "mb-7")}
+          style={bleed
+            ? { width: bleed.width - 2 * inset, marginLeft: bleed.left + inset, marginTop: inset - bleed.top }
+            : { width: `calc(100cqw - ${2 * inset}px)`, marginLeft: `calc(50% - 50cqw + ${inset}px)`, marginTop: `${inset - 24}px` }}>
           <CoverArt cover={page.cover} style={artStyle} assets={assets} grow={card} positionOverride={repositioning ?? undefined}
             darken={header.gradient ?? card}>
             {coverControls}
@@ -290,7 +300,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
             )}
             {repositionBar}
             {page.coverCredit && page.cover?.startsWith("asset:") && (
-              <p data-testid="cover-credit" className="absolute bottom-1.5 right-3 z-10 rounded-sm bg-black/50 px-1.5 py-0.5 text-[length:var(--text-note-size)] text-white">
+              <p data-testid="cover-credit" style={{ bottom: pad(2, 6), right: pad(2, 12) }} className="absolute bottom-1.5 right-3 z-10 rounded-sm bg-black/50 px-1.5 py-0.5 text-[length:var(--text-note-size)] text-white">
                 {t("cover.creditBy")}{" "}
                 <ExternalLink href={page.coverCredit.authorUrl} className="underline">{page.coverCredit.author}</ExternalLink>{" "}
                 {t("cover.creditOn")}{" "}
@@ -298,7 +308,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
               </p>
             )}
             {card && (
-              <div className="relative flex min-h-[inherit] flex-col justify-end gap-2 px-6 pb-6 pt-16 max-sm:px-4 max-sm:pb-4">
+              <div className="relative mx-auto flex min-h-[inherit] w-full max-w-[var(--size-reading-width)] flex-col justify-end gap-2 px-6 pb-6 pt-16 max-sm:px-4 max-sm:pb-4">
                 {metaRow(true)}
                 <div className="flex items-end gap-3">
                   {!iconOverlap && iconBox}
@@ -308,7 +318,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
               </div>
             )}
           </CoverArt>
-          {iconOverlap && iconBox}
+          {iconOverlap && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10"><div className="relative mx-auto w-full max-w-[var(--size-reading-width)]">{iconBox}</div></div>}
         </div>
       )}
 

@@ -7,6 +7,7 @@ import { Icon } from "../design/Icon";
 import { CellEditor } from "./cells";
 import type { DatabaseController } from "./databaseController";
 import { useDatabase } from "./useDatabase";
+import { Checkbox } from "../components/controls";
 
 const ROW_H = 40;
 
@@ -56,10 +57,7 @@ export function TableView({ controller, height = 480, onOpenRow, onNewProperty }
                       <input aria-label={t("databases.newPropertyName")} value={newName} onChange={(e) => setNewName(e.target.value)} className="rounded border px-1 py-0.5 text-sm font-normal" />
                     </label>
                     {p.type === "date" && (
-                      <label className="flex items-center gap-1 text-xs font-normal">
-                        <input type="checkbox" checked={p.config.asTask === true} onChange={(e) => void controller.updatePropertyConfig(p.id, { asTask: e.target.checked })} />
-                        {t("databases.useAsTask")}
-                      </label>
+                      <Checkbox className="text-xs font-normal" label={t("databases.useAsTask")} checked={p.config.asTask === true} onChange={(v) => void controller.updatePropertyConfig(p.id, { asTask: v })} />
                     )}
                     <button type="button" onClick={() => void controller.renameProperty(p.id, newName).then(() => setMenuFor(null))}>{t("databases.rename")}</button>
                     <button type="button" onClick={() => void controller.deleteProperty(p.id).then(() => setMenuFor(null))}>{t("databases.deleteProperty")}</button>

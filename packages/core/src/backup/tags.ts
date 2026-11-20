@@ -1,6 +1,6 @@
 import { appError, err, ok, type Result } from "../result";
 import type { SqlExecutor, SqlStore } from "../ports/sqlStore";
-import { TAG_COLORS } from "../tags/tagService";
+import { isTagColor } from "../tags/tagService";
 import { stableJson } from "./stableJson";
 
 export type TagsFile = { tags: { id: string; name: string; color: string; createdAt: number }[]; assignments: { pageId: string; tagId: string }[] };
@@ -27,7 +27,7 @@ export function validateTags(raw: unknown, pageIds: Set<string>): Result<TagsFil
   const ids = new Set<string>();
   const names = new Set<string>();
   for (const t of raw.tags) {
-    if (!isObj(t) || typeof t.id !== "string" || typeof t.name !== "string" || t.name.trim() === "" || typeof t.createdAt !== "number" || !TAG_COLORS.includes(t.color as never)) return invalid("tags.json tiene una etiqueta inválida");
+    if (!isObj(t) || typeof t.id !== "string" || typeof t.name !== "string" || t.name.trim() === "" || typeof t.createdAt !== "number" || !isTagColor(t.color)) return invalid("tags.json tiene una etiqueta inválida");
     if (ids.has(t.id) || names.has(t.name.toLowerCase())) return invalid("tags.json tiene etiquetas repetidas");
     ids.add(t.id); names.add(t.name.toLowerCase());
   }

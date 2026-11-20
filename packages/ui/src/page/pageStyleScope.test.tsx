@@ -49,8 +49,9 @@ describe("fuente de los títulos (E-118)", () => {
     expect(r).toContain("font-family: var(--font-headings)");
     expect(css).toContain('.page-scope .bn-block-content[data-content-type="heading"]');
   });
-  it("el texto del editor sigue a --font-content, por encima del Inter fijo de BlockNote", () => {
-    expect(ruleFor(".page-scope .bn-default-styles")).toContain("font-family: var(--font-content)");
+  it("solo el texto escrito sigue a --font-content; el resto del editor conserva la fuente de la interfaz", () => {
+    expect(ruleFor(".page-scope .bn-inline-content")).toContain("font-family: var(--font-content)");
+    expect(ruleFor(".page-scope .bn-default-styles")).toContain("font-family: var(--font-sans)");
   });
   it("la cabecera y los menús del editor no heredan la fuente de la página", () => {
     expect(css).not.toMatch(/\.page-scope\s*\{[^}]*font-family/);

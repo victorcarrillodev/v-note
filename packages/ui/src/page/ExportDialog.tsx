@@ -7,6 +7,7 @@ import type { AssetStore } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
 import { useOptionalTheme } from "../theme/theme";
 import { exportPaletteFor } from "../design/exportPalette";
+import { Checkbox } from "../components/controls";
 
 /** Lo que cada plataforma aporta para entregar la exportación: guardar el HTML o abrir el diálogo de impresión (para guardar como PDF). */
 export type ExportRuntime = {
@@ -93,10 +94,7 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
             </fieldset>
           )}
 
-          <label className="mb-2 flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={withChildren} disabled={running} onChange={(e) => setWithChildren(e.target.checked)} />
-            {t("export.withChildren")}
-          </label>
+          <Checkbox className="mb-2" label={t("export.withChildren")} checked={withChildren} disabled={running} onChange={setWithChildren} />
 
           {views.length > 1 && (
             <label className="mb-2 flex flex-col gap-1 text-sm">

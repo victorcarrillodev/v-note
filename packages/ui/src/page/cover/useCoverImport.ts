@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { freePhotoCredit, unsplashCredit, type AssetStore, type FreePhoto, type UnsplashErrorKind, type UnsplashPhoto } from "@vnote/core";
+import { unsplashCredit, type AssetStore, type UnsplashErrorKind, type UnsplashPhoto } from "@vnote/core";
 import { useUnsplash } from "../../unsplash/UnsplashContext";
 import type { WorkspaceController } from "../../workspace/controller";
 import { importCoverBytes, importCoverImage, type CoverImportError, type CoverImportDeps } from "./importCoverImage";
@@ -39,19 +39,6 @@ export function useCoverImport(controller: WorkspaceController, pageId: string, 
     setState({ ...IDLE, error: r.ok ? null : r.error, lowRes: r.ok && r.lowRes });
     return r.ok;
   }, [assets, controller, pageId, optimize, unsplash]);
-  /** Elegir una foto libre (Commons o Picsum): descarga, optimización y portada con su crédito. */
-  const importFree = useCallback(async (photo: FreePhoto): Promise<boolean> => {
-    if (!assets) return false;
-    const client = unsplash.getFreeClient();
-    if (!client) return false;
-    setState({ ...IDLE, busy: true, stage: "download" });
-    const got = await client.download(photo);
-    if (!got.ok) { setState({ ...IDLE, unsplashError: got.error.kind }); return false; }
-    setState({ ...IDLE, busy: true, stage: "optimize" });
-    const r = await importCoverBytes(got.value, { assets, setProps: (patch) => controller.setPageProps(pageId, patch), ...(optimize ? { optimize } : {}) }, freePhotoCredit(photo));
-    setState({ ...IDLE, error: r.ok ? null : r.error, lowRes: r.ok && r.lowRes });
-    return r.ok;
-  }, [assets, controller, pageId, optimize, unsplash]);
   const clear = useCallback(() => setState((s) => ({ ...s, error: null, unsplashError: null, lowRes: false })), []);
-  return { ...state, importFile, importUnsplash, importFree, clear, canImport: assets !== undefined };
+  return { ...state, importFile, importUnsplash, clear, canImport: assets !== undefined };
 }

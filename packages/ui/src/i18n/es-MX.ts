@@ -116,13 +116,6 @@ export const esMX = {
     credit: "Foto de {{author}} en Unsplash", creditBy: "Foto de", creditOn: "en", unsplash: "Unsplash", src: { unsplash: "Unsplash", commons: "Wikimedia Commons", picsum: "Picsum" },
     resetUndone: "Cambio deshecho", undoChange: "Cambio de la página",
   },
-  freePhotos: {
-    tab: "Fotos libres", searchLabel: "Buscar fotos libres", searchButton: "Buscar", gallery: "Ver galería", noResults: "No hay fotos para esa búsqueda.",
-    results: "Resultados de fotos libres", more: "Más resultados", downloading: "Descargando la foto…", photoOf: "Foto de {{author}}",
-    privacy: "No necesitas clave. Al buscar, el texto se envía a Wikimedia Commons; la galería usa Picsum. Nada se envía hasta que busques o abras la galería.",
-    attribution: "Fotos de Wikimedia Commons y Picsum. Se guarda el crédito con la portada.",
-    errors: { offline: "No hay conexión. Revisa tu red e inténtalo de nuevo.", unauthorized: "El servicio no aceptó la petición.", rateLimited: "Se alcanzó el límite de peticiones. Espera un rato e inténtalo de nuevo.", server: "El servicio no respondió como se esperaba. Inténtalo más tarde." },
-  },
   unsplash: {
     tab: "Unsplash", settingsTitle: "Fotos de Unsplash", enable: "Activar Unsplash",
     explain: "Al activarlo, lo que escribas al buscar fotos y tu clave de acceso se envían a Unsplash (api.unsplash.com), y las miniaturas y la foto elegida se descargan de images.unsplash.com. El contenido de tus páginas nunca se envía. Con Unsplash apagado no sale ninguna petición.",
@@ -156,6 +149,11 @@ export const esMX = {
     },
     changed: "Opción de la página cambiada", undo: "Deshacer",
     default: "Predeterminado",
+    accent: {
+      tabs: { vivid: "Vivos", pastel: "Pastel", gradient: "Degradados", mine: "Míos" },
+      vivid: "Vivo", pastel: "Pastel", gradient: "Degradado", mine: "Color propio",
+      noneSaved: "Aún no tienes colores propios. Crea uno y guárdalo.", color1: "Color", color2: "Segundo color", gradientOn: "Degradado", save: "Guardar y usar", remove: "Eliminar este color",
+    },
     typography: { body: "Fuente del texto", headings: "Fuente de los títulos" },
     spacing: {
       width: "Ancho de la página", widths: { narrow: "Estrecho", normal: "Normal", wide: "Amplio", full: "Completo" },
@@ -200,7 +198,7 @@ export const esMX = {
     pastReminder: "El recordatorio ya pasó. Puedes guardarla como vencida o cambiar la hora.", saveOverdue: "Guardar como vencida", changeTime: "Cambiar la hora",
     save: "Guardar", cancel: "Cancelar", pastGroup: "Recordatorio en el pasado",
   },
-  tags: { listLabel: "Etiquetas de la página", add: "Añadir etiqueta", search: "Buscar o crear etiqueta", options: "Etiquetas del espacio", remove: "Quitar la etiqueta {{name}}", more: "{{count}} etiquetas más", create: "Crear «{{name}}»", createFailed: "No se pudo crear la etiqueta." },
+  tags: { color: "Color", title: "Etiquetas", hint: "Todas las etiquetas del espacio. Úsalas en la búsqueda para encontrar páginas.", empty: "Aún no hay etiquetas. Crea una desde la cabecera de cualquier página.", uses_one: "{{count}} página", uses_other: "{{count}} páginas", showPages: "Ver páginas", noPages: "Ninguna página usa esta etiqueta.", pagesOf: "Páginas con la etiqueta {{name}}", rename: "Nuevo nombre de la etiqueta", renameTag: "Renombrar la etiqueta {{name}}", deleteTag: "Eliminar la etiqueta {{name}}", colorOf: "Color de la etiqueta {{name}}", save: "Guardar", cancel: "Cancelar", delete: "Eliminar", deleteTitle: "¿Eliminar la etiqueta «{{name}}»?", deleteBody_one: "Se quitará de {{count}} página. Las páginas no se borran.", deleteBody_other: "Se quitará de {{count}} páginas. Las páginas no se borran.", duplicate: "Ya existe una etiqueta con ese nombre.", nameRequired: "La etiqueta necesita un nombre.", filterLabel: "Filtrar por etiquetas", listLabel: "Etiquetas de la página", add: "Añadir etiqueta", search: "Buscar o crear etiqueta", options: "Etiquetas del espacio", remove: "Quitar la etiqueta {{name}}", more: "{{count}} etiquetas más", create: "Crear «{{name}}»", createFailed: "No se pudo crear la etiqueta." },
   errorScreen: {
     title: "Algo salió mal",
     generic: "La aplicación tuvo un problema inesperado.",
@@ -417,6 +415,9 @@ export const esMX = {
     rename: "Renombrar",
     deleteProperty: "Eliminar propiedad",
     newView: "Nueva vista",
+    newRowShort: "Nuevo", moreNew: "Más opciones para crear", search: "Buscar", layout: "Disposición de la vista", cardSize: "Tamaño de las tarjetas", size: { small: "Pequeña", medium: "Mediana", large: "Grande" },
+    showCover: "Mostrar portada", containCover: "Ver la portada completa", visibleProps: "Propiedades visibles", noProps: "Esta base aún no tiene propiedades.",
+    deleteView: "Eliminar vista", lastView: "Una base de datos necesita al menos una vista", deleteViewTitle: "¿Eliminar la vista «{{name}}»?", deleteViewBody: "Se borra solo la vista (sus filtros, orden y columnas). Las filas y sus datos no se tocan.",
     newViewType: "Tipo de vista nueva",
     views: "Vistas",
     startDate: "Fecha de inicio de {{name}}",
@@ -519,6 +520,7 @@ export const esMX = {
     triage: "Nota de la bandeja", moveTo: "Mover a…", moveSearch: "Buscar página de destino", moveRoot: "Mover al nivel principal", moveInto: "Mover a {{title}}", toCard: "Convertir en tarjeta", pickBoard: "Tablero de destino", doToCard: "Crear tarjeta", moved: "La nota salió de la bandeja.",
   },
   graph: {
+    legend: { title: "Tipos de elemento", page: "Página", subpage: "Subpágina", board: "Tablero", database: "Base de datos", trashed: "En la papelera" },
     title: "Grafo", filters: "Filtros del grafo", scope: "Alcance", local: "Página actual y vecinas", all: "Todo el espacio", depth: "Profundidad",
     kind: "Tipo", anyKind: "Todos", kinds: { note: "Notas", board: "Tableros", database: "Bases de datos" },
     hideOrphans: "Ocultar páginas sin enlaces", includeTrash: "Incluir papelera", zoom: "Zoom del grafo", zoomIn: "Acercar", zoomOut: "Alejar", fit: "Ajustar a pantalla",

@@ -1,10 +1,11 @@
-import type { GraphData } from "@vnote/core";
+import { graphNodeRadius, type GraphData } from "@vnote/core";
 
 export type Transform = { x: number; y: number; k: number };
 export type Pt = { x: number; y: number };
 export const MIN_ZOOM = 0.05, MAX_ZOOM = 8;
 
-export const nodeRadius = (degree: number): number => 4 + Math.min(10, Math.sqrt(degree) * 2);
+/** Radio de un nodo según sus conexiones: sin ninguna es pequeño y crece con la raíz del número de enlaces hasta un tope. Es el mismo radio que usa la disposición (`graphNodeRadius`) para que no se solapen. */
+export const nodeRadius = (degree: number): number => graphNodeRadius(degree);
 export const toScreen = (t: Transform, p: Pt): Pt => ({ x: p.x * t.k + t.x, y: p.y * t.k + t.y });
 export const toWorld = (t: Transform, p: Pt): Pt => ({ x: (p.x - t.x) / t.k, y: (p.y - t.y) / t.k });
 

@@ -16,6 +16,10 @@ export type ViewConfig = {
   /** Propiedad de fecha que usan calendario y línea de tiempo; para el tablero, la de estado. */
   dateProperty?: string;
   endDateProperty?: string;
+  /** Galería: tamaño de las tarjetas, si se muestra la portada y si se ve completa (`contain`) o recortada (`cover`). */
+  cardSize?: "small" | "medium" | "large";
+  showCover?: boolean;
+  coverFit?: "cover" | "contain";
 };
 export type View = { id: string; databaseId: string; name: string; type: ViewType; position: string; config: ViewConfig };
 export type ViewResult = { view: View; properties: Property[]; visibleProperties: string[]; rows: QueryRow[]; groups: Group[] | null };

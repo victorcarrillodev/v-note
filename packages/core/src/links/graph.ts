@@ -1,7 +1,7 @@
 import type { PageKind } from "../pages/pagesRepo";
 import type { SqlStore } from "../ports/sqlStore";
 
-export type GraphNode = { id: string; title: string; kind: PageKind; trashed: boolean; degree: number };
+export type GraphNode = { id: string; title: string; kind: PageKind; trashed: boolean; degree: number; /** Página dentro de otra página (tiene página madre). */ subpage?: boolean };
 export type GraphEdge = { from: string; to: string };
 export type GraphData = { nodes: GraphNode[]; edges: GraphEdge[]; /** Hay al menos un enlace entre páginas en el espacio (sin importar los filtros). */ hasLinks: boolean };
 export type GraphOptions = {
@@ -17,8 +17,8 @@ export class GraphService {
   constructor(private db: SqlStore) {}
 
   async build(opts: GraphOptions = {}): Promise<GraphData> {
-    const pages = await this.db.query<{ id: string; title: string; kind: PageKind; deleted_at: number | null }>(
-      `SELECT id, title, kind, deleted_at FROM pages ${opts.includeTrashed ? "" : "WHERE deleted_at IS NULL"} ORDER BY id`,
+    const pages = await this.db.query<{ id: string; title: string; kind: PageKind; deleted_at: number | null; parent_id: string | null }>(
+      `SELECT id, title, kind, deleted_at, parent_id FROM pages ${opts.includeTrashed ? "" : "WHERE deleted_at IS NULL"} ORDER BY id`,
     );
     const byId = new Map(pages.map((p) => [p.id, p]));
     const live = new Set(pages.filter((p) => p.deleted_at === null).map((p) => p.id));
@@ -48,7 +48,7 @@ export class GraphService {
     for (const e of edges) { degree.set(e.from, (degree.get(e.from) ?? 0) + 1); degree.set(e.to, (degree.get(e.to) ?? 0) + 1); }
     const nodes: GraphNode[] = [...keep]
       .filter((id) => !opts.hideOrphans || (degree.get(id) ?? 0) > 0 || id === opts.local?.pageId)
-      .map((id) => { const p = byId.get(id)!; return { id, title: p.title, kind: p.kind, trashed: p.deleted_at !== null, degree: degree.get(id) ?? 0 }; });
+      .map((id) => { const p = byId.get(id)!; return { id, title: p.title, kind: p.kind, trashed: p.deleted_at !== null, degree: degree.get(id) ?? 0, subpage: p.parent_id !== null }; });
     const shown = new Set(nodes.map((n) => n.id));
     return { nodes, edges: edges.filter((e) => shown.has(e.from) && shown.has(e.to)), hasLinks };
   }

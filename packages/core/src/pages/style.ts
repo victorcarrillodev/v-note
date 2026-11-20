@@ -1,6 +1,7 @@
 // Estilo de página (plan 005, §4.1 y §7.2): opciones de presentación de una página. TypeScript puro.
 // Toda clave es opcional: ausente = «Predeterminado» (sigue la apariencia global, D-11) o, en la cabecera, el estilo clásico.
 import { sortKeys } from "../backup/stableJson";
+import { customAccentVars, parseCustomAccent, type CustomAccent } from "./accent";
 
 /** Catálogo de fuentes incluidas en la aplicación (D-16). */
 export const FONT_IDS = ["inter", "geist", "nunito", "source-serif", "lora", "merriweather", "jetbrains-mono", "fira-code", "atkinson", "caveat", "comic-neue", "patrick-hand", "indie-flower", "kalam"] as const;
@@ -47,7 +48,7 @@ export type PageStyle = {
   typography?: { body?: FontId; headings?: FontId };
   spacing?: { width?: ContentWidth; textSize?: TextSize; leading?: Leading };
   toc?: { floating?: boolean; maxLevel?: TocLevel };
-  accent?: AccentId;
+  accent?: AccentId | CustomAccent;
 };
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -121,7 +122,7 @@ function sanitizeStyle(raw: Record<string, unknown>): PageStyle {
     typography: nonEmpty(defined({ body: oneOf(FONT_IDS, typo.body), headings: oneOf(FONT_IDS, typo.headings) })),
     spacing: nonEmpty(defined({ width: oneOf(CONTENT_WIDTHS, spacing.width), textSize: oneOf(TEXT_SIZES, spacing.textSize), leading: oneOf(LEADINGS, spacing.leading) })),
     toc: nonEmpty(defined({ floating: bool(toc.floating), maxLevel: oneOf(TOC_LEVELS, toc.maxLevel) })),
-    accent: oneOf(ACCENT_IDS, raw.accent),
+    accent: oneOf(ACCENT_IDS, raw.accent) ?? parseCustomAccent(raw.accent),
   });
 }
 
@@ -209,6 +210,9 @@ export function cssVarsFor(style: PageStyle): Record<string, string> {
   if (leading) vars["--block-gap"] = `var(--page-gap-${leading})`;
   const width = style.spacing?.width;
   if (width) vars["--size-reading-width"] = width === "full" ? "none" : `var(--page-width-${width})`;
-  if (style.accent) vars["--c-accent"] = `var(--block-${style.accent}-text)`;
+  if (style.accent) {
+    if (style.accent.startsWith("#")) Object.assign(vars, customAccentVars(style.accent as CustomAccent));
+    else vars["--c-accent"] = `var(--block-${style.accent}-text)`;
+  }
   return vars;
 }

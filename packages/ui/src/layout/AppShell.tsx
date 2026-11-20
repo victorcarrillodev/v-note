@@ -78,7 +78,7 @@ export function AppShell({ sidebar, header, children, preferences }: { sidebar: 
               <IconButton icon="sidebar" label={label} aria-expanded={visible} aria-controls="barra-lateral" onClick={toggle} />
               <div className="flex min-w-0 flex-1 items-center gap-2">{header}</div>
             </header>
-            <main id="contenido" className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+            <main id="contenido" className="min-h-0 flex-1 overflow-y-auto [container-type:inline-size]">{children}</main>
           </div>
         </div>
       </div>

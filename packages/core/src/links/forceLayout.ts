@@ -1,18 +1,21 @@
 import { forceCenter, forceLink, forceManyBody, forceSimulation, forceCollide, type SimulationLinkDatum, type SimulationNodeDatum } from "d3-force";
 import type { GraphData } from "./graph";
 
-type N = SimulationNodeDatum & { id: string };
+type N = SimulationNodeDatum & { id: string; degree: number };
+
+/** Radio de un nodo según sus conexiones: sin ninguna es pequeño y crece con la raíz del número de enlaces hasta un tope (de 4 a 44 px). La interfaz lo usa para dibujar y la disposición para que no se solapen. */
+export const graphNodeRadius = (degree: number): number => 4 + Math.min(40, Math.sqrt(degree) * 8);
 export type Positions = Map<string, { x: number; y: number }>;
 export type LayoutOptions = { ticks?: number; onStep?: (tick: number, total: number) => void; signal?: AbortSignal };
 
 /** Simulación paso a paso (para poder ceder el control entre pasos y cancelar). */
 export function createLayout(graph: GraphData, ticks?: number) {
-  const nodes: N[] = graph.nodes.map((n) => ({ id: n.id }));
+  const nodes: N[] = graph.nodes.map((n) => ({ id: n.id, degree: n.degree }));
   const links: SimulationLinkDatum<N>[] = graph.edges.map((e) => ({ source: e.from, target: e.to }));
   const sim = forceSimulation<N>(nodes)
-    .force("link", forceLink<N, SimulationLinkDatum<N>>(links).id((n) => n.id).distance(40).strength(0.4))
+    .force("link", forceLink<N, SimulationLinkDatum<N>>(links).id((n) => n.id).distance((l) => 40 + graphNodeRadius((l.source as N).degree) + graphNodeRadius((l.target as N).degree)).strength(0.4))
     .force("charge", forceManyBody<N>().strength(-40).theta(0.9).distanceMax(400))
-    .force("collide", forceCollide<N>(6))
+    .force("collide", forceCollide<N>((n) => graphNodeRadius(n.degree) + 4))
     .force("center", forceCenter(0, 0))
     .stop();
   const total = ticks ?? Math.min(300, Math.max(60, Math.ceil(30000 / Math.max(1, nodes.length))));

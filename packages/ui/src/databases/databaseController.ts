@@ -28,7 +28,7 @@ export class DatabaseController {
   private snapshot: DatabaseSnapshot = { database: null, properties: [], views: [], activeViewId: null, result: null, keyword: "" };
   private seq = 0;
 
-  constructor(store: SqlStore, clock: Clock, private dbId: string) {
+  constructor(private store: SqlStore, clock: Clock, private dbId: string) {
     this.dbs = new DatabaseService(store, clock);
     this.views = new ViewService(store);
     this.pages = new PageService(store, clock);
@@ -51,6 +51,13 @@ export class DatabaseController {
     const c = new DatabaseController(store, clock, dbId);
     await c.refresh();
     return c;
+  }
+
+  /** Ícono y portada de las páginas de las filas (para tarjetas y listas); las que no existen no aparecen. */
+  async rowMeta(pageIds: string[]): Promise<Record<string, { icon: string | null; cover: string | null }>> {
+    if (pageIds.length === 0) return {};
+    const rows = await this.store.query<{ id: string; icon: string | null; cover: string | null }>(`SELECT id, icon, cover FROM pages WHERE id IN (${pageIds.map(() => "?").join(",")})`, pageIds);
+    return Object.fromEntries(rows.map((r) => [r.id, { icon: r.icon, cover: r.cover }]));
   }
 
   subscribe = (fn: () => void): (() => void) => { this.listeners.add(fn); return () => this.listeners.delete(fn); };

@@ -1,4 +1,4 @@
-import { readTokens, GRAPH_TOKENS } from "../design/canvasColors";
+import { readTokens, shade, GRAPH_NODE_COLORS, GRAPH_TOKENS } from "../design/canvasColors";
 import { Button } from "../components/Button";
 import { IconButton } from "../components/IconButton";
 import { ViewLayout } from "../components/ViewLayout";
@@ -12,6 +12,13 @@ import type { GraphData, PageKind, Positions } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
 import { computeLayout } from "./layoutRunner";
 import { connections, fitTransform, hitNode, nodeRadius, panBy, toScreen, toWorld, zoomAt, type Pt, type Transform } from "./graphGeometry";
+import { Checkbox } from "../components/controls";
+
+type Category = "page" | "subpage" | "board" | "database" | "trashed";
+const CATEGORIES: Category[] = ["page", "subpage", "board", "database", "trashed"];
+/** Tipo de elemento de un nodo: la papelera manda; después tablero y base de datos; una nota dentro de otra página es subpágina. */
+const categoryOf = (n: { kind: PageKind; trashed: boolean; subpage?: boolean | undefined }): Category =>
+  n.trashed ? "trashed" : n.kind === "board" ? "board" : n.kind === "database" ? "database" : n.subpage ? "subpage" : "page";
 
 type Scope = "local" | "all";
 
@@ -32,6 +39,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
   const [size, setSize] = useState({ w: 800, h: 480 });
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const autoFit = useRef(true); // mientras nadie mueva la vista, se reajusta al encuadre cuando cambia el tamaño
   const live = useRef({ data, positions, tf });
   live.current = { data, positions, tf };
 
@@ -42,6 +50,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
   useEffect(() => {
     const ac = new AbortController();
     setBusy(true);
+    autoFit.current = true;
     void (async () => {
       const g = await controller.buildGraph({ ...(local ? { local } : {}), includeTrashed, hideOrphans, ...(kind ? { kinds: [kind] } : {}) });
       if (ac.signal.aborted) return;
@@ -64,6 +73,9 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
     setSize({ w: Math.max(200, el.clientWidth), h: 480 });
     return () => ro.disconnect();
   }, []);
+
+  // El contenedor está oculto mientras se calcula (ancho 0): al mostrarse y recibir su ancho real, el grafo se vuelve a encuadrar.
+  useEffect(() => { if (autoFit.current && positions.size > 0) setTf(fitTransform(positions, size)); }, [size]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const highlight = useMemo(() => (data && selected ? connections(data, selected) : null), [data, selected]);
 
@@ -97,7 +109,15 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
       const dim = highlight && !highlight.nodes.has(n.id);
       ctx.globalAlpha = dim ? 0.2 : 1;
       ctx.beginPath(); ctx.arc(s.x, s.y, Math.max(2, r), 0, Math.PI * 2);
-      ctx.fillStyle = n.trashed ? col.trashed : col[n.kind]; ctx.fill();
+      const cat = categoryOf(n);
+      const base = cat === "trashed" ? col.trashed : GRAPH_NODE_COLORS[cat];
+      const rr = Math.max(2, r);
+      // Degradado radial (luz arriba a la izquierda) y halo suave: da volumen a los nodos en vez de un círculo plano.
+      const grad = base.startsWith("#") ? ctx.createRadialGradient?.(s.x - rr * 0.35, s.y - rr * 0.35, rr * 0.1, s.x, s.y, rr) : undefined;
+      if (grad) { grad.addColorStop(0, shade(base, 0.45)); grad.addColorStop(1, shade(base, -0.12)); }
+      if (!dim && cat !== "trashed") { ctx.shadowColor = base; ctx.shadowBlur = 10; }
+      ctx.fillStyle = grad ?? base; ctx.fill();
+      ctx.shadowBlur = 0; ctx.shadowColor = "transparent";
       if (n.id === selected) { ctx.lineWidth = 3; ctx.strokeStyle = col.selected; ctx.stroke(); }
       if (tf.k >= 1.2 || highlight?.nodes.has(n.id) || n.id === currentPageId) {
         ctx.fillStyle = text; ctx.font = "12px sans-serif"; ctx.textAlign = "center";
@@ -116,6 +136,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const r = c.getBoundingClientRect();
+      autoFit.current = false;
       setTf((cur) => zoomAt(cur, { x: e.clientX - r.left, y: e.clientY - r.top }, Math.exp(-e.deltaY * 0.0015)));
     };
     c.addEventListener("wheel", onWheel, { passive: false });
@@ -138,7 +159,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
     const at = localPoint(e);
     const dx = at.x - d.x, dy = at.y - d.y;
     if (!d.moved && Math.hypot(dx, dy) < 4) return;
-    d.moved = true; d.x = at.x; d.y = at.y;
+    d.moved = true; d.x = at.x; d.y = at.y; autoFit.current = false;
     if (d.mode === "pan") setTf((cur) => panBy(cur, dx, dy));
     else if (d.id) {
       const id = d.id;
@@ -151,7 +172,7 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
     if (d && !d.moved) setSelected(d.id);
   };
 
-  const zoomBy = useCallback((f: number) => setTf((cur) => zoomAt(cur, { x: size.w / 2, y: size.h / 2 }, f)), [size]);
+  const zoomBy = useCallback((f: number) => { autoFit.current = false; setTf((cur) => zoomAt(cur, { x: size.w / 2, y: size.h / 2 }, f)); }, [size]);
   const selNode = data?.nodes.find((n) => n.id === selected) ?? null;
   const neighbours = data && selected ? data.nodes.filter((n) => highlight?.nodes.has(n.id) && n.id !== selected) : [];
 
@@ -183,14 +204,22 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
             <option value="note">{t("graph.kinds.note")}</option><option value="board">{t("graph.kinds.board")}</option><option value="database">{t("graph.kinds.database")}</option>
           </select>
         </label>
-        <label className={cx(FILTER, "font-normal")}><input type="checkbox" checked={hideOrphans} onChange={(e) => setHideOrphans(e.target.checked)} /> {t("graph.hideOrphans")}</label>
-        <label className={cx(FILTER, "font-normal")}><input type="checkbox" checked={includeTrashed} onChange={(e) => setIncludeTrashed(e.target.checked)} /> {t("graph.includeTrash")}</label>
+        <Checkbox className="text-[length:var(--text-ui-small-size)]" label={t("graph.hideOrphans")} checked={hideOrphans} onChange={setHideOrphans} />
+        <Checkbox className="text-[length:var(--text-ui-small-size)]" label={t("graph.includeTrash")} checked={includeTrashed} onChange={setIncludeTrashed} />
         <span role="group" aria-label={t("graph.zoom")} className="ml-auto inline-flex items-center">
           <IconButton icon="zoomIn" label={t("graph.zoomIn")} onClick={() => zoomBy(1.4)} />
           <IconButton icon="zoomOut" label={t("graph.zoomOut")} onClick={() => zoomBy(1 / 1.4)} />
-          <IconButton icon="fitView" label={t("graph.fit")} onClick={() => setTf(fitTransform(positions, size))} />
+          <IconButton icon="fitView" label={t("graph.fit")} onClick={() => { autoFit.current = true; setTf(fitTransform(positions, size)); }} />
         </span>
       </div>
+
+      <ul aria-label={t("graph.legend.title")} className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">
+        {CATEGORIES.map((c) => (
+          <li key={c} data-legend={c} className="inline-flex items-center gap-1.5">
+            <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: c === "trashed" ? `var(${GRAPH_TOKENS.trashed})` : `radial-gradient(circle at 30% 30%, ${shade(GRAPH_NODE_COLORS[c], 0.45)}, ${GRAPH_NODE_COLORS[c]})`, boxShadow: c === "trashed" ? undefined : `0 0 6px ${GRAPH_NODE_COLORS[c]}` }} />{t(`graph.legend.${c}`)}
+          </li>
+        ))}
+      </ul>
 
       {busy && <p role="status" className="text-[var(--c-text-muted)]">{t("graph.computing")}</p>}
       {!busy && data && !data.hasLinks && <div role="status" data-testid="graph-empty" className={NOTICE}><Illustration name="pages" /><p>{t("graph.noLinks")}</p></div>}

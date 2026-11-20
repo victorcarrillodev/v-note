@@ -36,7 +36,7 @@ describe("chips (U-238)", () => {
   it("cada chip lleva texto (no solo color) y color por nombre de la paleta", async () => {
     await setup(1);
     const chip = await screen.findByText("Etiqueta 0");
-    expect(chip.closest("li")!.getAttribute("data-color")).toBe("blue");
+    expect(chip.closest("[data-color]")!.getAttribute("data-color")).toBe("blue");
   });
 });
 

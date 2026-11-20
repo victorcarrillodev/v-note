@@ -2,10 +2,17 @@ import { appError, err, ok, type Result } from "../result";
 import type { Clock } from "../clock";
 import type { SqlStore } from "../ports/sqlStore";
 import { newId } from "../ids";
+import { parseCustomAccent, type CustomAccent } from "../pages/accent";
 
-/** Los nueve nombres de color de la paleta de bloques; el tema decide el valor (RF-2.6). */
+/** Los nueve nombres de color de la paleta de bloques (los mismos del resaltado); el tema decide el valor (RF-2.6). */
 export const TAG_COLORS = ["gray", "brown", "red", "orange", "yellow", "green", "blue", "purple", "pink"] as const;
-export type TagColor = (typeof TAG_COLORS)[number];
+/** Color de una etiqueta: un nombre de la paleta de bloques o uno de las paletas de acento («#rrggbb» o «#rrggbb~#rrggbb»). */
+export type TagColor = (typeof TAG_COLORS)[number] | CustomAccent;
+/** Devuelve el color normalizado, o `undefined` si no es válido. */
+export function normalizeTagColor(v: unknown): TagColor | undefined {
+  return (TAG_COLORS as readonly unknown[]).includes(v) ? (v as TagColor) : parseCustomAccent(v);
+}
+export const isTagColor = (v: unknown): v is TagColor => normalizeTagColor(v) !== undefined;
 export type Tag = { id: string; name: string; color: TagColor; createdAt: number };
 export type TagWithUses = Tag & { uses: number };
 
@@ -34,10 +41,11 @@ export class TagService {
   async create(input: { name: string; color: string }): Promise<Result<Tag>> {
     const name = input.name.trim();
     if (name === "") return invalid("La etiqueta necesita un nombre", "NAME");
-    if (!TAG_COLORS.includes(input.color as TagColor)) return invalid("El color no es de la paleta", "COLOR");
+    const color = normalizeTagColor(input.color);
+    if (!color) return invalid("El color no es válido", "COLOR");
     if (await this.nameTaken(name)) return invalid("Ya existe una etiqueta con ese nombre", "DUPLICATE");
     const id = newId();
-    await this.db.exec("INSERT INTO tags(id, name, color, created_at) VALUES (?, ?, ?, ?)", [id, name, input.color, this.clock.now()]);
+    await this.db.exec("INSERT INTO tags(id, name, color, created_at) VALUES (?, ?, ?, ?)", [id, name, color, this.clock.now()]);
     return ok((await this.get(id))!);
   }
   async rename(id: string, name: string): Promise<Result<Tag>> {
@@ -48,8 +56,9 @@ export class TagService {
     await this.db.exec("UPDATE tags SET name = ? WHERE id = ?", [n, id]);
     return ok((await this.get(id))!);
   }
-  async recolor(id: string, color: string): Promise<Result<Tag>> {
-    if (!TAG_COLORS.includes(color as TagColor)) return invalid("El color no es de la paleta", "COLOR");
+  async recolor(id: string, input: string): Promise<Result<Tag>> {
+    const color = normalizeTagColor(input);
+    if (!color) return invalid("El color no es válido", "COLOR");
     if (!(await this.get(id))) return err(appError("NOT_FOUND", "La etiqueta no existe", { id }));
     await this.db.exec("UPDATE tags SET color = ? WHERE id = ?", [color, id]);
     return ok((await this.get(id))!);

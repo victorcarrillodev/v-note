@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { FreePhotosClient, UnsplashClient, UnsplashKeyStore, type Keychain, type UnsplashFetch } from "@vnote/core";
+import { UnsplashClient, UnsplashKeyStore, type Keychain, type UnsplashFetch } from "@vnote/core";
 import type { PreferenceStore } from "../theme/theme";
 
 /** Lo que cada cascarón aporta para usar Unsplash: el llavero, su `fetch` y la plataforma (la web no guarda la clave). */
@@ -26,11 +26,9 @@ export type UnsplashApi = {
    * no existe ningún cliente ni sale ninguna petición.
    */
   getClient(): Promise<UnsplashClient | null>;
-  /** Cliente de fotos libres (sin clave); solo se crea al usarlo, nunca por adelantado. */
-  getFreeClient(): FreePhotosClient | null;
 };
 
-const OFF: UnsplashApi = { supported: false, platform: "web", enabled: false, setEnabled: () => {}, keyStore: null, getClient: async () => null, getFreeClient: () => null };
+const OFF: UnsplashApi = { supported: false, platform: "web", enabled: false, setEnabled: () => {}, keyStore: null, getClient: async () => null };
 const Ctx = createContext<UnsplashApi>(OFF);
 export const useUnsplash = (): UnsplashApi => useContext(Ctx);
 
@@ -44,10 +42,9 @@ export function UnsplashProvider({ runtime, preferences, children }: { runtime: 
     if (!key) return null;
     return (runtime.createClient ?? ((o) => new UnsplashClient(o)))({ fetch: runtime.fetch, key });
   }, [runtime, keyStore, enabled]);
-  const getFreeClient = useCallback(() => (runtime ? new FreePhotosClient({ fetch: runtime.fetch }) : null), [runtime]);
   const value = useMemo<UnsplashApi>(
-    () => (runtime ? { supported: true, platform: runtime.platform, enabled, setEnabled, keyStore, getClient, getFreeClient } : OFF),
-    [runtime, enabled, setEnabled, keyStore, getClient, getFreeClient],
+    () => (runtime ? { supported: true, platform: runtime.platform, enabled, setEnabled, keyStore, getClient } : OFF),
+    [runtime, enabled, setEnabled, keyStore, getClient],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

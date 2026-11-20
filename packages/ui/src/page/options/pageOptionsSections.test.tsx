@@ -22,43 +22,47 @@ async function setup(opts: { props?: object } = {}) {
 const open = async (user: ReturnType<typeof userEvent.setup>) => { await user.click(screen.getByRole("button", { name: "Opciones de la página" })); return screen.findByRole("group", { name: "Opciones de la página" }); };
 
 describe("tipografía (E-120)", () => {
-  it("dos listas, cada una con «Predeterminado» y todas las fuentes (14) escritas en su fuente", async () => {
+  const openSelect = async (user: ReturnType<typeof userEvent.setup>, name: string) => {
+    await user.click(screen.getByRole("button", { name: new RegExp(name) }));
+    return screen.getByRole("listbox", { name });
+  };
+  it("dos selectores cerrados; al abrir, «Predeterminado» y todas las fuentes (14) escritas en su fuente", async () => {
     const { user } = await setup();
     await open(user);
+    expect(screen.queryByRole("listbox")).toBeNull();
     for (const name of ["Fuente del texto", "Fuente de los títulos"]) {
-      const radios = within(screen.getByRole("radiogroup", { name })).getAllByRole("radio");
-      expect(radios).toHaveLength(FONT_IDS.length + 1);
-      expect(radios[0]).toHaveTextContent("Predeterminado");
-      expect(radios[0]).toBeChecked();
-      expect(radios[0]!.style.fontFamily).toBe("");
-      expect(radios[1]!.style.fontFamily).toBe("var(--font-inter)");
+      expect(screen.getByRole("button", { name: new RegExp(name) })).toHaveAttribute("aria-expanded", "false");
+      const options = within(await openSelect(user, name)).getAllByRole("option");
+      expect(options).toHaveLength(FONT_IDS.length + 1);
+      expect(options[0]).toHaveTextContent("Predeterminado");
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+      expect(options[0]!.style.fontFamily).toBe("");
+      expect(options[1]!.style.fontFamily).toBe("var(--font-inter)");
+      await waitFor(() => expect(options[0]).toHaveFocus());
+      await user.keyboard("{Escape}");
+      expect(screen.queryByRole("listbox")).toBeNull();
     }
-    const lora = within(screen.getByRole("radiogroup", { name: "Fuente del texto" })).getByRole("radio", { name: /Lora/ });
-    expect(lora.style.fontFamily).toBe("var(--font-lora)");
   });
-  it("elegir una fuente la guarda y «Predeterminado» la quita", async () => {
+  it("elegir una fuente la guarda, cierra la lista y «Predeterminado» la quita", async () => {
     const { user, page } = await setup();
     await open(user);
-    const body = within(screen.getByRole("radiogroup", { name: "Fuente del texto" }));
-    const heads = within(screen.getByRole("radiogroup", { name: "Fuente de los títulos" }));
-    await user.click(body.getByRole("radio", { name: /Lora/ }));
-    await user.click(heads.getByRole("radio", { name: /Caveat/ }));
+    await user.click(within(await openSelect(user, "Fuente del texto")).getByRole("option", { name: /Lora/ }));
+    expect(screen.queryByRole("listbox")).toBeNull();
+    await user.click(within(await openSelect(user, "Fuente de los títulos")).getByRole("option", { name: /Caveat/ }));
     expect(page().style.typography).toEqual({ body: "lora", headings: "caveat" });
-    expect(body.getByRole("radio", { name: /Lora/ })).toBeChecked();
-    await user.click(body.getByRole("radio", { name: "Predeterminado" }));
+    expect(screen.getByRole("button", { name: /Fuente del texto/ })).toHaveTextContent("Lora");
+    await user.click(within(await openSelect(user, "Fuente del texto")).getByRole("option", { name: "Predeterminado" }));
     expect(page().style.typography).toEqual({ headings: "caveat" });
-    await user.click(heads.getByRole("radio", { name: "Predeterminado" }));
+    await user.click(within(await openSelect(user, "Fuente de los títulos")).getByRole("option", { name: "Predeterminado" }));
     expect(page().style.typography).toBeUndefined();
   });
-  it("las flechas cambian la selección", async () => {
+  it("las flechas mueven el foco y Enter elige", async () => {
     const { user, page } = await setup();
     await open(user);
-    const checked = within(screen.getByRole("radiogroup", { name: "Fuente del texto" })).getByRole("radio", { checked: true });
-    checked.focus();
-    await user.keyboard("{ArrowDown}");
-    expect(page().style.typography.body).toBe("inter");
-    await user.keyboard("{ArrowDown}");
-    expect(page().style.typography.body).toBe("geist");
+    await user.click(screen.getByRole("button", { name: /Fuente del texto/ }));
+    await waitFor(() => expect(within(screen.getByRole("listbox")).getByRole("option", { name: "Predeterminado" })).toHaveFocus());
+    await user.keyboard("{ArrowDown}{Enter}");
+    await waitFor(() => expect(page().style.typography?.body).toBe("inter"));
   });
 });
 
@@ -95,14 +99,44 @@ describe("espaciado (E-121)", () => {
 });
 
 describe("color de acento (E-123)", () => {
-  it("nueve muestras y «Predeterminado»; elegir una cambia --c-accent", async () => {
+  const swatches = () => within(screen.getByRole("radiogroup", { name: /^(Vivos|Pastel|Degradados|Míos)$/ })).queryAllByRole("radio");
+  it("«Predeterminado» quita el acento y no hay pestaña de colores del tema", async () => {
     const { user, page } = await setup();
     await open(user);
-    const group = within(screen.getByRole("radiogroup", { name: "Color de acento" }));
-    expect(group.getAllByRole("radio")).toHaveLength(10);
-    await user.click(group.getByRole("radio", { name: "Morado" }));
-    expect(cssVarsFor(page().style)["--c-accent"]).toBe("var(--block-purple-text)");
-    await user.click(group.getByRole("radio", { name: "Predeterminado" }));
+    expect(screen.queryByRole("tab", { name: "Tema" })).toBeNull();
+    await user.click(swatches()[0]!);
+    expect(page().style.accent).toMatch(/^#[0-9a-f]{6}$/);
+    await user.click(screen.getByRole("radio", { name: "Predeterminado" }));
+    expect(page().style.accent).toBeUndefined();
+  });
+  it("vivos, pastel y degradados traen 66 colores cada uno", async () => {
+    const { user, page } = await setup();
+    await open(user);
+    for (const tab of ["Vivos", "Pastel", "Degradados"]) {
+      await user.click(screen.getByRole("tab", { name: tab }));
+      expect(swatches()).toHaveLength(66);
+    }
+    await user.click(swatches()[3]!);
+    expect(page().style.accent).toMatch(/^#[0-9a-f]{6}~#[0-9a-f]{6}$/);
+    expect(cssVarsFor(page().style)["--c-accent-fill"]).toContain("linear-gradient");
+    await user.click(screen.getByRole("tab", { name: "Vivos" }));
+    await user.click(swatches()[0]!);
+    expect(page().style.accent).toMatch(/^#[0-9a-f]{6}$/);
+    expect(cssVarsFor(page().style)["--c-on-accent"]).toMatch(/^#(000000|ffffff)$/);
+  });
+  it("se crea un color propio, se guarda para otras páginas y se puede eliminar", async () => {
+    localStorage.clear();
+    const { user, page } = await setup();
+    await open(user);
+    await user.click(screen.getByRole("tab", { name: "Míos" }));
+    expect(swatches()).toHaveLength(0);
+    await user.click(screen.getByRole("checkbox", { name: "Degradado" }));
+    await user.click(screen.getByRole("button", { name: "Guardar y usar" }));
+    expect(swatches()).toHaveLength(1);
+    expect(page().style.accent).toMatch(/~/);
+    expect(JSON.parse(localStorage.getItem("vnote.page.savedAccents")!)).toHaveLength(1);
+    await user.click(screen.getByRole("button", { name: "Eliminar este color" }));
+    expect(swatches()).toHaveLength(0);
     expect(page().style.accent).toBeUndefined();
   });
 });

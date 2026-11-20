@@ -38,6 +38,8 @@ export function Drawer({ open, onOpenChange, title, children, size = "l", modal 
             if (first) { e.preventDefault(); first.focus(); }
           }}
           onCloseAutoFocus={(e) => { e.preventDefault(); if (restoreFocus?.() !== false) opener.current?.focus(); }}
+          // Un control abierto dentro del panel (lista desplegable) usa el primer Escape para cerrarse, no para cerrar el panel.
+          onEscapeKeyDown={(e) => { if ((e.target as Element | null)?.closest?.("[data-handles-escape]")) e.preventDefault(); }}
           onInteractOutside={(e) => { if ((e.target as Element | null)?.closest?.(keep)) e.preventDefault(); }}
           className={cx("fixed right-0 top-0 z-[var(--z-dialog)] flex h-full max-w-full flex-col border-l border-[var(--c-border)] bg-[var(--bg)] shadow-[var(--elevation-4)]", WIDTH[size])}
         >

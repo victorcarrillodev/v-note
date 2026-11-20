@@ -1,22 +1,32 @@
 import * as S from "@radix-ui/react-switch";
 import * as TG from "@radix-ui/react-toggle-group";
-import { useId, useRef, type KeyboardEvent } from "react";
+import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { cx } from "../design/cx";
 import { Icon } from "../design/Icon";
 
-/** Casilla de ≥ 24 px; el estado marcado se comunica con un ícono (forma), no solo con color. */
-export function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+/** Casilla estándar de la aplicación: ≥ 18 px, foco visible y estado marcado con ícono (forma), no solo con color. Sin `label` visible, pasa `ariaLabel`. */
+export function Checkbox({ label, ariaLabel, checked, onChange, disabled = false, className }: { label?: ReactNode; ariaLabel?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; className?: string }) {
   const id = useId();
   return (
-    <label htmlFor={id} className="inline-flex min-h-6 cursor-pointer items-center gap-2 text-[length:var(--text-ui-size)]">
-      <span className="relative inline-flex size-4.5 items-center justify-center">
-        <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="peer absolute inset-0 m-0 h-full w-full cursor-pointer opacity-0" />
-        <span aria-hidden="true" className={cx("inline-flex h-full w-full items-center justify-center rounded border", checked ? "border-[var(--c-accent)] bg-[var(--c-accent)] text-[var(--c-on-accent)]" : "border-[var(--c-border-control)] bg-[var(--c-card)]")}>
+    <label htmlFor={id} className={cx("inline-flex min-h-6 items-center gap-2 text-[length:var(--text-ui-size)] [@media(pointer:coarse)]:min-h-11", disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer", className)}>
+      <span className="relative inline-flex size-4.5 shrink-0 items-center justify-center [@media(pointer:coarse)]:size-6">
+        <input id={id} type="checkbox" aria-label={label === undefined ? ariaLabel : undefined} checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="peer absolute inset-0 m-0 h-full w-full cursor-[inherit] opacity-0" />
+        <span aria-hidden="true" className={cx("inline-flex h-full w-full items-center justify-center rounded border transition-colors duration-100 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--c-accent)]", checked ? "border-[var(--c-accent)] bg-[var(--c-accent)] text-[var(--c-on-accent)]" : "border-[var(--c-border-control)] bg-[var(--c-card)]")}>
           {checked && <Icon name="check" size={14} />}
         </span>
       </span>
       {label}
     </label>
+  );
+}
+
+/** Selector de color estándar: muestra el color como una muestra redonda sin borde; el selector nativo del sistema queda invisible encima. */
+export function ColorInput({ label, value, onChange, className }: { label: string; value: string; onChange: (hex: string) => void; className?: string }) {
+  return (
+    <span className={cx("relative inline-block size-8 shrink-0 [@media(pointer:coarse)]:size-11", className)}>
+      <input type="color" aria-label={label} title={label} value={value} onChange={(e) => onChange(e.target.value)} className="peer absolute inset-0 m-0 h-full w-full cursor-pointer opacity-0" />
+      <span aria-hidden="true" style={{ background: value }} className="pointer-events-none block h-full w-full rounded-full transition-shadow duration-100 peer-hover:ring-2 peer-hover:ring-[var(--c-border-control)] peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--c-accent)]" />
+    </span>
   );
 }
 

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { advanceSchedule, validateRecurrence, type Frequency, type Recurrence } from "@vnote/core";
+import { Checkbox } from "../components/controls";
 
 export type TaskProps = { checked: boolean; due: string; remindAt: string; recurrence: string; durationMin?: string };
 
@@ -27,7 +28,7 @@ export function TaskBlockView({ props, onChange, now, content }: { props: TaskPr
   return (
     <div className="flex w-full flex-col gap-1">
       <div className="flex items-start gap-2">
-        <input type="checkbox" aria-label={t("task.done")} checked={props.checked} onChange={toggle} contentEditable={false} className="mt-1" />
+        <span contentEditable={false} className="mt-0.5"><Checkbox ariaLabel={t("task.done")} checked={props.checked} onChange={() => toggle()} /></span>
         <div className={`min-w-0 flex-1 ${props.checked ? "line-through opacity-60" : ""}`}>{content}</div>
       </div>
       <div className="ml-6 flex flex-wrap items-center gap-2 text-xs" contentEditable={false}>

@@ -3,9 +3,14 @@
 /* Tipografía del texto y de los títulos (RF-5.2): la del contenido sigue a la apariencia global si la página no elige una.
    Solo el texto escrito cambia de fuente: la cabecera (etiquetas, acciones, descripción) y los menús del editor conservan la de la interfaz.
    BlockNote fija Inter en `.bn-default-styles` (el propio editor), así que se sobrescribe con más especificidad. */
-.page-scope .bn-default-styles { font-family: var(--font-content); }
+.page-scope .bn-default-styles { font-family: var(--font-sans); }
+.page-scope .bn-inline-content { font-family: var(--font-content); }
 .page-scope [data-page-title],
-.page-scope .bn-block-content[data-content-type="heading"] { font-family: var(--font-headings); }
+.page-scope .bn-block-content[data-content-type="heading"] .bn-inline-content { font-family: var(--font-headings); }
+/* Marcadores de posición («Escribe o teclea '/'…») y demás textos de interfaz: siempre la fuente de la interfaz. */
+.page-scope .bn-inline-content::before,
+.page-scope .bn-block-content::before,
+.page-scope .bn-block-content *:not(.bn-inline-content, .bn-inline-content *) { font-family: var(--font-sans); }
 
 /* Tamaño del texto e interlineado (RF-6.3, RF-6.4): el editor siempre usa el tamaño de lectura (17 px por defecto, en lugar de los
    16 px fijos de BlockNote); la página puede cambiarlo y los encabezados, medidos en em, crecen con él. */
@@ -16,5 +21,5 @@
 
 /* Color de acento de la página (RF-8.2): enlaces, casillas, resaltado de selección e índice siguen a --c-accent, que el contenedor redeclara. */
 .page-scope { accent-color: var(--c-accent); }
-.page-scope .bn-editor a { color: var(--c-accent); }
+.page-scope .bn-editor a { color: var(--c-accent-text, var(--c-accent)); }
 .page-scope [data-content-type="checkListItem"] input[type="checkbox"] { accent-color: var(--c-accent); }

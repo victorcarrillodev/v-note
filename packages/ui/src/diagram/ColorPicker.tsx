@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { fillFor, paletteFor, strokeFor } from "../design/diagramPalette";
 import { FIELD_CONTROL } from "./panelStyles";
+import { ColorInput } from "../components/controls";
 
 const HEX = /^#?(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 // Color que muestra la entrada nativa cuando el valor es de paleta (no es un color elegido).
@@ -43,7 +44,7 @@ export function ColorPicker({ label, role, value, allowNone = false, recents, on
       )}
       <div className="mt-0.5 flex items-center gap-1.5">
         <input aria-label={`${label}: ${t("diagram.hex")}`} value={text} onChange={(e) => onText(e.target.value)} aria-invalid={invalid} placeholder="#RRGGBB" className={`w-24 ${FIELD_CONTROL}`} />
-        <input type="color" className="h-7 w-8 rounded-[var(--radius-md)] bg-[var(--c-raised)] p-0.5 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11" aria-label={`${label}: ${t("diagram.pickColor")}`} value={custom ? toNative(custom) : NATIVE_DEFAULT} onChange={(e) => onChange(e.target.value)} />
+        <ColorInput label={`${label}: ${t("diagram.pickColor")}`} value={custom ? toNative(custom) : NATIVE_DEFAULT} onChange={onChange} />
       </div>
       {invalid && <p className="text-xs text-[var(--c-danger)]">{t("diagram.invalidHex")}</p>}
     </div>

@@ -7,7 +7,11 @@ import { CalendarView } from "./CalendarView";
 import { DatabaseHeader, VIEW_ICON } from "./DatabaseHeader";
 import { Tabs } from "../components/Tabs";
 import { Button } from "../components/Button";
-import { DatabaseToolbar } from "./DatabaseToolbar";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { DatabaseSearch, DatabaseToolbar } from "./DatabaseToolbar";
+import { ViewOptions } from "./ViewOptions";
+import { Popover } from "../components/Popover";
+import { IconButton } from "../components/IconButton";
 import { FilterPanel } from "./FilterPanel";
 import { GalleryView, ListView } from "./ListGalleryViews";
 import { TimelineView } from "./TimelineView";
@@ -23,6 +27,7 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
   const snap = useDatabase(controller);
   const [adding, setAdding] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [deletingView, setDeletingView] = useState(false);
   const [name, setName] = useState("");
   const [type, setType] = useState<PropertyType>("text");
   const [expression, setExpression] = useState("");
@@ -54,10 +59,16 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
     setError(null); setName(""); setExpression(""); setAdding(false);
   };
   const active = snap.views.find((v) => v.id === snap.activeViewId);
+  const activeName = active ? active.name || t(`databases.view.${active.type}`) : "";
 
   return (
     <section aria-label={snap.database?.name ?? ""} className="flex flex-col gap-3 p-4">
-      <DatabaseHeader name={snap.database?.name ?? ""} showTitle={showTitle} onNewRow={() => void controller.addRow("")} onNewProperty={() => setAdding((a) => !a)} />
+      <DatabaseHeader name={snap.database?.name ?? ""} showTitle={showTitle} onNewRow={() => void controller.addRow("")} onNewProperty={() => setAdding((a) => !a)}
+        tools={<>
+          <IconButton icon="filter" label={t("databases.filters")} aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)} />
+          <DatabaseSearch controller={controller} />
+          <Popover align="end" trigger={<IconButton icon="settings" label={t("databases.layout")} />}><ViewOptions controller={controller} /></Popover>
+        </>} />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
@@ -67,8 +78,10 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
           {VIEW_TYPES.map((v) => <option key={v} value={v}>{t(`databases.view.${v}`)}</option>)}
         </select>
         <Button size="sm" onClick={() => void controller.createView(newViewType, t(`databases.view.${newViewType}`)).then(async (r) => { if (r.ok) await controller.setActiveView(r.value.id); })}>{t("databases.newView")}</Button>
-        <Button size="sm" aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>{t("databases.filters")}</Button>
+        <Button size="sm" variant="danger" disabled={snap.views.length <= 1} title={snap.views.length <= 1 ? t("databases.lastView") : undefined} onClick={() => setDeletingView(true)}>{t("databases.deleteView")}</Button>
       </div>
+      <ConfirmDialog open={deletingView} onOpenChange={setDeletingView} title={t("databases.deleteViewTitle", { name: activeName })} description={t("databases.deleteViewBody")}
+        confirmLabel={t("databases.deleteView")} cancelLabel={t("databases.cancel")} onConfirm={() => { if (active) void controller.deleteView(active.id); setDeletingView(false); }} />
 
       <DatabaseToolbar controller={controller} onEditFilters={() => setShowFilters(true)} />
 

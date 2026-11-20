@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { FIELD_CONTROL, FIELD_LABEL, PANEL_BUTTON } from "./panelStyles";
 import { CURVATURE_MAX, CURVATURE_MIN, DEFAULT_CURVATURE, ROUTES, type DEdge, type Point, type Route } from "@vnote/core";
+import { Checkbox } from "../components/controls";
 
 /** Controles del trazado del conector seleccionado: son la vía de teclado equivalente a arrastrar tramos, asas y puntos (RF-18, DP-10). */
 export function RouteControls({ edge, onRoute, onReset, onCurvature, onSmooth, onPointChange, onAddPoint, onRemovePoint }: {
@@ -25,7 +26,7 @@ export function RouteControls({ edge, onRoute, onReset, onCurvature, onSmooth, o
       {edge.route === "orthogonal" && <p className="max-w-[28ch] text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("diagram.autoCornersHint")}</p>}
       {(edge.route === "free" || edge.route === "curved") && (
         <>
-          {edge.route === "free" && <label className="flex items-center gap-1.5 text-[length:var(--text-ui-small-size)]"><input type="checkbox" className="accent-[var(--c-accent)]" checked={edge.smooth ?? false} onChange={(e) => onSmooth(e.target.checked)} />{t("diagram.smooth")}</label>}
+          {edge.route === "free" && <Checkbox className="text-[length:var(--text-ui-small-size)]" label={t("diagram.smooth")} checked={edge.smooth ?? false} onChange={onSmooth} />}
           <div role="group" aria-label={t("diagram.controlPoints")} className="flex flex-col gap-1">
             {points.map((q, i) => (
               <div key={i} className="flex items-end gap-2">

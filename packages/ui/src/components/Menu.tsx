@@ -7,10 +7,10 @@ import { Icon } from "../design/Icon";
 export type MenuItem = { label: string; onSelect: () => void; danger?: boolean; icon?: IconName };
 
 /** Menú de acciones con teclado completo (flechas, Inicio, Fin, búsqueda por letra, Escape devuelve el foco). */
-export function Menu({ label, items, icon = "more" }: { label: string; items: MenuItem[]; icon?: IconName }) {
+export function Menu({ label, items, icon = "more", triggerClassName }: { label: string; items: MenuItem[]; icon?: IconName; triggerClassName?: string }) {
   return (
     <D.Root>
-      <D.Trigger asChild><IconButton icon={icon} label={label} /></D.Trigger>
+      <D.Trigger asChild><IconButton icon={icon} label={label} {...(triggerClassName ? { className: triggerClassName } : {})} /></D.Trigger>
       <D.Portal>
         <D.Content sideOffset={4} align="end" className="z-[var(--z-menu)] min-w-44 rounded-md border border-[var(--c-border)] bg-[var(--c-card)] p-1 text-[length:var(--text-ui-size)] shadow-[var(--elevation-3)]">
           {items.map((it) => (

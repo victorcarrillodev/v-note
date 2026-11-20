@@ -99,7 +99,7 @@ export const coverEditor = { neutral: "#808080", gradientStart: "#f3e7d3", gradi
 
 type Level = { size: number; line: number; weight: 400 | 500 | 600 | 700 };
 export const typography: Record<"pageTitle" | "h1" | "h2" | "h3" | "reading" | "dialogTitle" | "component" | "ui" | "uiSmall" | "note" | "label", Level> = {
-  pageTitle: { size: 36, line: 44, weight: 700 },
+  pageTitle: { size: 48, line: 56, weight: 700 },
   h1: { size: 28, line: 36, weight: 700 },
   h2: { size: 22, line: 30, weight: 600 },
   h3: { size: 18, line: 26, weight: 600 },

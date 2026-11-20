@@ -63,10 +63,10 @@ const openUnsplash = async (user: ReturnType<typeof userEvent.setup>) => { await
 const search = async (user: ReturnType<typeof userEvent.setup>, q = "mar") => { await user.type(await screen.findByRole("searchbox", { name: "Buscar en Unsplash" }), `${q}{Enter}`); };
 
 describe("la pestaña solo aparece con Unsplash activado (E-164, RF-9.4)", () => {
-  it("activado: Subir, Fotos libres, Unsplash, Colores y Degradados", async () => {
+  it("activado: Subir, Unsplash, Colores y Degradados", async () => {
     const { user } = await setup();
     await open(user);
-    expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Subir", "Fotos libres", "Unsplash", "Colores", "Degradados"]);
+    expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Subir", "Unsplash", "Colores", "Degradados"]);
   });
   it("apagado, no existe", async () => {
     const { user, net } = await setup({ enabled: false });

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { COMPUTED_TYPES, type CellValue, type DateValue, type ErrorValue, type Property, type Result } from "@vnote/core";
+import { Checkbox } from "../components/controls";
 
 export type CellProps = {
   prop: Property;
@@ -54,7 +55,7 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
 
   switch (prop.type) {
     case "checkbox":
-      return <input type="checkbox" aria-label={prop.name} checked={value === true} onChange={(e) => void commit(e.target.checked)} />;
+      return <Checkbox ariaLabel={prop.name} checked={value === true} onChange={(v) => void commit(v)} />;
     case "select":
     case "status":
       return (
@@ -71,10 +72,7 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
       return (
         <div role="group" aria-label={prop.name} className="flex flex-wrap gap-2">
           {(prop.config.options ?? []).map((o) => (
-            <label key={o.id} className="flex items-center gap-1 text-sm">
-              <input type="checkbox" checked={current.includes(o.id)} aria-label={o.name} onChange={(e) => void commit(e.target.checked ? [...current, o.id] : current.filter((x) => x !== o.id))} />
-              {o.name}
-            </label>
+            <Checkbox key={o.id} className="text-sm" label={o.name} checked={current.includes(o.id)} onChange={(v) => void commit(v ? [...current, o.id] : current.filter((x) => x !== o.id))} />
           ))}
         </div>
       );

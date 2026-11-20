@@ -36,6 +36,7 @@ import { Sidebar } from "../sidebar/Sidebar";
 import { PageHeader } from "../page/PageHeader";
 import { ExportDialog } from "../page/ExportDialog";
 import { TrashView } from "../trash/TrashView";
+import { TagsView } from "../tags/TagsView";
 import { EmptyState } from "../empty/EmptyState";
 import { WorkspaceManagerView } from "../workspaces/WorkspaceManagerView";
 import { WorkspaceController } from "../workspace/controller";
@@ -44,7 +45,7 @@ import { RestoreWizard } from "../restore/RestoreWizard";
 import { useWorkspace } from "../workspace/useController";
 import { hideSplash } from "./splash";
 
-type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "locked" | "reminders" | "graph" | "import";
+type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "locked" | "reminders" | "graph" | "import" | "tags";
 type Opened = { workspace: Workspace; controller: WorkspaceController };
 
 export type AppProps = {
@@ -231,6 +232,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
               [
                 { id: "capture", label: t("capture.open"), icon: "inbox", onClick: () => setCaptureOpen(true) },
                 { id: "graph", label: t("graph.title"), icon: "graph", onClick: () => setView("graph") },
+                { id: "tags", label: t("tags.title"), icon: "tag", onClick: () => setView("tags") },
                 ...(backup ? [{ id: "import", label: t("import.title"), icon: "import" as const, onClick: () => setView("import") }] : []),
                 ...(center ? [{ id: "reminders", label: t("reminders.title"), icon: "reminder" as const, onClick: () => setView("reminders") }] : []),
                 { id: "settings", label: t("app.settings"), icon: "settings", onClick: () => setSettingsOpen(true) },
@@ -292,6 +294,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
       )}
       <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} preferences={preferences} />
       {view === "trash" && opened && <TrashView controller={opened.controller} />}
+      {view === "tags" && opened && <TagsView controller={opened.controller} onOpenPage={(id) => { void opened.controller.select(id); setView("page"); }} />}
       {view === "backup" && opened && backup && (
         <BackupPanelFor ws={opened.workspace} workspaces={workspaces} serviceFor={serviceFor} platform={backup.platform} />
       )}
@@ -383,7 +386,7 @@ function PageArea({ controller, workspace, renderPageBody, exporter }: { control
     return (
       <PageStyleScope as="article" style={pageStyle} className="mx-auto max-w-6xl p-6">
         <PageHeader controller={controller} pageId={snap.selectedId} assets={assets} workspaceName={workspace.name} {...(onExport ? { onExport } : {})} />
-        <DatabasePage key={snap.selectedId} controller={controller} pageId={snap.selectedId} />
+        <DatabasePage key={snap.selectedId} controller={controller} pageId={snap.selectedId} assets={assets} />
         {dialog}
       </PageStyleScope>
     );

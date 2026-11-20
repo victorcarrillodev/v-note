@@ -6,15 +6,15 @@ import { useCoverImage } from "./useCoverImage";
 /** Radio CSS de las esquinas: un valor o [sup-izq, sup-der, inf-der, inf-izq]. */
 export const radiusCss = (r: CornerRadius | undefined): string => (r === undefined ? "0" : Array.isArray(r) ? r.map((c) => `${c}px`).join(" ") : `${r}px`);
 
-/** Degradado oscuro sobre la imagen: transparente arriba y, con una curva suave (sin tramos ni cortes visibles), llega a la opacidad elegida donde va el texto (plan §6.3). */
+/** Degradado oscuro sobre la imagen: nace del borde inferior con la opacidad elegida y, con una curva suave (sin tramos ni cortes visibles), se desvanece hacia arriba hasta ser transparente (plan §6.3). */
 export const overlayCss = (overlay: number): string => {
   const a = Math.min(100, Math.max(0, overlay)) / 100;
   const stops = Array.from({ length: 11 }, (_, i) => {
-    const t = Math.min(1, i / 10 / 0.85); // alcanza el máximo al 85 % de la altura
+    const t = 1 - Math.min(1, i / 10 / 0.85); // máximo en el borde inferior y nada al 85 % de la altura
     const eased = t * t * (3 - 2 * t); // smoothstep: arranque y final sin quiebres
     return `rgba(0,0,0,${+(a * eased).toFixed(3)}) ${i * 10}%`;
   });
-  return `linear-gradient(to bottom, ${stops.join(", ")})`;
+  return `linear-gradient(to top, ${stops.join(", ")})`;
 };
 
 /**
@@ -40,19 +40,20 @@ export function CoverArt({ cover, style, assets, grow = false, darken, positionO
   const pos = positionOverride ?? { x: c.posX ?? 50, y: c.posY ?? 50 };
   const showOverlay = darken ?? style.header?.gradient ?? style.header?.titleOverCover ?? false;
   const bg = backgroundOf(parsed);
-  // Todo se pinta en UNA sola capa (oscurecido encima de la imagen, del degradado o del color). Con capas separadas,
-  // el navegador suaviza el borde curvo de cada una por su cuenta y, en las esquinas redondeadas, la imagen clara
-  // asoma bajo el oscurecido como un filo de píxeles claros.
+  // La imagen y el oscurecido son dos capas rectangulares y las esquinas se recortan UNA sola vez sobre el conjunto con `clip-path`.
+  // Si cada capa llevara su propio radio, el borde curvo se suavizaría por separado y asomaría un filo de píxeles claros sin oscurecer.
   const base = hash ? (src ? `url("${src}") ${pos.x}% ${pos.y}% / cover no-repeat` : "var(--cover-graphite)") : (bg ?? "var(--cover-graphite)");
   const overlay = c.overlay ?? 60;
+  const rounded = Array.isArray(c.radius) ? c.radius.some((r) => r > 0) : (c.radius ?? 0) > 0;
   return (
     <div
       data-testid="cover" data-cover-kind={parsed.kind} data-cover-height={c.height ?? "medium"}
-      className="relative isolate w-full overflow-hidden"
-      style={{ [grow ? "minHeight" : "height"]: height, borderRadius: radiusCss(c.radius) }}
+      className="relative isolate w-full"
+      style={{ [grow ? "minHeight" : "height"]: height, borderRadius: radiusCss(c.radius), ...(rounded ? { clipPath: `inset(0 round ${radiusCss(c.radius)})` } : {}) }}
     >
       <div aria-hidden="true" data-testid="cover-paint" data-cover-layer="" {...(showOverlay ? { "data-overlay": overlay } : {})}
-        className="pointer-events-none absolute inset-0 -z-10" style={{ background: showOverlay ? `${overlayCss(overlay)}, ${base}` : base }} />
+        className="pointer-events-none absolute inset-0 -z-10" style={{ background: base }} />
+      {showOverlay && <div aria-hidden="true" data-testid="cover-shade" className="pointer-events-none absolute inset-0 -z-10" style={{ background: overlayCss(overlay) }} />}
       {/* La imagen no se ve (la pinta la capa de arriba): da el tamaño natural para reposicionar y confirma que cargó. */}
       {hash && src && <img alt="" src={src} draggable={false} className="invisible absolute inset-0 -z-20 h-full w-full select-none object-cover" style={{ objectPosition: `${pos.x}% ${pos.y}%` }} />}
       {children}

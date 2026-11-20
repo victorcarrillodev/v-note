@@ -120,13 +120,6 @@ export const en: Widen<typeof esMX> = {
     credit: "Photo by {{author}} on Unsplash", creditBy: "Photo by", creditOn: "on", unsplash: "Unsplash", src: { unsplash: "Unsplash", commons: "Wikimedia Commons", picsum: "Picsum" },
     resetUndone: "Change undone", undoChange: "Page change",
   },
-  freePhotos: {
-    tab: "Free photos", searchLabel: "Search free photos", searchButton: "Search", gallery: "Browse gallery", noResults: "No photos for that search.",
-    results: "Free photo results", more: "More results", downloading: "Downloading the photo…", photoOf: "Photo by {{author}}",
-    privacy: "No key needed. When you search, the text is sent to Wikimedia Commons; the gallery uses Picsum. Nothing is sent until you search or open the gallery.",
-    attribution: "Photos from Wikimedia Commons and Picsum. The credit is saved with the cover.",
-    errors: { offline: "No connection. Check your network and try again.", unauthorized: "The service did not accept the request.", rateLimited: "Request limit reached. Wait a while and try again.", server: "The service did not respond as expected. Try again later." },
-  },
   unsplash: {
     tab: "Unsplash", settingsTitle: "Unsplash photos", enable: "Turn on Unsplash",
     explain: "When on, what you type to search photos and your access key are sent to Unsplash (api.unsplash.com), and thumbnails and the chosen photo are downloaded from images.unsplash.com. The content of your pages is never sent. With Unsplash off, no request leaves your device.",
@@ -160,6 +153,11 @@ export const en: Widen<typeof esMX> = {
     },
     changed: "Page option changed", undo: "Undo",
     default: "Default",
+    accent: {
+      tabs: { vivid: "Vivid", pastel: "Pastel", gradient: "Gradients", mine: "Mine" },
+      vivid: "Vivid", pastel: "Pastel", gradient: "Gradient", mine: "Custom color",
+      noneSaved: "You have no custom colors yet. Create one and save it.", color1: "Color", color2: "Second color", gradientOn: "Gradient", save: "Save and use", remove: "Delete this color",
+    },
     typography: { body: "Text font", headings: "Heading font" },
     spacing: {
       width: "Page width", widths: { narrow: "Narrow", normal: "Normal", wide: "Wide", full: "Full" },
@@ -204,7 +202,7 @@ export const en: Widen<typeof esMX> = {
     pastReminder: "The reminder time has already passed. You can save it as overdue or change the time.", saveOverdue: "Save as overdue", changeTime: "Change the time",
     save: "Save", cancel: "Cancel", pastGroup: "Reminder in the past",
   },
-  tags: { listLabel: "Page tags", add: "Add tag", search: "Search or create tag", options: "Workspace tags", remove: "Remove tag {{name}}", more: "{{count}} more tags", create: "Create “{{name}}”", createFailed: "The tag could not be created." },
+  tags: { color: "Color", title: "Tags", hint: "All the tags in this workspace. Use them in search to find pages.", empty: "No tags yet. Create one from any page header.", uses_one: "{{count}} page", uses_other: "{{count}} pages", showPages: "Show pages", noPages: "No page uses this tag.", pagesOf: "Pages with the tag {{name}}", rename: "New tag name", renameTag: "Rename the tag {{name}}", deleteTag: "Delete the tag {{name}}", colorOf: "Color of the tag {{name}}", save: "Save", cancel: "Cancel", delete: "Delete", deleteTitle: "Delete the tag “{{name}}”?", deleteBody_one: "It will be removed from {{count}} page. Pages are not deleted.", deleteBody_other: "It will be removed from {{count}} pages. Pages are not deleted.", duplicate: "A tag with that name already exists.", nameRequired: "The tag needs a name.", filterLabel: "Filter by tags", listLabel: "Page tags", add: "Add tag", search: "Search or create tag", options: "Workspace tags", remove: "Remove tag {{name}}", more: "{{count}} more tags", create: "Create “{{name}}”", createFailed: "The tag could not be created." },
   errorScreen: {
     title: "Something went wrong",
     generic: "The app hit an unexpected problem.",
@@ -421,6 +419,9 @@ export const en: Widen<typeof esMX> = {
     rename: "Rename",
     deleteProperty: "Delete property",
     newView: "New view",
+    newRowShort: "New", moreNew: "More ways to create", search: "Search", layout: "View layout", cardSize: "Card size", size: { small: "Small", medium: "Medium", large: "Large" },
+    showCover: "Show cover", containCover: "Show the whole cover", visibleProps: "Visible properties", noProps: "This database has no properties yet.",
+    deleteView: "Delete view", lastView: "A database needs at least one view", deleteViewTitle: "Delete the view “{{name}}”?", deleteViewBody: "Only the view is deleted (its filters, sorting and columns). Rows and their data are not touched.",
     newViewType: "New view type",
     views: "Views",
     startDate: "Start date of {{name}}",
@@ -523,6 +524,7 @@ export const en: Widen<typeof esMX> = {
     triage: "Inbox note", moveTo: "Move to…", moveSearch: "Search destination page", moveRoot: "Move to top level", moveInto: "Move to {{title}}", toCard: "Convert to card", pickBoard: "Destination board", doToCard: "Create card", moved: "The note left the inbox.",
   },
   graph: {
+    legend: { title: "Item types", page: "Page", subpage: "Subpage", board: "Board", database: "Database", trashed: "In trash" },
     title: "Graph", filters: "Graph filters", scope: "Scope", local: "Current page and neighbors", all: "Whole workspace", depth: "Depth",
     kind: "Type", anyKind: "All", kinds: { note: "Notes", board: "Boards", database: "Databases" },
     hideOrphans: "Hide pages without links", includeTrash: "Include trash", zoom: "Graph zoom", zoomIn: "Zoom in", zoomOut: "Zoom out", fit: "Fit to screen",

@@ -78,13 +78,34 @@ export class WorkspaceController {
   };
 
   /** Búsqueda de texto completo del espacio abierto (nunca cruza espacios). `withinDays` limita a lo modificado en los últimos N días. */
-  search(o: { query: string; kind?: PageKind; withinDays?: number; includeTrashed?: boolean }): Promise<SearchHit[]> {
+  async search(o: { query: string; kind?: PageKind; withinDays?: number; includeTrashed?: boolean; tagIds?: string[] }): Promise<SearchHit[]> {
+    const tagIds = o.tagIds ?? [];
+    if (tagIds.length === 0) return this.searchText(o);
+    const allowed = new Set(await this.tags.pagesWithAll(tagIds));
+    if (o.query.trim() !== "") return (await this.searchText(o)).filter((h) => allowed.has(h.pageId));
+    // Sin texto, las etiquetas solas listan las páginas que las tienen (más recientes primero).
+    const cutoff = o.withinDays ? this.clock.now() - o.withinDays * 86_400_000 : 0;
+    const hits: SearchHit[] = [];
+    for (const id of allowed) {
+      const r = await this.pages.get(id);
+      if (!r.ok || (o.kind && r.value.kind !== o.kind) || r.value.updatedAt < cutoff) continue;
+      hits.push({ pageId: id, title: r.value.title, kind: r.value.kind, updatedAt: r.value.updatedAt, trashed: false, snippet: [] });
+    }
+    return hits.sort((a, b) => b.updatedAt - a.updatedAt);
+  }
+  private searchText(o: { query: string; kind?: PageKind; withinDays?: number; includeTrashed?: boolean }): Promise<SearchHit[]> {
     return this.searchIndex.search({
       query: o.query,
       ...(o.kind ? { kinds: [o.kind] } : {}),
       ...(o.withinDays ? { modifiedAfter: this.clock.now() - o.withinDays * 86_400_000 } : {}),
       ...(o.includeTrashed ? { includeTrashed: true } : {}),
     });
+  }
+
+  /** Una página por id, o `null` si no existe. */
+  async getPage(id: string): Promise<Page | null> {
+    const r = await this.pages.get(id);
+    return r.ok ? r.value : null;
   }
 
   recent(limit = 8): Promise<RecentPage[]> {

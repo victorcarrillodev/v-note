@@ -17,7 +17,7 @@ export function serveGraphLayout(port: Port): void {
         const layout = createLayout(m.graph);
         while (layout.done < layout.total) {
           if (cancelled.has(m.id)) { port.postMessage({ id: m.id, result: { status: "cancelled" } satisfies LayoutResult }); cancelled.delete(m.id); return; }
-          layout.step(m.chunk ?? 10);
+          layout.step(m.chunk ?? 40);
           await tick();
         }
         port.postMessage({ id: m.id, result: { status: "done", positions: [...layout.positions()] } satisfies LayoutResult });

@@ -6,6 +6,7 @@ import type { PageKind, RecentPage, SearchHit } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
 import { Icon } from "../design/Icon";
 import { IconButton } from "../components/IconButton";
+import { TagFilter } from "../tags/TagFilter";
 
 export type PaletteAction = { id: string; label: string; run: () => void; /** Atajo ya formateado para la plataforma. */ shortcut?: string; /** Valor para `aria-keyshortcuts`. */ ariaShortcut?: string };
 type Props = {
@@ -56,6 +57,7 @@ export function CommandPalette({ controller, open, onClose, onOpenPage, actions,
   const [kind, setKind] = useState<PageKind | "any">("any");
   const [within, setWithin] = useState<Within>("any");
   const [trash, setTrash] = useState(false);
+  const [tagIds, setTagIds] = useState<string[]>([]);
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [recent, setRecent] = useState<RecentPage[]>([]);
   const [searched, setSearched] = useState(false);
@@ -72,7 +74,7 @@ export function CommandPalette({ controller, open, onClose, onOpenPage, actions,
   }, [open]);
 
   useEffect(() => {
-    if (!open) { setQuery(""); setKind("any"); setWithin("any"); setTrash(false); }
+    if (!open) { setQuery(""); setKind("any"); setWithin("any"); setTrash(false); setTagIds([]); }
   }, [open]);
 
   // Recientes al abrir
@@ -84,13 +86,13 @@ export function CommandPalette({ controller, open, onClose, onOpenPage, actions,
   useEffect(() => {
     if (!open) return;
     const mine = ++seq.current;
-    if (query.trim() === "") { setHits([]); setSearched(false); return; }
+    if (query.trim() === "" && tagIds.length === 0) { setHits([]); setSearched(false); return; }
     const days = DAYS[within];
     void controller
-      .search({ query, ...(kind !== "any" ? { kind } : {}), ...(days ? { withinDays: days } : {}), includeTrashed: trash })
+      .search({ query, ...(kind !== "any" ? { kind } : {}), ...(days ? { withinDays: days } : {}), includeTrashed: trash, ...(tagIds.length ? { tagIds } : {}) })
       .then((r) => { if (mine === seq.current) { setHits(r); setSearched(true); } })
       .catch(() => { if (mine === seq.current) { setHits([]); setSearched(true); } });
-  }, [open, query, kind, within, trash, controller]);
+  }, [open, query, kind, within, trash, tagIds, controller]);
 
   // Ruta (padres) de cada resultado visible
   useEffect(() => {
@@ -104,7 +106,7 @@ export function CommandPalette({ controller, open, onClose, onOpenPage, actions,
   const shownActions = q === "" ? actions : actions.filter((a) => a.label.toLowerCase().includes(q));
   const choosePage = (id: string) => { onOpenPage(id); onClose(); };
   const title = (s: string) => (s === "" ? t("palette.untitled") : s);
-  const nothing = q !== "" && searched && hits.length === 0 && shownActions.length === 0;
+  const nothing = (q !== "" || tagIds.length > 0) && searched && hits.length === 0 && shownActions.length === 0;
   const toggleKind = (k: PageKind) => setKind((cur) => (cur === k ? "any" : k));
   const toggleWithin = (w: Within) => setWithin((cur) => (cur === w ? "any" : w));
 
@@ -133,16 +135,17 @@ export function CommandPalette({ controller, open, onClose, onOpenPage, actions,
         <FilterChip label={t("palette.month")} pressed={within === "month"} onClick={() => toggleWithin("month")} />
         <span aria-hidden="true" className="mx-1 h-4 w-px bg-[var(--c-border)]" />
         <FilterChip label={t("palette.includeTrash")} pressed={trash} onClick={() => setTrash((v) => !v)} />
+        <TagFilter controller={controller} value={tagIds} onChange={setTagIds} active={open} />
       </div>
       <Command.List className="min-h-0 flex-1 overflow-y-auto px-2 pb-2 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[length:var(--text-label-size)] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:text-[var(--c-text-muted)]">
-        {q === "" && recent.length > 0 && (
+        {q === "" && tagIds.length === 0 && recent.length > 0 && (
           <Command.Group heading={t("palette.recent")}>
             {recent.map((r) => (
               <Command.Item key={r.pageId} value={`recent-${r.pageId}`} onSelect={() => choosePage(r.pageId)} className={ITEM}><Icon name="note" />{title(r.title)}</Command.Item>
             ))}
           </Command.Group>
         )}
-        {q !== "" && hits.length > 0 && (
+        {(q !== "" || tagIds.length > 0) && hits.length > 0 && (
           <Command.Group heading={t("palette.pages")}>
             {hits.map((h) => (
               <Command.Item key={h.pageId} value={`hit-${h.pageId}`} aria-label={`${title(h.title)}${h.trashed ? `, ${t("palette.inTrash")}` : ""}`} onSelect={() => choosePage(h.pageId)} className={ITEM}>
