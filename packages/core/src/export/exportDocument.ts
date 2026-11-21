@@ -1,3 +1,4 @@
+import { parseGallery } from "../blocks/gallery";
 import type { AssetStore } from "../assets/assetStore";
 import { parseAssetUrl } from "../assets/attach";
 import type { Block } from "../blocks/types";
@@ -77,7 +78,7 @@ export async function exportHtml(input: ExportInput, deps: ExportDeps, opts: Exp
 
   const assets = new Map<string, ResolvedAsset>();
   const names = new Map<string, string>();
-  const collectNames = (list: Block[]) => { for (const b of list) { if ((b.type === "image" || b.type === "file") && typeof b.props.url === "string") names.set(b.props.url, String(b.props.name ?? "")); collectNames(b.children); } };
+  const collectNames = (list: Block[]) => { for (const b of list) { if ((b.type === "image" || b.type === "file") && typeof b.props.url === "string") names.set(b.props.url, String(b.props.name ?? "")); if (b.type === "gallery") for (const g of parseGallery(b.props.images)) names.set(g.url, g.name); collectNames(b.children); } };
   collectNames(allBlocks);
   for (const url of urls) {
     if (signal?.aborted) return { status: "cancelled" };

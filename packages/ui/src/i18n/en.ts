@@ -120,7 +120,7 @@ export const en: Widen<typeof esMX> = {
     credit: "Photo by {{author}} on Unsplash", creditBy: "Photo by", creditOn: "on", unsplash: "Unsplash", src: { unsplash: "Unsplash", commons: "Wikimedia Commons", picsum: "Picsum" },
     resetUndone: "Change undone", undoChange: "Page change",
   },
-  unsplash: {
+  unsplash: { keyRegistered: "Key registered. Type another to replace it, or delete it.",
     tab: "Unsplash", settingsTitle: "Unsplash photos", enable: "Turn on Unsplash",
     explain: "When on, what you type to search photos and your access key are sent to Unsplash (api.unsplash.com), and thumbnails and the chosen photo are downloaded from images.unsplash.com. The content of your pages is never sent. With Unsplash off, no request leaves your device.",
     keyLabel: "Unsplash access key", keyHint: "It is kept in the system keychain.",
@@ -202,7 +202,7 @@ export const en: Widen<typeof esMX> = {
     pastReminder: "The reminder time has already passed. You can save it as overdue or change the time.", saveOverdue: "Save as overdue", changeTime: "Change the time",
     save: "Save", cancel: "Cancel", pastGroup: "Reminder in the past",
   },
-  tags: { color: "Color", title: "Tags", hint: "All the tags in this workspace. Use them in search to find pages.", empty: "No tags yet. Create one from any page header.", uses_one: "{{count}} page", uses_other: "{{count}} pages", showPages: "Show pages", noPages: "No page uses this tag.", pagesOf: "Pages with the tag {{name}}", rename: "New tag name", renameTag: "Rename the tag {{name}}", deleteTag: "Delete the tag {{name}}", colorOf: "Color of the tag {{name}}", save: "Save", cancel: "Cancel", delete: "Delete", deleteTitle: "Delete the tag “{{name}}”?", deleteBody_one: "It will be removed from {{count}} page. Pages are not deleted.", deleteBody_other: "It will be removed from {{count}} pages. Pages are not deleted.", duplicate: "A tag with that name already exists.", nameRequired: "The tag needs a name.", filterLabel: "Filter by tags", listLabel: "Page tags", add: "Add tag", search: "Search or create tag", options: "Workspace tags", remove: "Remove tag {{name}}", more: "{{count}} more tags", create: "Create “{{name}}”", createFailed: "The tag could not be created." },
+  tags: { color: "Color", title: "Tags", hint: "All the tags in this workspace. Use them in search to find pages.", empty: "No tags yet. Create one from any page header.", uses_one: "{{count}} page", uses_other: "{{count}} pages", showPages: "Show pages", noPages: "No page uses this tag.", pagesOf: "Pages with the tag {{name}}", rename: "New tag name", renameTag: "Rename the tag {{name}}", deleteTag: "Delete the tag {{name}}", colorOf: "Color of the tag {{name}}", save: "Save", cancel: "Cancel", delete: "Delete", deleteTitle: "Delete the tag “{{name}}”?", deleteBody_one: "It will be removed from {{count}} page. Pages are not deleted.", deleteBody_other: "It will be removed from {{count}} pages. Pages are not deleted.", duplicate: "A tag with that name already exists.", nameRequired: "The tag needs a name.", filterLabel: "Filter by tags", listLabel: "Page tags", add: "Add tag", search: "Search or create tag", options: "Workspace tags", remove: "Remove tag {{name}}", more: "{{count}} more tags", create: "Create “{{name}}”", newName: "Tag name", createFailed: "The tag could not be created." },
   errorScreen: {
     title: "Something went wrong",
     generic: "The app hit an unexpected problem.",
@@ -240,6 +240,15 @@ export const en: Widen<typeof esMX> = {
     hideSidebar: "Hide sidebar",
     showSidebar: "Show sidebar",
     skipToContent: "Skip to content",
+  },
+  gallery: {
+    imageOptions: "Options for {{name}}", size: "Size", wider: "Widen", narrower: "Narrow", taller: "Make taller", shorter: "Shorten", removeImage: "Remove image",
+    fitLabel: "Fit", imageFit: "Fit of {{name}}", fitInherit: "Like gallery ({{fit}})", height: "Height", small: "Short", medium: "Medium", large: "Tall",
+    fit: { cover: "Fill (crop)", contain: "Contain", fill: "Stretch", none: "Original size", "scale-down": "Scale down" },
+    mosaicStyle: "Mosaic style", regular: "Regular", custom: "Custom",
+    slash: "Image gallery", slashHint: "Photos as mosaic, columns or carousel", label: "Image gallery", layout: "Gallery layout",
+    mosaic: "Mosaic", columns: "Columns", carousel: "Carousel", add: "Add images", uploading: "Uploading…", failed: "Some images could not be added.",
+    empty: "No images yet. Add or drag photos here.", image: "Image", remove: "Remove {{name}}", previous: "Previous image", next: "Next image",
   },
   editor: {
     noResults: "No matches",
@@ -338,7 +347,7 @@ export const en: Widen<typeof esMX> = {
     futureVersion: "This backup is from a newer version of the app; update the app to restore it.",
     damaged: "The backup is damaged: {{message}}",
   },
-  settings: {
+  settings: { languageHint: "Interface language",
     title: "Settings",
     theme: "Theme",
     language: "Language",

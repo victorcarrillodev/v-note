@@ -1,3 +1,4 @@
+import { parseGallery } from "../blocks/gallery";
 import { inlineToText, type Block, type Inline } from "../blocks/types";
 import { isAttached, parseDiagram, type Endpoint } from "../diagrams/diagram";
 import type { Anchor } from "../diagrams/anchors";
@@ -57,6 +58,7 @@ function render(blocks: Block[], indent: string, toc: readonly TocEntry[]): stri
         break;
       }
       case "image": lines.push(`![${String(b.props.caption || b.props.name || "")}](${String(b.props.url ?? "")})`); break;
+      case "gallery": parseGallery(b.props.images).forEach((g, i, a) => { if (i > 0 && a.length > 0) lines.push(""); lines.push(`![${g.caption || g.name}](${g.url})`); }); break;
       case "file": lines.push(`[${String(b.props.name || b.props.url || "")}](${String(b.props.url ?? "")})`); break;
       case "table": {
         const rows = b.content && !Array.isArray(b.content) ? b.content.rows : [];

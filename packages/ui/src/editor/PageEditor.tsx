@@ -174,7 +174,7 @@ function Editor({ session, locked, handlers, findPages }: { session: DocSession;
     [session],
   );
   const editor = useCreateBlockNote(
-    { ...withCollaboration({ collaboration }), schema, domAttributes: { editor: { "aria-label": t("editor.label") } }, pasteHandler: handlePaste, ...(handlers ? { uploadFile: handlers.uploadFile, resolveFileURL: handlers.resolveFileUrl } : {}), dictionary: i18n.language.startsWith("es") ? bnEs : bnEn },
+    { ...withCollaboration({ collaboration }), schema, domAttributes: { editor: { "aria-label": t("editor.label") } }, pasteHandler: handlePaste, ...(handlers ? { uploadFile: handlers.uploadFile, resolveFileUrl: handlers.resolveFileUrl } : {}), dictionary: i18n.language.startsWith("es") ? bnEs : bnEn },
     [session, i18n.language],
   );
   /** Menú de menciones (`@` o `[[`): páginas que coinciden con lo escrito. */

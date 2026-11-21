@@ -1,3 +1,4 @@
+import { parseGallery } from "../blocks/gallery";
 import { inlineToText, type Block } from "../blocks/types";
 import { graphicBlockText, isGraphicBlock } from "../diagrams/blockText";
 
@@ -18,6 +19,7 @@ function blockText(b: Block): string[] {
     const parts = [b.props.name, b.props.caption].filter((v): v is string => typeof v === "string" && v !== "");
     if (parts.length) lines.push(parts.join(" "));
   }
+  if (b.type === "gallery") for (const g of parseGallery(b.props.images)) { const t = [g.name, g.caption].filter((v) => v !== "").join(" "); if (t !== "") lines.push(t); }
   if (isGraphicBlock(b)) { const t = graphicBlockText(b); if (t !== "") lines.push(t); }
   for (const child of b.children) lines.push(...blockText(child));
   return lines;

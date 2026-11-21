@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { TagWithUses } from "@vnote/core";
+import { TAG_COLORS, type TagWithUses } from "@vnote/core";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { IconButton } from "../components/IconButton";
@@ -24,6 +24,9 @@ export function TagsView({ controller, onOpenPage }: { controller: WorkspaceCont
   const [open, setOpen] = useState<string | null>(null);
   const [pages, setPages] = useState<PageRef[]>([]);
   const [pending, setPending] = useState<TagWithUses | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newError, setNewError] = useState<string | null>(null);
   const reload = useCallback(async () => setTags(await controller.tags.list()), [controller]);
   useEffect(() => { void reload(); }, [reload]);
 
@@ -39,11 +42,31 @@ export function TagsView({ controller, onOpenPage }: { controller: WorkspaceCont
     if (!r.ok) { setError(t(r.error.details?.reason === "DUPLICATE" ? "tags.duplicate" : "tags.nameRequired")); return; }
     setEditing(null); setError(null); await reload();
   };
+  const closeAdd = () => { setAdding(false); setNewName(""); setNewError(null); };
+  const add = async () => {
+    const name = newName.trim();
+    if (name === "") { setNewError(t("tags.nameRequired")); return; }
+    const r = await controller.tags.create({ name, color: TAG_COLORS[tags.length % TAG_COLORS.length]! });
+    if (!r.ok) { setNewError(t(r.error.details?.reason === "DUPLICATE" ? "tags.duplicate" : "tags.createFailed")); return; }
+    closeAdd(); await reload();
+  };
   const recolor = async (id: string, c: string) => { await controller.tags.recolor(id, c); await reload(); };
   const remove = async () => { if (!pending) return; await controller.tags.remove(pending.id); setPending(null); if (open === pending.id) setOpen(null); await reload(); };
 
   return (
     <ViewLayout title={t("tags.title")} description={t("tags.hint")}>
+      <div className="mb-3 flex flex-col gap-2">
+        {adding ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <input autoFocus aria-label={t("tags.newName")} placeholder={t("tags.newName")} value={newName} onChange={(e) => { setNewName(e.target.value); setNewError(null); }} onKeyDown={(e) => { if (e.key === "Enter") void add(); if (e.key === "Escape") closeAdd(); }} aria-invalid={newError !== null} className={`${INPUT} max-w-60`} />
+            <Button size="sm" variant="primary" onClick={() => void add()}>{t("tags.save")}</Button>
+            <Button size="sm" onClick={closeAdd}>{t("tags.cancel")}</Button>
+          </div>
+        ) : (
+          <Button size="sm" className="self-start" onClick={() => setAdding(true)}>+ {t("tags.add")}</Button>
+        )}
+        {adding && newError && <p role="alert" className="text-[length:var(--text-note-size)] text-[var(--c-danger)]">{newError}</p>}
+      </div>
       {tags.length === 0 ? <EmptyState illustration="search" title={t("tags.empty")} /> : (
         <ViewSection flush>
           <ul aria-label={t("tags.options")} className="divide-y divide-[var(--c-border)]">

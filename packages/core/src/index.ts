@@ -51,6 +51,7 @@ export * from "./backup/restoreFlows";
 export * from "./shortcuts/shortcuts";
 export * from "./shortcuts/globalShortcut";
 export * from "./blocks/count";
+export * from "./blocks/gallery";
 export * from "./assets/attach";
 export * from "./workspaces/moveWorkspace";
 export * from "./databases/values";

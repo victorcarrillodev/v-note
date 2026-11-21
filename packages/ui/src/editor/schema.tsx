@@ -12,6 +12,7 @@ import { MentionView } from "./MentionView";
 import { MatrixEditor, TimelineEditor, TreeEditor } from "../diagram/Organizers";
 import { MindMapEditor } from "../diagram/MindMapEditor";
 import { useToc } from "./TocContext";
+import { GalleryView } from "./GalleryBlock";
 
 export const CALLOUT_VARIANTS = ["info", "success", "warning", "danger"] as const;
 type Variant = (typeof CALLOUT_VARIANTS)[number];
@@ -184,7 +185,27 @@ export function TocBlockView() {
 /** Bloque «Índice»: sin propiedades ni contenido propio; se rehace solo con los encabezados de la página. */
 export const tocBlock = createReactBlockSpec({ type: "toc", propSchema: {}, content: "none" }, { render: () => <TocBlockView /> });
 
+/** Galería de imágenes: mosaico, columnas o carrusel. Las imágenes se guardan como adjuntos del espacio. */
+export const galleryBlock = createReactBlockSpec(
+  { type: "gallery", propSchema: { images: { default: "" }, layout: { default: "mosaic" }, mosaicStyle: { default: "regular" }, fit: { default: "cover" }, rowHeight: { default: "medium" } }, content: "none" },
+  {
+    render: ({ block, editor }) => (
+      <GalleryView
+        images={block.props.images}
+        layout={block.props.layout}
+        mosaicStyle={block.props.mosaicStyle}
+        fit={block.props.fit}
+        rowHeight={block.props.rowHeight}
+        editable={editor.isEditable}
+        resolve={(url) => (editor.resolveFileUrl ? editor.resolveFileUrl(url) : Promise.resolve(url))}
+        upload={async (file) => { const r = await editor.uploadFile!(file); return typeof r === "string" ? r : r.props.url as string; }}
+        onChange={(patch) => editor.updateBlock(block, { props: patch })}
+      />
+    ),
+  },
+);
+
 export const schema = BlockNoteSchema.create({
   inlineContentSpecs: { ...defaultInlineContentSpecs, mention: mentionInline },
-  blockSpecs: { ...defaultBlockSpecs, codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock(), toc: tocBlock() },
+  blockSpecs: { ...defaultBlockSpecs, codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock(), toc: tocBlock(), gallery: galleryBlock() },
 });

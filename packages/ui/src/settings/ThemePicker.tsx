@@ -49,8 +49,8 @@ export function ThemePicker() {
   const labelOf = (id: Option["id"]) => (id === "system" || id === "light" || id === "dark" ? nameOf(id) : t("theme.option", { name: nameOf(id), variant: t(variantOf(id) === "dark" ? "theme.variantDark" : "theme.variantLight") }));
 
   return (
-    <fieldset className="flex flex-col gap-3 border-b border-[var(--c-border)] px-4 py-3">
-      <legend className="float-left mb-1 font-medium">{t("settings.theme")}</legend>
+    <fieldset className="flex flex-col gap-3 px-4 py-3">
+      <legend className="sr-only">{t("settings.theme")}</legend>
       <div className="clear-both flex flex-col gap-3">
         {GROUPS.map((g) => (
           <div key={g.key} role="group" aria-labelledby={`theme-group-${g.key}`} className="flex flex-col gap-1.5">

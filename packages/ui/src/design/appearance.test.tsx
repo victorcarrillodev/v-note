@@ -42,28 +42,21 @@ describe("preferencias de apariencia (RF-10.1, RF-10.2)", () => {
 });
 
 describe("pantalla Apariencia (RF-10.1, RF-10.2, RF-10.5)", () => {
-  it("ofrece tipografía y densidad, y al cambiar se aplica al instante y se guarda", async () => {
+  it("ofrece densidad (la tipografía se define por página), y al cambiar se aplica al instante y se guarda", async () => {
     const p = new MemoryPreferences();
     await renderWithI18n(<AppearancePanel preferences={p} />);
-    await userEvent.click(screen.getByRole("radio", { name: "Serif" }));
-    expect(document.documentElement.getAttribute("data-font")).toBe("serif");
-    expect(p.get("font")).toBe("serif");
+    expect(screen.queryByRole("radio", { name: "Serif" })).toBeNull();
     await userEvent.click(screen.getByRole("radio", { name: "Compacta" }));
     expect(document.documentElement.getAttribute("data-density")).toBe("compact");
     expect(p.get("density")).toBe("compact");
   });
   it("al reiniciar, los ajustes guardados se conservan", async () => {
-    const p = new MemoryPreferences(); saveAppearance(p, { font: "mono", density: "compact" });
+    const p = new MemoryPreferences(); saveAppearance(p, { font: "sans", density: "compact" });
     await renderWithI18n(<AppearancePanel preferences={p} />);
-    expect(screen.getByRole("radio", { name: "Mono" })).toHaveAttribute("aria-checked", "true");
     expect(screen.getByRole("radio", { name: "Compacta" })).toHaveAttribute("aria-checked", "true");
   });
-  it("la vista previa refleja la tipografía y la densidad elegidas", async () => {
+  it("la vista previa refleja la densidad elegida", async () => {
     await renderWithI18n(<AppearancePanel preferences={new MemoryPreferences()} />);
-    const preview = screen.getByTestId("appearance-preview");
-    expect(preview).toHaveAttribute("data-font", "sans");
-    await userEvent.click(screen.getByRole("radio", { name: "Mono" }));
-    expect(screen.getByTestId("appearance-preview")).toHaveAttribute("data-font", "mono");
     await userEvent.click(screen.getByRole("radio", { name: "Compacta" }));
     expect(screen.getByTestId("appearance-preview")).toHaveAttribute("data-density", "compact");
   });
@@ -72,14 +65,14 @@ describe("pantalla Apariencia (RF-10.1, RF-10.2, RF-10.5)", () => {
     const backing = new MemoryPreferences();
     const p: PreferenceStore = { get: (k) => backing.get(k), set: (k, v) => { if (fail) return false; backing.set(k, v); return true; } };
     await renderWithI18n(<AppearancePanel preferences={p} />);
-    await userEvent.click(screen.getByRole("radio", { name: "Serif" }));
-    expect(document.documentElement.getAttribute("data-font")).toBe("serif"); // se aplicó en la sesión
+    await userEvent.click(screen.getByRole("radio", { name: "Compacta" }));
+    expect(document.documentElement.getAttribute("data-density")).toBe("compact"); // se aplicó en la sesión
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/no se pudo conservar/i);
-    expect(backing.get("font")).toBeNull();
+    expect(backing.get("density")).toBeNull();
     fail = false;
     await userEvent.click(screen.getByRole("button", { name: "Reintentar" }));
-    expect(backing.get("font")).toBe("serif");
+    expect(backing.get("density")).toBe("compact");
     expect(screen.queryByRole("alert")).toBeNull();
   });
 });

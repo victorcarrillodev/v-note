@@ -49,10 +49,15 @@ export function SettingsContent({ preferences }: { preferences: PreferenceStore 
 
   return (
     <>
-      <ViewSection title={t("settings.general")} flush>
+      <ViewSection title={t("settings.theme")} flush>
         <ThemePicker />
-        <label className={SETTING}><span className="font-medium">{t("settings.language")}</span>
+      </ViewSection>
+
+      <ViewSection title={t("settings.language")} flush>
+        <div className={SETTING}>
+          <span className={MUTED}>{t("settings.languageHint")}</span>
           <select
+            aria-label={t("settings.language")}
             value={i18n.language === "en" ? "en" : "es-MX"}
             onChange={(e) => { preferences.set("language", e.target.value); void i18n.changeLanguage(e.target.value); }}
             className={`${INPUT} max-w-56`}
@@ -60,7 +65,7 @@ export function SettingsContent({ preferences }: { preferences: PreferenceStore 
             <option value="es-MX">{t("settings.spanish")}</option>
             <option value="en">{t("settings.english")}</option>
           </select>
-        </label>
+        </div>
       </ViewSection>
 
       <AppearancePanel preferences={preferences} />

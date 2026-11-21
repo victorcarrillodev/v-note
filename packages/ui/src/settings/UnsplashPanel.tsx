@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../components/Button";
 import { Switch } from "../components/controls";
@@ -18,12 +18,19 @@ export function UnsplashPanel() {
   const { t } = useTranslation();
   const u = useUnsplash();
   const [key, setKey] = useState("");
+  const [hasKey, setHasKey] = useState(false);
   const [note, setNote] = useState<{ tone: "ok" | "warn" | "error"; text: string } | null>(null);
+  const keyStore = u.keyStore;
+  useEffect(() => {
+    let alive = true;
+    void keyStore?.get().then((k) => { if (alive) setHasKey(!!k); });
+    return () => { alive = false; };
+  }, [keyStore]);
   if (!u.supported) return null;
   const save = async () => {
     const r = await u.keyStore!.set(key);
     if (!r.ok) { setNote({ tone: "error", text: t("unsplash.keyInvalid") }); return; }
-    setKey("");
+    setKey(""); setHasKey(true);
     setNote(r.value.persisted ? { tone: "ok", text: t("unsplash.keySaved") } : { tone: "warn", text: t("unsplash.keyNotPersisted") });
   };
   return (
@@ -35,10 +42,11 @@ export function UnsplashPanel() {
           <div className="flex flex-col gap-1">
             <label htmlFor="unsplash-key" className="text-[length:var(--text-ui-small-size)] font-medium">{t("unsplash.keyLabel")}</label>
             <div className="flex flex-wrap items-center gap-2">
-              <input id="unsplash-key" type="password" autoComplete="off" spellCheck={false} value={key} onChange={(e) => { setKey(e.target.value); setNote(null); }} className={`${INPUT} max-w-80`} />
+              <input id="unsplash-key" type="password" autoComplete="off" spellCheck={false} placeholder={hasKey ? "••••••••••••••••" : ""} value={key} onChange={(e) => { setKey(e.target.value); setNote(null); }} className={`${INPUT} max-w-80`} />
               <Button size="sm" onClick={() => void save()} disabled={key.trim() === ""}>{t("unsplash.saveKey")}</Button>
-              <Button size="sm" variant="ghost" onClick={() => void u.keyStore!.clear().then(() => setNote({ tone: "ok", text: t("unsplash.keyCleared") }))}>{t("unsplash.clearKey")}</Button>
+              <Button size="sm" variant="ghost" disabled={!hasKey} onClick={() => void u.keyStore!.clear().then(() => { setHasKey(false); setNote({ tone: "ok", text: t("unsplash.keyCleared") }); })}>{t("unsplash.clearKey")}</Button>
             </div>
+            {hasKey && <p role="status" className="text-[var(--chip-success-fg)]">{t("unsplash.keyRegistered")}</p>}
             <p className={MUTED}>{u.platform === "web" ? t("unsplash.keyHintWeb") : t("unsplash.keyHint")}</p>
             {note && <p role={note.tone === "error" ? "alert" : "status"} className={note.tone === "error" ? "text-[var(--c-danger)]" : note.tone === "warn" ? "text-[var(--chip-warning-fg)]" : MUTED}>{note.text}</p>}
           </div>

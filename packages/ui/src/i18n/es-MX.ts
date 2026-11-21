@@ -116,7 +116,7 @@ export const esMX = {
     credit: "Foto de {{author}} en Unsplash", creditBy: "Foto de", creditOn: "en", unsplash: "Unsplash", src: { unsplash: "Unsplash", commons: "Wikimedia Commons", picsum: "Picsum" },
     resetUndone: "Cambio deshecho", undoChange: "Cambio de la página",
   },
-  unsplash: {
+  unsplash: { keyRegistered: "Clave registrada. Escribe otra para reemplazarla o bórrala.",
     tab: "Unsplash", settingsTitle: "Fotos de Unsplash", enable: "Activar Unsplash",
     explain: "Al activarlo, lo que escribas al buscar fotos y tu clave de acceso se envían a Unsplash (api.unsplash.com), y las miniaturas y la foto elegida se descargan de images.unsplash.com. El contenido de tus páginas nunca se envía. Con Unsplash apagado no sale ninguna petición.",
     keyLabel: "Clave de acceso de Unsplash", keyHint: "Se guarda en el llavero del sistema.",
@@ -198,7 +198,7 @@ export const esMX = {
     pastReminder: "El recordatorio ya pasó. Puedes guardarla como vencida o cambiar la hora.", saveOverdue: "Guardar como vencida", changeTime: "Cambiar la hora",
     save: "Guardar", cancel: "Cancelar", pastGroup: "Recordatorio en el pasado",
   },
-  tags: { color: "Color", title: "Etiquetas", hint: "Todas las etiquetas del espacio. Úsalas en la búsqueda para encontrar páginas.", empty: "Aún no hay etiquetas. Crea una desde la cabecera de cualquier página.", uses_one: "{{count}} página", uses_other: "{{count}} páginas", showPages: "Ver páginas", noPages: "Ninguna página usa esta etiqueta.", pagesOf: "Páginas con la etiqueta {{name}}", rename: "Nuevo nombre de la etiqueta", renameTag: "Renombrar la etiqueta {{name}}", deleteTag: "Eliminar la etiqueta {{name}}", colorOf: "Color de la etiqueta {{name}}", save: "Guardar", cancel: "Cancelar", delete: "Eliminar", deleteTitle: "¿Eliminar la etiqueta «{{name}}»?", deleteBody_one: "Se quitará de {{count}} página. Las páginas no se borran.", deleteBody_other: "Se quitará de {{count}} páginas. Las páginas no se borran.", duplicate: "Ya existe una etiqueta con ese nombre.", nameRequired: "La etiqueta necesita un nombre.", filterLabel: "Filtrar por etiquetas", listLabel: "Etiquetas de la página", add: "Añadir etiqueta", search: "Buscar o crear etiqueta", options: "Etiquetas del espacio", remove: "Quitar la etiqueta {{name}}", more: "{{count}} etiquetas más", create: "Crear «{{name}}»", createFailed: "No se pudo crear la etiqueta." },
+  tags: { color: "Color", title: "Etiquetas", hint: "Todas las etiquetas del espacio. Úsalas en la búsqueda para encontrar páginas.", empty: "Aún no hay etiquetas. Crea una con «Añadir etiqueta» o desde la cabecera de cualquier página.", uses_one: "{{count}} página", uses_other: "{{count}} páginas", showPages: "Ver páginas", noPages: "Ninguna página usa esta etiqueta.", pagesOf: "Páginas con la etiqueta {{name}}", rename: "Nuevo nombre de la etiqueta", renameTag: "Renombrar la etiqueta {{name}}", deleteTag: "Eliminar la etiqueta {{name}}", colorOf: "Color de la etiqueta {{name}}", save: "Guardar", cancel: "Cancelar", delete: "Eliminar", deleteTitle: "¿Eliminar la etiqueta «{{name}}»?", deleteBody_one: "Se quitará de {{count}} página. Las páginas no se borran.", deleteBody_other: "Se quitará de {{count}} páginas. Las páginas no se borran.", duplicate: "Ya existe una etiqueta con ese nombre.", nameRequired: "La etiqueta necesita un nombre.", filterLabel: "Filtrar por etiquetas", listLabel: "Etiquetas de la página", add: "Añadir etiqueta", search: "Buscar o crear etiqueta", options: "Etiquetas del espacio", remove: "Quitar la etiqueta {{name}}", more: "{{count}} etiquetas más", create: "Crear «{{name}}»", newName: "Nombre de la etiqueta", createFailed: "No se pudo crear la etiqueta." },
   errorScreen: {
     title: "Algo salió mal",
     generic: "La aplicación tuvo un problema inesperado.",
@@ -236,6 +236,15 @@ export const esMX = {
     hideSidebar: "Ocultar barra lateral",
     showSidebar: "Mostrar barra lateral",
     skipToContent: "Saltar al contenido",
+  },
+  gallery: {
+    imageOptions: "Opciones de {{name}}", size: "Tamaño", wider: "Ensanchar", narrower: "Estrechar", taller: "Alargar", shorter: "Acortar", removeImage: "Quitar imagen",
+    fitLabel: "Ajuste", imageFit: "Ajuste de {{name}}", fitInherit: "Como la galería ({{fit}})", height: "Altura", small: "Baja", medium: "Media", large: "Alta",
+    fit: { cover: "Rellenar", contain: "Contener", fill: "Estirar", none: "Original", "scale-down": "Reducir" },
+    mosaicStyle: "Estilo del mosaico", regular: "Regular", custom: "Personalizado",
+    slash: "Galería de imágenes", slashHint: "Fotos en mosaico, columnas o carrusel", label: "Galería de imágenes", layout: "Diseño de la galería",
+    mosaic: "Mosaico", columns: "Columnas", carousel: "Carrusel", add: "Añadir imágenes", uploading: "Subiendo…", failed: "No se pudo añadir alguna imagen.",
+    empty: "Aún no hay imágenes. Añade o arrastra fotos aquí.", image: "Imagen", remove: "Quitar {{name}}", previous: "Imagen anterior", next: "Imagen siguiente",
   },
   editor: {
     noResults: "Sin coincidencias",
@@ -334,7 +343,7 @@ export const esMX = {
     futureVersion: "Este respaldo es de una versión más nueva de la aplicación; actualízala para restaurarlo.",
     damaged: "El respaldo está dañado: {{message}}",
   },
-  settings: {
+  settings: { languageHint: "Idioma de la interfaz",
     title: "Ajustes",
     theme: "Tema",
     language: "Idioma",

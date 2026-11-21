@@ -6,7 +6,7 @@ import { ViewSection } from "../components/ViewLayout";
 import { applyAppearance, loadAppearance, saveAppearance, type Appearance } from "../design/appearance";
 import type { PreferenceStore } from "../theme/theme";
 
-/** Ajustes › Apariencia: tipografía del contenido y densidad. Se aplican al instante; si no se pueden conservar, se avisa con «Reintentar». */
+/** Ajustes › Apariencia: densidad del contenido. Se aplican al instante; si no se pueden conservar, se avisa con «Reintentar». */
 export function AppearancePanel({ preferences }: { preferences: PreferenceStore }) {
   const { t } = useTranslation();
   const [a, setA] = useState<Appearance>(() => loadAppearance(preferences));
@@ -22,9 +22,6 @@ export function AppearancePanel({ preferences }: { preferences: PreferenceStore 
       <ViewSection title={t("appearance.title")}>
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-6">
-            <div className="flex flex-col gap-1"><span className="text-[length:var(--text-ui-small-size)] font-medium">{t("appearance.font")}</span>
-              <Segmented label={t("appearance.font")} value={a.font} onChange={(v) => change({ ...a, font: v as Appearance["font"] })} options={[{ value: "sans", label: t("appearance.sans") }, { value: "serif", label: t("appearance.serif") }, { value: "mono", label: t("appearance.mono") }]} />
-            </div>
             <div className="flex flex-col gap-1"><span className="text-[length:var(--text-ui-small-size)] font-medium">{t("appearance.density")}</span>
               <Segmented label={t("appearance.density")} value={a.density} onChange={(v) => change({ ...a, density: v as Appearance["density"] })} options={[{ value: "comfortable", label: t("appearance.comfortable") }, { value: "compact", label: t("appearance.compact") }]} />
             </div>

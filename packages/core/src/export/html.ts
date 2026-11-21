@@ -1,3 +1,4 @@
+import { galleryCarouselRem, galleryFitOf, galleryLayoutOf, galleryMosaicStyleOf, galleryRowRem, parseGallery } from "../blocks/gallery";
 import { inlineToText, type Block, type Inline } from "../blocks/types";
 import { parseAssetUrl } from "../assets/attach";
 import { parseDiagram } from "../diagrams/diagram";
@@ -36,6 +37,16 @@ const VARIANTS = new Set(["info", "warning", "success", "error", "note"]);
 const LANG = /^[A-Za-z0-9_+#.-]{1,32}$/;
 const SAFE_HREF = /^(https?:|mailto:|tel:)/i;
 const safeHref = (h: unknown): string | null => (typeof h === "string" && SAFE_HREF.test(h.trim()) && !/[\s<>"]/.test(h.trim()) ? h.trim() : null);
+// Estilos en línea: la hoja de estilos del documento exportado no cambia y cada galería se ve igual en cualquier visor.
+const galleryBox = (layout: "mosaic" | "columns" | "carousel", rowRem: number): string =>
+  layout === "mosaic" ? `display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:${rowRem}rem;grid-auto-flow:dense;gap:.5rem;margin:1rem 0`
+  : layout === "columns" ? "column-width:12rem;column-gap:.5rem;margin:1rem 0"
+  : "display:flex;gap:.5rem;overflow-x:auto;margin:1rem 0";
+const GALLERY_FIGURE = { mosaic: "margin:0;min-height:0", columns: "margin:0 0 .5rem;break-inside:avoid", carousel: "margin:0;flex:0 0 min(80%,22rem)" } as const;
+const galleryImg = (layout: "mosaic" | "columns" | "carousel", fit: string, carouselRem: number): string =>
+  layout === "mosaic" ? `display:block;width:100%;height:100%;object-fit:${fit}`
+  : layout === "carousel" ? `display:block;width:100%;height:${carouselRem}rem;object-fit:${fit}`
+  : "display:block;width:100%;height:auto";
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
 
 function inline(items: Inline[], ctx: RenderContext): string {
@@ -72,6 +83,7 @@ export function collectAssetUrls(blocks: Block[]): string[] {
   const walk = (list: Block[]) => {
     for (const b of list) {
       if ((b.type === "image" || b.type === "file") && parseAssetUrl(str(b.props.url))) out.add(str(b.props.url));
+      if (b.type === "gallery") for (const g of parseGallery(b.props.images)) if (parseAssetUrl(g.url)) out.add(g.url);
       walk(b.children);
     }
   };
@@ -149,6 +161,20 @@ function renderOne(b: Block, ctx: RenderContext): string {
       } else src = safeHref(url) && /^https?:/i.test(url.trim()) ? url.trim() : null;
       if (!src) return missing(ctx, name || url, url);
       return `<figure><img src="${esc(src)}" alt="${esc(caption || name)}">${caption ? `<figcaption>${esc(caption)}</figcaption>` : ""}</figure>`;
+    }
+    case "gallery": {
+      const imgs = parseGallery(b.props.images);
+      const layout = galleryLayoutOf(b.props.layout);
+      const baseFit = galleryFitOf(b.props.fit);
+      const custom = layout === "mosaic" && galleryMosaicStyleOf(b.props.mosaicStyle) === "custom";
+      const items = imgs.map((g) => {
+        let src: string | null = null;
+        if (parseAssetUrl(g.url)) { const a = ctx.assets.get(g.url); if (!a) { missing(ctx, g.name, g.url); return ""; } src = a.dataUri; }
+        else src = safeHref(g.url) && /^https?:/i.test(g.url.trim()) ? g.url.trim() : null;
+        if (!src) { missing(ctx, g.name || g.url, g.url); return ""; }
+        return `<figure style="${GALLERY_FIGURE[layout]}${custom ? `;grid-column:span ${g.cols};grid-row:span ${g.rows}` : ""}"><img src="${esc(src)}" alt="${esc(g.caption || g.name)}" style="${galleryImg(layout, galleryFitOf(g.fit, baseFit), galleryCarouselRem(b.props.rowHeight))}">${g.caption ? `<figcaption>${esc(g.caption)}</figcaption>` : ""}</figure>`;
+      }).join("");
+      return items ? `<div class="gallery gallery-${layout}" style="${galleryBox(layout, galleryRowRem(b.props.rowHeight))}">${items}</div>` : "";
     }
     case "file": {
       const url = str(b.props.url), name = str(b.props.name) || url;
