@@ -27,7 +27,7 @@ import { cx } from "../design/cx";
 
 /** Acciones de la página: discretas (texto atenuado) hasta pasar el puntero, como en un editor de notas. */
 const ACTION = "inline-flex h-7 items-center gap-1.5 rounded-[var(--radius-md)] px-2 text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)] transition-colors duration-100 hover:bg-[var(--c-raised)] hover:text-[var(--c-text)] [@media(pointer:coarse)]:h-11";
-const MENU_ITEM = "rounded-[var(--radius-base)] px-2 py-1 text-left text-[length:var(--text-ui-small-size)] text-[var(--c-text)] hover:bg-[var(--c-raised)] [@media(pointer:coarse)]:py-3";
+const MENU_ITEM = "flex items-center gap-2 rounded-[var(--radius-base)] px-2 py-1 text-left text-[length:var(--text-ui-small-size)] text-[var(--c-text)] hover:bg-[var(--c-raised)] [@media(pointer:coarse)]:py-3";
 /** Botón translúcido sobre la portada: visible al pasar el puntero o con foco dentro de la cabecera; siempre en pantallas táctiles (RF-1.7). */
 const COVER_BTN = "inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-md)] bg-black/50 px-2.5 text-[length:var(--text-ui-small-size)] text-white opacity-0 backdrop-blur-sm transition-opacity duration-100 hover:bg-black/65 focus-visible:opacity-100 group-hover/header:opacity-100 group-focus-within/header:opacity-100 data-[state=open]:opacity-100 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:opacity-100";
 /** Texto blanco con sombra suave sobre la imagen oscurecida (RF-1.7, DP-16). */
@@ -363,8 +363,8 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
           <button type="button" className={ACTION} aria-haspopup="menu" aria-expanded={dupOpen} onClick={() => setDupOpen((o) => !o)}><Icon name="duplicate" size={14} />{t("page.duplicate")}</button>
           {dupOpen && (
             <div role="menu" className="absolute z-10 mt-1 flex min-w-max flex-col rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)] p-1 shadow-[var(--elevation-3)]">
-              <button type="button" role="menuitem" className={MENU_ITEM} onClick={() => { duplicate(page.id, false); setDupOpen(false); }}>{t("page.duplicateOnlyThis")}</button>
-              <button type="button" role="menuitem" className={MENU_ITEM} onClick={() => { duplicate(page.id, true); setDupOpen(false); }}>{t("page.duplicateWithChildren")}</button>
+              <button type="button" role="menuitem" className={MENU_ITEM} onClick={() => { duplicate(page.id, false); setDupOpen(false); }}><Icon name="duplicate" size={14} />{t("page.duplicateOnlyThis")}</button>
+              <button type="button" role="menuitem" className={MENU_ITEM} onClick={() => { duplicate(page.id, true); setDupOpen(false); }}><Icon name="folder" size={14} />{t("page.duplicateWithChildren")}</button>
             </div>
           )}
         </div>

@@ -120,13 +120,29 @@ export class WorkspaceManager {
     return l.ok ? ok(l.value.find((w) => w.isCaptureDefault) ?? null) : l;
   }
 
-  /** Datos que la interfaz muestra antes de confirmar una eliminación (CL-29). */
-  async prepareDelete(id: string): Promise<Result<{ name: string; lastBackupAt: number | null; hasNoBackup: boolean }>> {
-    const opened = await this.open(id);
-    if (!opened.ok) return opened;
-    const rows = await opened.value.store.query<{ value: string }>("SELECT value FROM meta WHERE key = 'last_backup_at'");
-    const lastBackupAt = rows[0] ? Number(rows[0].value) : null;
-    return ok({ name: opened.value.workspace.name, lastBackupAt, hasNoBackup: lastBackupAt === null });
+  /**
+   * Datos que la interfaz muestra antes de confirmar una eliminación (CL-29). Solo lee: no migra ni deja abierta una base que
+   * no lo estaba. Si no se puede leer el respaldo (carpeta no disponible o base ilegible), `backupUnknown` lo avisa.
+   */
+  async prepareDelete(id: string): Promise<Result<{ name: string; lastBackupAt: number | null; hasNoBackup: boolean; backupUnknown?: true }>> {
+    const reg = await this.load();
+    if (!reg.ok) return reg;
+    const ws = reg.value.workspaces.find((w) => w.id === id);
+    if (!ws) return err(appError("NOT_FOUND", "El espacio de trabajo no existe", { id }));
+    const unknown = ok({ name: ws.name, lastBackupAt: null, hasNoBackup: false, backupUnknown: true as const });
+    let store = this.open_.get(id);
+    const temporary = !store;
+    if (!store) {
+      try {
+        if (!(await this.storage.exists(ws.location))) return unknown;
+        store = await this.storage.open(ws.location);
+      } catch { return unknown; }
+    }
+    try {
+      const rows = await store.query<{ value: string }>("SELECT value FROM meta WHERE key = 'last_backup_at'");
+      const lastBackupAt = rows[0] ? Number(rows[0].value) : null;
+      return ok({ name: ws.name, lastBackupAt, hasNoBackup: lastBackupAt === null });
+    } catch { return unknown; } finally { if (temporary) await store.close().catch(() => {}); }
   }
 
   /** Elimina un espacio y sus datos. Exige escribir el nombre exacto (constitución, art. 5). */
@@ -138,7 +154,9 @@ export class WorkspaceManager {
     if (opts.typedName !== ws.name) return err(appError("NEEDS_CONFIRMATION", "Debes escribir el nombre exacto del espacio para eliminarlo", { id }));
     const store = this.open_.get(id);
     if (store) { await store.close(); this.open_.delete(id); }
-    await this.storage.remove(ws.location);
+    try { await this.storage.remove(ws.location); } catch (e) {
+      return err(appError("STORAGE", "No se pudieron borrar los datos del espacio; no se eliminó", { id, reason: e instanceof Error ? e.message : String(e) }));
+    }
     reg.value.workspaces = reg.value.workspaces.filter((w) => w.id !== id);
     await this.save(reg.value);
     return ok(undefined);

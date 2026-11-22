@@ -43,7 +43,7 @@ export function Switch({ label, checked, onChange, disabled = false }: { label: 
 }
 
 /** Control segmentado (tema, tipografía, densidad): el valor activo se marca con fondo, peso y una marca, además del color. */
-export function Segmented({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+export function Segmented({ label, value, onChange, options, compact }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; compact?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   // Comportamiento de grupo de radios: las flechas mueven la selección y el foco.
   const onKeyDown = (e: KeyboardEvent) => {
@@ -58,7 +58,7 @@ export function Segmented({ label, value, onChange, options }: { label: string; 
   return (
     <TG.Root ref={root} type="single" value={value} onValueChange={(v) => v && onChange(v)} aria-label={label} onKeyDown={onKeyDown} rovingFocus={false} className="inline-flex rounded border border-[var(--c-border-control)] p-0.5">
       {options.map((o) => (
-        <TG.Item key={o.value} value={o.value} data-value={o.value} role="radio" aria-checked={o.value === value} className={cx("inline-flex h-7 items-center gap-1 rounded-sm px-3 text-[length:var(--text-ui-small-size)]", o.value === value ? "bg-[var(--c-raised)] font-semibold text-[var(--c-text)]" : "text-[var(--c-text-muted)] hover:bg-[var(--c-raised)]")}>
+        <TG.Item key={o.value} value={o.value} data-value={o.value} role="radio" aria-checked={o.value === value} className={cx("inline-flex h-7 items-center gap-1 rounded-sm text-[length:var(--text-ui-small-size)]", compact ? "px-2" : "px-3", o.value === value ? "bg-[var(--c-raised)] font-semibold text-[var(--c-text)]" : "text-[var(--c-text-muted)] hover:bg-[var(--c-raised)]")}>
           {o.value === value && <Icon name="check" size={14} />}
           {o.label}
         </TG.Item>

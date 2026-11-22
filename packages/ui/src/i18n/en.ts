@@ -224,6 +224,8 @@ export const en: Widen<typeof esMX> = {
     typeNameToDelete: "Type “{{name}}” to confirm",
     lastBackup: "Last backup: {{date}}",
     noBackup: "This workspace has no successful backup.",
+    backupUnknown: "Could not check this workspace's last backup. Its data may not be backed up; deleting it is permanent.",
+    deleteFailed: "The workspace could not be deleted. Try again.",
     open: "Open {{name}}",
     lockedElsewhere: "This workspace is open for editing in another window or tab. Close it to edit here; meanwhile it cannot be modified from this one.",
     retry: "Retry",

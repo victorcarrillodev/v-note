@@ -7,12 +7,12 @@ import { MemoryConfigStore, MemoryWorkspaceStorage } from "../../../core/tests/s
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { WorkspaceManagerView } from "./WorkspaceManagerView";
 
-async function setup(names: string[] = ["Personal"]) {
+async function setup(names: string[] = ["Personal"], onDeleted?: (id: string) => void) {
   const storage = new MemoryWorkspaceStorage();
   const manager = new WorkspaceManager(new MemoryConfigStore(), storage, new FakeClock(1_000));
   for (const n of names) await manager.create({ name: n });
   const opened: string[] = [];
-  await renderWithI18n(<WorkspaceManagerView manager={manager} activeId={null} onOpen={(id) => opened.push(id)} />);
+  await renderWithI18n(<WorkspaceManagerView manager={manager} activeId={null} onOpen={(id) => opened.push(id)} {...(onDeleted ? { onDeleted } : {})} />);
   return { manager, storage, opened, user: userEvent.setup() };
 }
 
@@ -60,6 +60,26 @@ describe("WorkspaceManagerView", () => {
     expect(confirm).toBeEnabled();
     await user.click(confirm);
     await waitFor(async () => expect(((await manager.list()) as { value: unknown[] }).value).toEqual([]));
+  });
+  it("al eliminar avisa a quien muestra el espacio abierto", async () => {
+    const deleted: string[] = [];
+    const { manager, user } = await setup(["Uno"], (id) => deleted.push(id));
+    const ws = ((await manager.list()) as { value: { id: string }[] }).value[0]!;
+    await user.click(await screen.findByRole("button", { name: "Eliminar espacio Uno" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await user.type(within(dialog).getByRole("textbox"), "Uno");
+    await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
+    await waitFor(() => expect(deleted).toEqual([ws.id]));
+  });
+  it("si el borrado falla, el diálogo sigue abierto y muestra la causa", async () => {
+    const { storage, user } = await setup(["Uno"]);
+    storage.remove = async () => { throw new Error("x"); };
+    await user.click(await screen.findByRole("button", { name: "Eliminar espacio Uno" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await user.type(within(dialog).getByRole("textbox"), "Uno");
+    await user.click(within(dialog).getByRole("button", { name: "Eliminar" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("No se pudieron borrar los datos");
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
   });
   it("muestra la fecha del último respaldo cuando existe", async () => {
     const { manager, user } = await setup(["Con respaldo"]);

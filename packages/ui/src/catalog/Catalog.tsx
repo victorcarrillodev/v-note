@@ -154,7 +154,7 @@ export function Catalog() {
         <Both name="Ilustraciones"><div className="flex gap-4 text-[var(--c-text-muted)]">{(Object.keys(ILLUSTRATIONS) as IllustrationName[]).map((n) => <Illustration key={n} name={n} size={64} />)}</div></Both>
         <Both name="Esqueleto"><Skeleton height={20} width={160} /></Both>
         <Both name="Aviso en línea"><div className="flex flex-col gap-2"><InlineAlert tone="info">Solo lectura</InlineAlert><InlineAlert tone="error" title="No se pudo respaldar" action={{ label: "Reintentar", onClick: () => {} }}>El token no es válido.</InlineAlert></div></Both>
-        <Both name="Menú"><Menu label="Más acciones" items={[{ label: "Renombrar", onSelect: () => {} }, { label: "Eliminar", onSelect: () => {}, danger: true }]} /></Both>
+        <Both name="Menú"><Menu label="Más acciones" items={[{ label: "Renombrar", icon: "edit", onSelect: () => {} }, { label: "Eliminar", icon: "delete", onSelect: () => {}, danger: true }]} /></Both>
         <Both name="Popover"><Popover trigger={<Button>Abrir popover</Button>}><p>Contenido del popover</p></Popover></Both>
         <Both name="Modal"><ModalDemo /></Both>
         <Both name="Confirmación destructiva"><p className="text-[length:var(--text-ui-size)]">Se abre desde «Abrir confirmación» del modal.</p></Both>

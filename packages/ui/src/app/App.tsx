@@ -186,6 +186,17 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
     return controller;
   }, [workspaces, clock, ensureLock, backup]);
 
+  // Tras eliminar un espacio: si era el abierto, se pasa al predeterminado (o al primero); sin espacios, vuelve la bienvenida.
+  const afterWorkspaceDeleted = useCallback(async (deletedId: string) => {
+    const list = await workspaces.list();
+    const rest = list.ok ? list.value : [];
+    if (rest.length === 0) { setOpened(null); setNoWorkspaces(true); setView("workspaces"); return; }
+    if (openedRef.current?.workspace.id !== deletedId) return;
+    setOpened(null);
+    await openWorkspace((rest.find((w) => w.isCaptureDefault) ?? rest[0]!).id);
+    setView("workspaces");
+  }, [workspaces, openWorkspace]);
+
   // La ventana de recordatorio pide abrir una tarea: se abre su espacio y su página (RF-11).
   const openedRef = useRef(opened);
   openedRef.current = opened;
@@ -265,7 +276,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
         />
       )}
       {view === "workspaces" && !(noWorkspaces && !opened) && (
-        <WorkspaceManagerView manager={workspaces} activeId={opened?.workspace.id ?? null} onOpen={(id) => void openWorkspace(id)} onCreated={(w) => void openWorkspace(w.id)} {...(revealLocation ? { onRevealLocation: revealLocation } : {})} {...(pickFolder ? { pickFolder } : {})} />
+        <WorkspaceManagerView manager={workspaces} activeId={opened?.workspace.id ?? null} onOpen={(id) => void openWorkspace(id)} onCreated={(w) => void openWorkspace(w.id)} onDeleted={(id) => void afterWorkspaceDeleted(id)} {...(revealLocation ? { onRevealLocation: revealLocation } : {})} {...(pickFolder ? { pickFolder } : {})} />
       )}
       {view === "workspaces" && !opened && !noWorkspaces && backup && (
         <div className="px-4">

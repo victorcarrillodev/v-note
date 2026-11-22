@@ -36,10 +36,10 @@ function ImageMenu({ label, image, fit, sizable, onSpan, onFit, onRemove }: {
           {sizable && (
             <>
               <D.Label className={GROUP_LABEL}>{t("gallery.size")} · {image.cols}×{image.rows}</D.Label>
-              <D.Item className={ITEM} disabled={image.cols >= MAX_GALLERY_SPAN} onSelect={(e) => { e.preventDefault(); onSpan(image.cols + 1, image.rows); }}>{t("gallery.wider")}</D.Item>
-              <D.Item className={ITEM} disabled={image.cols <= 1} onSelect={(e) => { e.preventDefault(); onSpan(image.cols - 1, image.rows); }}>{t("gallery.narrower")}</D.Item>
-              <D.Item className={ITEM} disabled={image.rows >= MAX_GALLERY_SPAN} onSelect={(e) => { e.preventDefault(); onSpan(image.cols, image.rows + 1); }}>{t("gallery.taller")}</D.Item>
-              <D.Item className={ITEM} disabled={image.rows <= 1} onSelect={(e) => { e.preventDefault(); onSpan(image.cols, image.rows - 1); }}>{t("gallery.shorter")}</D.Item>
+              <D.Item className={ITEM} disabled={image.cols >= MAX_GALLERY_SPAN} onSelect={(e) => { e.preventDefault(); onSpan(image.cols + 1, image.rows); }}><Icon name="wider" />{t("gallery.wider")}</D.Item>
+              <D.Item className={ITEM} disabled={image.cols <= 1} onSelect={(e) => { e.preventDefault(); onSpan(image.cols - 1, image.rows); }}><Icon name="narrower" />{t("gallery.narrower")}</D.Item>
+              <D.Item className={ITEM} disabled={image.rows >= MAX_GALLERY_SPAN} onSelect={(e) => { e.preventDefault(); onSpan(image.cols, image.rows + 1); }}><Icon name="taller" />{t("gallery.taller")}</D.Item>
+              <D.Item className={ITEM} disabled={image.rows <= 1} onSelect={(e) => { e.preventDefault(); onSpan(image.cols, image.rows - 1); }}><Icon name="shorter" />{t("gallery.shorter")}</D.Item>
               <D.Separator className="my-1 h-px bg-[var(--c-border)]" />
             </>
           )}
@@ -96,7 +96,7 @@ function GalleryImageView({ image, resolve, layout, custom, fit, carouselRem, ed
 
 function Group({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-0.5">
       <span className="text-[length:var(--text-label-size)] font-semibold uppercase text-[var(--c-text-muted)]">{label}</span>
       <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
@@ -163,15 +163,15 @@ export function GalleryView({ images, layout, mosaicStyle, fit, rowHeight, edita
       onDrop={(e) => { if (!editable || e.dataTransfer.files.length === 0) return; e.preventDefault(); e.stopPropagation(); void add([...e.dataTransfer.files]); }}
     >
       {editable && (
-        <div className="flex flex-wrap items-end gap-x-6 gap-y-3 border-b border-[var(--c-border)] bg-[var(--c-raised)] px-3 py-3">
+        <div className="flex flex-wrap items-end gap-x-3 gap-y-2 border-b border-[var(--c-border)] bg-[var(--c-raised)] px-3 py-2">
           <Group label={t("gallery.layout")}>
-            <Segmented label={t("gallery.layout")} value={mode} onChange={(v) => onChange({ layout: galleryLayoutOf(v) })} options={[
+            <Segmented compact label={t("gallery.layout")} value={mode} onChange={(v) => onChange({ layout: galleryLayoutOf(v) })} options={[
               { value: "mosaic", label: t("gallery.mosaic") }, { value: "columns", label: t("gallery.columns") }, { value: "carousel", label: t("gallery.carousel") },
             ]} />
           </Group>
           {mode === "mosaic" && (
             <Group label={t("gallery.mosaicStyle")}>
-              <Segmented label={t("gallery.mosaicStyle")} value={custom ? "custom" : "regular"} onChange={(v) => onChange({ mosaicStyle: galleryMosaicStyleOf(v) })} options={[
+              <Segmented compact label={t("gallery.mosaicStyle")} value={custom ? "custom" : "regular"} onChange={(v) => onChange({ mosaicStyle: galleryMosaicStyleOf(v) })} options={[
                 { value: "regular", label: t("gallery.regular") }, { value: "custom", label: t("gallery.custom") },
               ]} />
             </Group>
@@ -179,16 +179,16 @@ export function GalleryView({ images, layout, mosaicStyle, fit, rowHeight, edita
           {mode !== "columns" && (
             <>
               <Group label={t("gallery.fitLabel")}>
-                <ChoiceMenu label={t("gallery.fitLabel")} value={baseFit} onChange={(v) => onChange({ fit: galleryFitOf(v) })} options={GALLERY_FITS.map((f) => ({ value: f, label: t(`gallery.fit.${f}`) }))} />
+                <ChoiceMenu className="!min-w-24" label={t("gallery.fitLabel")} value={baseFit} onChange={(v) => onChange({ fit: galleryFitOf(v) })} options={GALLERY_FITS.map((f) => ({ value: f, label: t(`gallery.fit.${f}`) }))} />
               </Group>
               <Group label={t("gallery.height")}>
-                <Segmented label={t("gallery.height")} value={height} onChange={(v) => onChange({ rowHeight: galleryRowHeightOf(v) })} options={[
+                <Segmented compact label={t("gallery.height")} value={height} onChange={(v) => onChange({ rowHeight: galleryRowHeightOf(v) })} options={[
                   { value: "small", label: t("gallery.small") }, { value: "medium", label: t("gallery.medium") }, { value: "large", label: t("gallery.large") },
                 ]} />
               </Group>
             </>
           )}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="order-last flex w-full items-center gap-2">
             {busy && <span role="status" className="text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)]">{t("gallery.uploading")}</span>}
             <Button size="sm" variant="primary" disabled={busy || list.length >= MAX_GALLERY_IMAGES} onClick={() => input.current?.click()}>+ {t("gallery.add")}</Button>
             <input ref={input} type="file" accept="image/*" multiple hidden aria-label={t("gallery.add")} onChange={(e) => { const f = [...(e.target.files ?? [])]; e.target.value = ""; void add(f); }} />

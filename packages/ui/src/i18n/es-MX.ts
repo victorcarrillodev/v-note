@@ -220,6 +220,8 @@ export const esMX = {
     typeNameToDelete: "Escribe «{{name}}» para confirmar",
     lastBackup: "Último respaldo: {{date}}",
     noBackup: "Este espacio no tiene ningún respaldo exitoso.",
+    backupUnknown: "No se pudo comprobar el último respaldo de este espacio. Puede que sus datos no estén respaldados; eliminarlo es permanente.",
+    deleteFailed: "No se pudo eliminar el espacio. Inténtalo de nuevo.",
     open: "Abrir {{name}}",
     lockedElsewhere: "Este espacio está abierto para editar en otra ventana o pestaña. Ciérrala para editar aquí; mientras tanto no se puede modificar desde esta.",
     retry: "Reintentar",

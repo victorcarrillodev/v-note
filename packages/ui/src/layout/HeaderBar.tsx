@@ -26,7 +26,7 @@ export function HeaderBar({ crumbs, onNavigate, status, onRetry, lastEditedAt, n
             return (
               <li key={p.kind === "item" ? p.item.id : "gap"} className="flex min-w-0 items-center gap-1">
                 {p.kind === "gap" ? (
-                  <Menu label={t("header.hiddenCrumbs")} items={p.hidden.map((h) => ({ label: h.title.trim() === "" ? t("app.untitled") : h.title, onSelect: () => onNavigate(h.id) }))} />
+                  <Menu label={t("header.hiddenCrumbs")} items={p.hidden.map((h) => ({ label: h.title.trim() === "" ? t("app.untitled") : h.title, icon: "note", onSelect: () => onNavigate(h.id) }))} />
                 ) : isLast ? (
                   <span aria-current="page" title={p.item.title} className="truncate font-medium text-[var(--c-text)]">{p.item.title.trim() === "" ? t("app.untitled") : p.item.title}</span>
                 ) : (

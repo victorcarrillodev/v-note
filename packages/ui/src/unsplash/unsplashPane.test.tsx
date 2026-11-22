@@ -84,11 +84,12 @@ describe("la pestaña solo aparece con Unsplash activado (E-164, RF-9.4)", () =>
     await open(user);
     expect(screen.queryByRole("tab", { name: "Unsplash" })).toBeNull();
   });
-  it("abrir el selector con Unsplash encendido no hace ninguna petición hasta buscar", async () => {
+  it("abrir el selector con Unsplash encendido carga una sola búsqueda inicial al azar", async () => {
     const { user, net } = await setup();
     await openUnsplash(user);
     await screen.findByRole("searchbox", { name: "Buscar en Unsplash" });
-    expect(net.urls).toEqual([]);
+    await screen.findByRole("button", { name: "Foto de Autor a" });
+    expect(net.urls.map((u) => new URL(u).pathname)).toEqual(["/search/photos"]);
   });
 });
 
@@ -103,8 +104,8 @@ describe("búsqueda con miniaturas (E-165)", () => {
     await user.click(screen.getByRole("button", { name: "Más resultados" }));
     await waitFor(() => expect(within(screen.getByRole("list", { name: "Resultados de Unsplash" })).getAllByRole("button")).toHaveLength(3));
     expect(screen.queryByRole("button", { name: "Más resultados" })).toBeNull(); // era la última página
-    expect(net.urls.map((u) => new URL(u).searchParams.get("page"))).toEqual(["1", "2"]);
-    expect(new URL(net.urls[0]!).searchParams.get("query")).toBe("montañas");
+    expect(net.urls.map((u) => new URL(u).searchParams.get("page"))).toEqual(["1", "1", "2"]);
+    expect(new URL(net.urls[1]!).searchParams.get("query")).toBe("montañas");
   });
   it("una búsqueda sin resultados lo dice", async () => {
     const { user } = await setup({ behaviour: { search: () => ({ json: { total_pages: 0, results: [] } }) } });
@@ -122,7 +123,7 @@ describe("elegir una foto (E-166, RF-2.5, D-14)", () => {
     await user.click(await screen.findByRole("button", { name: "Foto de Autor a" }));
     await waitFor(() => expect(page().cover).toMatch(/^asset:[0-9a-f]{64}$/));
     // primero el aviso de descarga a la API, después la imagen, sin la clave
-    expect(net.urls.slice(1).map((u) => new URL(u).host)).toEqual(["api.unsplash.com", "images.unsplash.com"]);
+    expect(net.urls.slice(2).map((u) => new URL(u).host)).toEqual(["api.unsplash.com", "images.unsplash.com"]);
     expect(page().coverCredit).toMatchObject({ source: "unsplash", photoId: "a", author: "Autor a" });
     expect(new URL(page().coverCredit.authorUrl).searchParams.get("utm_medium")).toBe("referral");
     expect((await assets!.list()).length).toBe(1);
@@ -205,8 +206,7 @@ describe("clave borrada o revocada (E-169, CL-9)", () => {
   });
   it("una clave revocada (401) se borra y la pestaña la vuelve a pedir", async () => {
     const { user, keychain } = await setup({ behaviour: { search: () => ({ status: 401 }) } });
-    await openUnsplash(user);
-    await search(user);
+    await openUnsplash(user); // la búsqueda inicial ya recibe el 401
     expect(await screen.findByText("Unsplash no aceptó la clave. Escríbela de nuevo.")).toBeInTheDocument();
     expect(await keychain.get("unsplash-access-key")).toBeNull();
     expect(screen.queryByRole("searchbox")).toBeNull();

@@ -9,9 +9,9 @@ import { INPUT, MUTED } from "../components/formStyles";
 import { useTranslation } from "react-i18next";
 import type { Workspace, WorkspaceManager } from "@vnote/core";
 
-type DeleteInfo = { lastBackupAt: number | null; hasNoBackup: boolean } | null;
+type DeleteInfo = { lastBackupAt: number | null; hasNoBackup: boolean; backupUnknown: boolean } | null;
 
-export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onRevealLocation, pickFolder }: { manager: WorkspaceManager; activeId: string | null; onOpen: (id: string) => void; onCreated?: (w: Workspace) => void; onRevealLocation?: (location: string) => void; /** Solo escritorio: diálogo nativo para elegir la carpeta de datos del espacio nuevo (RF-25). */ pickFolder?: () => Promise<string | null> }) {
+export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onDeleted, onRevealLocation, pickFolder }: { manager: WorkspaceManager; activeId: string | null; onOpen: (id: string) => void; onCreated?: (w: Workspace) => void; /** Se eliminó un espacio: quien muestra el espacio abierto decide a dónde ir. */ onDeleted?: (id: string) => void; onRevealLocation?: (location: string) => void; /** Solo escritorio: diálogo nativo para elegir la carpeta de datos del espacio nuevo (RF-25). */ pickFolder?: () => Promise<string | null> }) {
   const [folder, setFolder] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const [items, setItems] = useState<Workspace[]>([]);
@@ -20,6 +20,8 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onR
   const [deleting, setDeleting] = useState<Workspace | null>(null);
   const [info, setInfo] = useState<DeleteInfo>(null);
   const [typed, setTyped] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -35,14 +37,17 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onR
     else setError(r.error.message);
   };
   const startDelete = async (ws: Workspace) => {
-    setDeleting(ws); setTyped(""); setInfo(null);
+    setDeleting(ws); setTyped(""); setInfo(null); setDeleteError(null);
     const r = await manager.prepareDelete(ws.id);
-    if (r.ok) setInfo({ lastBackupAt: r.value.lastBackupAt, hasNoBackup: r.value.hasNoBackup });
+    setInfo(r.ok ? { lastBackupAt: r.value.lastBackupAt, hasNoBackup: r.value.hasNoBackup, backupUnknown: r.value.backupUnknown === true } : { lastBackupAt: null, hasNoBackup: false, backupUnknown: true });
   };
   const confirmDelete = async () => {
-    if (!deleting) return;
-    const r = await manager.delete(deleting.id, { typedName: typed });
-    if (r.ok) { setDeleting(null); await reload(); }
+    if (!deleting || busy) return;
+    setBusy(true); setDeleteError(null);
+    const r = await manager.delete(deleting.id, { typedName: typed }).catch(() => null);
+    setBusy(false);
+    if (r?.ok) { const id = deleting.id; setDeleting(null); await reload(); onDeleted?.(id); }
+    else setDeleteError(r && !r.ok ? r.error.message : t("workspace.deleteFailed"));
   };
 
   return (
@@ -98,16 +103,18 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onR
         open={deleting !== null}
         onOpenChange={(o) => { if (!o) setDeleting(null); }}
         title={t("workspace.delete")}
-        description={info ? (info.hasNoBackup ? t("workspace.noBackup") : t("workspace.lastBackup", { date: new Date(info.lastBackupAt!).toLocaleString(i18n.language) })) : ""}
+        description={info ? (info.backupUnknown ? t("workspace.backupUnknown") : info.hasNoBackup ? t("workspace.noBackup") : t("workspace.lastBackup", { date: new Date(info.lastBackupAt!).toLocaleString(i18n.language) })) : ""}
         confirmLabel={t("workspace.confirmDelete")}
         cancelLabel={t("workspace.cancel")}
-        confirmDisabled={typed !== deleting?.name}
+        confirmDisabled={typed !== deleting?.name || busy}
+        closeOnConfirm={false}
         onConfirm={() => void confirmDelete()}
       >
         <label className="flex flex-col gap-1">
           <span>{t("workspace.typeNameToDelete", { name: deleting?.name ?? "" })}</span>
           <input value={typed} onChange={(e) => setTyped(e.target.value)} className={INPUT} />
         </label>
+        {deleteError && <p role="alert" className="text-[length:var(--text-ui-small-size)] text-[var(--c-danger)]">{deleteError}</p>}
       </ConfirmDialog>
     </ViewLayout>
   );

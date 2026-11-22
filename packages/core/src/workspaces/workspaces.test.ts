@@ -117,6 +117,21 @@ describe("eliminar (T-088, CL-29, CL-30)", () => {
     await store.exec("INSERT OR REPLACE INTO meta(key, value) VALUES ('last_backup_at', '5000')");
     expect(must(await mgr.prepareDelete(a.id))).toEqual({ name: "A", lastBackupAt: 5000, hasNoBackup: false });
   });
+  it("prepareDelete con la carpeta no disponible avisa que no se pudo comprobar, sin abrir nada", async () => {
+    const a = must(await mgr.create({ name: "A" }));
+    await mgr.closeWorkspace(a.id);
+    storage.missing.add(a.location);
+    const opened = storage.opened;
+    expect(must(await mgr.prepareDelete(a.id))).toMatchObject({ name: "A", backupUnknown: true });
+    expect(storage.opened).toBe(opened);
+  });
+  it("si el almacenamiento falla al borrar, devuelve error y conserva el registro", async () => {
+    const a = must(await mgr.create({ name: "A" }));
+    storage.remove = async () => { throw new Error("permiso denegado"); };
+    const r = await mgr.delete(a.id, { typedName: "A" });
+    expect(r.ok === false && r.error.code).toBe("STORAGE");
+    expect(must(await mgr.list())).toHaveLength(1);
+  });
   it("sin escribir el nombre exacto no se elimina nada", async () => {
     const a = must(await mgr.create({ name: "Mi Espacio" }));
     for (const typed of ["", "mi espacio", "Mi Espacio ", "otro"]) {

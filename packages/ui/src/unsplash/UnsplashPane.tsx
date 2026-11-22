@@ -5,6 +5,9 @@ import { Button } from "../components/Button";
 import { INPUT, MUTED } from "../components/formStyles";
 import { useUnsplash } from "./UnsplashContext";
 
+/** Temas para la selección inicial: al abrir la pestaña se carga uno al azar, para no mostrarla vacía. */
+const RANDOM_TOPICS = ["nature", "landscape", "mountains", "ocean", "forest", "city", "architecture", "sky", "minimal", "texture", "abstract", "space"];
+
 /**
  * Pestaña «Unsplash» del selector de portada (RF-2.4 a RF-2.6, CL-8, CL-9): búsqueda con miniaturas y «Más resultados».
  * Los errores se muestran aquí y no afectan a las demás pestañas. Si falta la clave o Unsplash la rechaza, se vuelve a pedir.
@@ -38,6 +41,12 @@ export function UnsplashPane({ onPick, picking, pickError }: { onPick: (photo: U
     setSearched(q); setPage(nextPage); setPages(r.value.totalPages);
     setPhotos((prev) => (nextPage === 1 ? r.value.results : [...prev, ...r.value.results]));
   };
+  // Con clave guardada, la pestaña abre con fotos de un tema al azar ya cargadas.
+  useEffect(() => {
+    if (hasKey !== true) return;
+    void run(RANDOM_TOPICS[Math.floor(Math.random() * RANDOM_TOPICS.length)]!, 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasKey]);
   const submit = (e: FormEvent) => { e.preventDefault(); if (query.trim() !== "") void run(query.trim(), 1); };
   const saveKey = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,7 +76,7 @@ export function UnsplashPane({ onPick, picking, pickError }: { onPick: (photo: U
       {picking && <p role="status" className={MUTED}>{t("unsplash.downloading")}</p>}
       {searched !== "" && photos.length === 0 && !loading && !error && <p role="status" className={MUTED}>{t("unsplash.noResults")}</p>}
       {photos.length > 0 && (
-        <ul aria-label={t("unsplash.results")} className="grid max-h-64 grid-cols-3 gap-1.5 overflow-y-auto">
+        <ul aria-label={t("unsplash.results")} className="grid max-h-80 grid-cols-4 gap-1.5 overflow-y-auto">
           {photos.map((p) => (
             <li key={p.id}>
               <button type="button" disabled={picking} aria-label={t("unsplash.photoOf", { author: p.author })} title={t("unsplash.photoOf", { author: p.author })} onClick={() => onPick(p)}

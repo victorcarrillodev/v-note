@@ -45,8 +45,8 @@ export function CoverPicker({ trigger, open, onOpenChange, hasCover, canUpload, 
   ];
   const apply = (cover: string | null) => { onApply({ cover, coverCredit: null }); onOpenChange(false); };
   return (
-    <Popover open={open} onOpenChange={onOpenChange} align="end" trigger={trigger}>
-      <div role="group" aria-label={t("cover.pickerTitle")} className="flex w-[22rem] max-w-full flex-col gap-3">
+    <Popover wide open={open} onOpenChange={onOpenChange} align="end" trigger={trigger}>
+      <div role="group" aria-label={t("cover.pickerTitle")} className="flex w-[34rem] max-w-[calc(100vw-2rem)] flex-col gap-3">
         <Tabs label={t("cover.tabs")} value={tab} onChange={(v) => setTab(v as typeof tab)} tabs={tabs} />
         {tab === "unsplash" && showUnsplash && <UnsplashPane onPick={onUnsplash!} picking={unsplashBusy} pickError={unsplashError} />}
         {tab === "upload" && canUpload && <UploadPane error={error} onFile={onFile} />}
