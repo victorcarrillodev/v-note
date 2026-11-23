@@ -8,6 +8,7 @@ import { Icon } from "../design/Icon";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
 import type { BackupService, BackupSettings, BackupStatus } from "@vnote/core";
+import { Dropdown } from "../components/ChoiceMenu";
 
 export function BackupPanel({ service, platform = "desktop" }: { service: BackupService; platform?: "desktop" | "web" }) {
   const { t, i18n } = useTranslation();
@@ -93,9 +94,9 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
 
               <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[var(--c-border)] pt-4">
                 <label className={FIELD}>{t("backup.frequency")}
-                  <select value={String(settings.frequencyDays)} onChange={(e) => void service.setFrequency(Number(e.target.value))} className={`${INPUT} min-w-40`}>
+                  <Dropdown value={String(settings.frequencyDays)} onChange={(e) => void service.setFrequency(Number(e.target.value))} className={`${INPUT} min-w-40`}>
                     {[1, 2, 3, 4, 5, 6, 7].map((d) => <option key={d} value={String(d)}>{t("backup.everyDays", { count: d })}</option>)}
-                  </select>
+                  </Dropdown>
                 </label>
                 <Button variant="primary" disabled={busy} onClick={() => void run()}>
                   <Icon name="backup" />{busy ? t("backup.running") : t("backup.runNow")}

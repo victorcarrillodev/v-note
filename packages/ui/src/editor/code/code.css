@@ -1,0 +1,80 @@
+/* Bloque de código: paletas del resaltado y lista de autocompletado.
+   Cada tema define las mismas variables; `auto` (sin atributo) usa los colores de la app y cambia con el tema claro/oscuro. */
+
+[data-code-block] {
+  --code-bg: var(--c-raised);
+  --code-bar: var(--c-card);
+  --code-fg: var(--c-text);
+  --code-muted: var(--c-text-muted);
+  --code-keyword: #7c3aed;
+  --code-string: #15803d;
+  --code-number: #b45309;
+  --code-fn: #1d4ed8;
+  --code-type: #0e7490;
+  --code-var: var(--c-text);
+  --code-op: var(--c-text-muted);
+  --code-meta: #be185d;
+}
+[data-theme="dark"] [data-code-block] {
+  --code-keyword: #c4a1ff;
+  --code-string: #86d9a0;
+  --code-number: #f0b36b;
+  --code-fn: #8ab4ff;
+  --code-type: #67d4e8;
+  --code-meta: #f49ac1;
+}
+
+:root[data-code-theme="github"] [data-code-block] { --code-bg: #f6f8fa; --code-bar: #eaeef2; --code-fg: #1f2328; --code-muted: #59636e; --code-keyword: #cf222e; --code-string: #0a3069; --code-number: #0550ae; --code-fn: #8250df; --code-type: #953800; --code-var: #953800; --code-op: #cf222e; --code-meta: #116329; }
+:root[data-theme="dark"][data-code-theme="github"] [data-code-block] { --code-bg: #0d1117; --code-bar: #161b22; --code-fg: #e6edf3; --code-muted: #8b949e; --code-keyword: #ff7b72; --code-string: #a5d6ff; --code-number: #79c0ff; --code-fn: #d2a8ff; --code-type: #ffa657; --code-var: #ffa657; --code-op: #ff7b72; --code-meta: #7ee787; }
+
+:root[data-code-theme="one"] [data-code-block] { --code-bg: #fafafa; --code-bar: #eeeeef; --code-fg: #383a42; --code-muted: #6b6f78; --code-keyword: #a626a4; --code-string: #3f7f3a; --code-number: #986801; --code-fn: #4078f2; --code-type: #c18401; --code-var: #e45649; --code-op: #0184bc; --code-meta: #0184bc; }
+:root[data-theme="dark"][data-code-theme="one"] [data-code-block] { --code-bg: #282c34; --code-bar: #21252b; --code-fg: #abb2bf; --code-muted: #8a93a3; --code-keyword: #c678dd; --code-string: #98c379; --code-number: #d19a66; --code-fn: #61afef; --code-type: #e5c07b; --code-var: #e06c75; --code-op: #56b6c2; --code-meta: #56b6c2; }
+
+:root[data-code-theme="solarized"] [data-code-block] { --code-bg: #fdf6e3; --code-bar: #eee8d5; --code-fg: #586e75; --code-muted: #6c7f80; --code-keyword: #859900; --code-string: #2aa198; --code-number: #cb4b16; --code-fn: #268bd2; --code-type: #b58900; --code-var: #268bd2; --code-op: #657b83; --code-meta: #d33682; }
+:root[data-theme="dark"][data-code-theme="solarized"] [data-code-block] { --code-bg: #002b36; --code-bar: #073642; --code-fg: #93a1a1; --code-muted: #7f9496; --code-keyword: #b5c42a; --code-string: #35b8ae; --code-number: #e0602a; --code-fn: #3a9be0; --code-type: #d0a000; --code-var: #3a9be0; --code-op: #93a1a1; --code-meta: #e0509a; }
+
+/* Dracula, Monokai y Nord son oscuros por naturaleza: se ven igual con la app en claro u oscuro. */
+:root[data-code-theme="dracula"] [data-code-block] { --code-bg: #282a36; --code-bar: #21222c; --code-fg: #f8f8f2; --code-muted: #8f9bc7; --code-keyword: #ff79c6; --code-string: #f1fa8c; --code-number: #bd93f9; --code-fn: #50fa7b; --code-type: #8be9fd; --code-var: #ffb86c; --code-op: #ff79c6; --code-meta: #ffb86c; }
+:root[data-code-theme="monokai"] [data-code-block] { --code-bg: #272822; --code-bar: #1e1f1c; --code-fg: #f8f8f2; --code-muted: #9a9684; --code-keyword: #f92672; --code-string: #e6db74; --code-number: #ae81ff; --code-fn: #a6e22e; --code-type: #66d9ef; --code-var: #fd971f; --code-op: #f92672; --code-meta: #fd971f; }
+:root[data-code-theme="nord"] [data-code-block] { --code-bg: #2e3440; --code-bar: #272c36; --code-fg: #d8dee9; --code-muted: #8d9bb3; --code-keyword: #81a1c1; --code-string: #a3be8c; --code-number: #b48ead; --code-fn: #88c0d0; --code-type: #8fbcbb; --code-var: #d8dee9; --code-op: #81a1c1; --code-meta: #d08770; }
+
+[data-code-block] { background: var(--code-bg); color: var(--code-fg); }
+[data-code-block] { border-color: color-mix(in srgb, var(--code-fg) 16%, transparent); }
+[data-code-block] > [data-code-bar] { background: var(--code-bar); color: var(--code-fg); border-color: color-mix(in srgb, var(--code-fg) 16%, transparent); }
+[data-code-block] [data-code-content] { color: var(--code-fg); caret-color: var(--code-fg); tab-size: 2; }
+
+[data-code-block] .tok-keyword, [data-code-block] .tok-operatorKeyword, [data-code-block] .tok-controlKeyword, [data-code-block] .tok-modifier { color: var(--code-keyword); }
+[data-code-block] .tok-string, [data-code-block] .tok-string2, [data-code-block] .tok-regexp, [data-code-block] .tok-escape { color: var(--code-string); }
+[data-code-block] .tok-number, [data-code-block] .tok-bool, [data-code-block] .tok-null, [data-code-block] .tok-atom, [data-code-block] .tok-integer, [data-code-block] .tok-float { color: var(--code-number); }
+[data-code-block] .tok-comment, [data-code-block] .tok-lineComment, [data-code-block] .tok-blockComment { color: var(--code-muted); font-style: italic; }
+[data-code-block] .tok-variableName2, [data-code-block] .tok-function, [data-code-block] .tok-propertyName, [data-code-block] .tok-labelName { color: var(--code-fn); }
+[data-code-block] .tok-typeName, [data-code-block] .tok-className, [data-code-block] .tok-namespace, [data-code-block] .tok-tagName { color: var(--code-type); }
+[data-code-block] .tok-variableName, [data-code-block] .tok-attributeName, [data-code-block] .tok-definition { color: var(--code-var); }
+[data-code-block] .tok-operator, [data-code-block] .tok-punctuation, [data-code-block] .tok-separator, [data-code-block] .tok-bracket { color: var(--code-op); }
+[data-code-block] .tok-meta, [data-code-block] .tok-annotation, [data-code-block] .tok-link, [data-code-block] .tok-url { color: var(--code-meta); }
+[data-code-block] .tok-heading { color: var(--code-fn); font-weight: 600; }
+[data-code-block] .tok-strong { font-weight: 700; }
+[data-code-block] .tok-emphasis { font-style: italic; }
+[data-code-block] .tok-invalid { color: var(--c-danger, #dc2626); text-decoration: underline wavy; }
+
+/* Lista de autocompletado */
+.vn-code-complete {
+  position: fixed;
+  z-index: var(--z-menu);
+  min-width: 10rem;
+  max-width: 22rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: var(--space-1, 4px);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  background: var(--c-card);
+  color: var(--c-text);
+  box-shadow: var(--elevation-3);
+  font: var(--text-ui-small-size, 13px) / 1.4 var(--font-mono);
+  animation: vn-pop var(--motion-fast) var(--ease-out);
+}
+.vn-code-complete-item { padding: 3px var(--space-2, 8px); border-radius: var(--radius-sm, 4px); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vn-code-complete-item[data-kind="local"]::after { content: "·"; margin-left: 0.5em; color: var(--c-text-muted); }
+.vn-code-complete-item[aria-selected="true"] { background: var(--c-raised); outline: 1px solid var(--c-border); }
+@keyframes vn-pop { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }

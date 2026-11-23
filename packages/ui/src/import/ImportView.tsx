@@ -7,6 +7,7 @@ import { Icon } from "../design/Icon";
 import { useTranslation } from "react-i18next";
 import { readZip, type AssetStore, type Clock, type ImportKind, type ImportReport, type ReportItem, type SourceFile, type SqlStore } from "@vnote/core";
 import { runImport, type ImportProgress } from "./runImport";
+import { Dropdown } from "../components/ChoiceMenu";
 
 type Source = "folder" | "obsidian" | "notion";
 type State =
@@ -67,11 +68,11 @@ export function ImportView({ store, assets, clock, onOpen, parentId }: { store: 
       <ViewSection>
         <div className="flex max-w-md flex-col gap-4">
           <label className={FIELD}>{t("import.source")}
-            <select value={source} disabled={working} onChange={(e) => { setSource(e.target.value as Source); setPicked([]); }} className={INPUT}>
+            <Dropdown value={source} disabled={working} onChange={(e) => { setSource(e.target.value as Source); setPicked([]); }} className="w-full">
               <option value="folder">{t("import.sources.folder")}</option>
               <option value="obsidian">{t("import.sources.obsidian")}</option>
               <option value="notion">{t("import.sources.notion")}</option>
-            </select>
+            </Dropdown>
           </label>
           {isZip ? (
             <label className={FIELD}>{t("import.zip")}

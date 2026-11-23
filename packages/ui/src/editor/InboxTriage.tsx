@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
 import type { WorkspaceController } from "../workspace/controller";
+import { Dropdown } from "../components/ChoiceMenu";
 
 /** Acciones sobre una nota de la Bandeja de entrada: moverla a otra página o convertirla en tarjeta (RF-13). */
 export function InboxTriage({ controller, pageId }: { controller: WorkspaceController; pageId: string }) {
@@ -51,7 +52,7 @@ export function InboxTriage({ controller, pageId }: { controller: WorkspaceContr
       {boards.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <label>{t("capture.pickBoard")}{" "}
-            <select value={board} onChange={(e) => setBoard(e.target.value)}>{boards.map((b) => <option key={b.id} value={b.id}>{b.name.trim() || t("app.untitled")}</option>)}</select>
+            <Dropdown value={board} onChange={(e) => setBoard(e.target.value)}>{boards.map((b) => <option key={b.id} value={b.id}>{b.name.trim() || t("app.untitled")}</option>)}</Dropdown>
           </label>
           <button type="button" onClick={() => void toCard()}>{t("capture.doToCard")}</button>
         </div>

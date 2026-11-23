@@ -7,6 +7,8 @@ import { cx } from "../design/cx";
 import { Icon } from "../design/Icon";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { Dropdown } from "../components/ChoiceMenu";
+import { Radio } from "../components/controls";
 import {
   describeReplacement, replaceWorkspace, restoreAsNewWorkspace,
   type AssetStore, type CommitSummary, type ReplacementInfo, type RestoreSource, type Workspace, type WorkspaceManager,
@@ -150,7 +152,7 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
               <div role="radiogroup" aria-label={t("restore.available")} className="flex flex-col">
                 {points.map((p) => (
                   <label key={p.sha} className={cx(VIEW_ROW, "cursor-pointer has-[:checked]:bg-[var(--c-raised)]")}>
-                    <input type="radio" name="punto" checked={sha === p.sha} onChange={() => setSha(p.sha)} />
+                    <Radio name="punto" checked={sha === p.sha} onChange={() => setSha(p.sha)} />
                     <span className="min-w-0 flex-1 truncate">{when(p.date)} — {p.message}</span>
                   </label>
                 ))}
@@ -169,7 +171,7 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
           <ViewSection>
             <div className="flex flex-col gap-3">
               <label className={OPTION}>
-                <input type="radio" name="destino" checked={mode === "new"} onChange={() => setMode("new")} />{t("restore.newSpace")}
+                <Radio name="destino" checked={mode === "new"} onChange={() => setMode("new")} />{t("restore.newSpace")}
               </label>
               {mode === "new" && (
                 <label className={cx(FIELD, "ml-7 max-w-md")}>{t("restore.newName")}
@@ -179,14 +181,14 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
               {existing.length > 0 && (
                 <>
                   <label className={OPTION}>
-                    <input type="radio" name="destino" checked={mode === "replace"} onChange={() => setMode("replace")} />{t("restore.replaceSpace")}
+                    <Radio name="destino" checked={mode === "replace"} onChange={() => setMode("replace")} />{t("restore.replaceSpace")}
                   </label>
                   {mode === "replace" && (
                     <div className="ml-7 flex max-w-md flex-col gap-3">
                       <label className={FIELD}>{t("restore.chooseWorkspace")}
-                        <select value={targetId} onChange={(e) => { setTargetId(e.target.value); setTyped(""); }} className={INPUT}>
+                        <Dropdown value={targetId} onChange={(e) => { setTargetId(e.target.value); setTyped(""); }} className="w-full">
                           {existing.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-                        </select>
+                        </Dropdown>
                       </label>
                       {info && (
                         <>

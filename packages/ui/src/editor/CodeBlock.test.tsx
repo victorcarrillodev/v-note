@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { defaultBlockSpecs } from "@blocknote/core";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { CodeBlockView, codeBlock } from "./CodeBlock";
+import { choose, dropdownOptions } from "../../tests/dropdown";
 
 function setup(language = "text") {
   const updateBlock = vi.fn();
@@ -23,16 +24,17 @@ describe("bloque de código (U-163)", () => {
     const { editor, block, updateBlock } = setup();
     await renderWithI18n(<CodeBlockView block={block} editor={editor} contentRef={() => {}} />);
     const select = screen.getByRole("combobox", { name: "Lenguaje del bloque" });
-    expect(select).toHaveValue("text");
-    await userEvent.setup().selectOptions(select, "javascript");
+    expect(select).toHaveAttribute("data-value", "text");
+    await choose(userEvent.setup(), select, "javascript");
     expect(updateBlock).toHaveBeenCalledWith("b1", { props: { language: "javascript" } });
   });
 
   it("muestra el idioma tal cual cuando no está en la lista (importado)", async () => {
-    const { editor, block } = setup("rust");
+    const { editor, block } = setup("cobol");
     await renderWithI18n(<CodeBlockView block={block} editor={editor} contentRef={() => {}} />);
-    expect(screen.getByRole("combobox", { name: "Lenguaje del bloque" })).toHaveValue("rust");
-    expect(screen.getByRole("option", { name: "rust" })).toBeInTheDocument();
+    const sel = screen.getByRole("combobox", { name: "Lenguaje del bloque" });
+    expect(sel).toHaveAttribute("data-value", "cobol");
+    expect((await dropdownOptions(sel)).map((o) => o.value)).toContain("cobol");
   });
 
   it("conserva el análisis de HTML y el lenguaje del bloque predeterminado", () => {

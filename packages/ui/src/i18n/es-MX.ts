@@ -168,6 +168,7 @@ export const esMX = {
     },
   },
   trash: {
+    hint: "Las páginas eliminadas se conservan {{days}} días antes de borrarse para siempre.",
     title: "Papelera",
     empty: "La papelera está vacía.",
     restore: "Restaurar",
@@ -189,7 +190,7 @@ export const esMX = {
   calendar: { mode: "Vista del calendario", month: "Mes", week: "Semana", grid: "Calendario semanal", allDay: "Todo el día", hour: "Hora", moreSimultaneous: "+{{count}} más", simultaneous: "Eventos simultáneos" },
   schedule: {
     title: "Nueva tarea con horario", titleLabel: "Título", date: "Fecha", start: "Hora de inicio", end: "Hora de fin", duration: "Duración", remind: "Recordatorio", repeat: "Repetir",
-    pickDate: "Elegir fecha", pickStart: "Elegir hora de inicio", pickEnd: "Elegir hora de fin", hours: "Horas",
+    pickTime: "Elegir hora", minutes: "Minutos", pickDate: "Elegir fecha", pickStart: "Elegir hora de inicio", pickEnd: "Elegir hora de fin", hours: "Horas",
     minutes_one: "{{count}} minuto", minutes_other: "{{count}} minutos",
     remindOption: { none: "Sin recordatorio", at_start: "Al empezar", "10m": "10 minutos antes", "1h": "1 hora antes", "1d": "1 día antes" },
     invalidTime: "Escribe una hora válida, por ejemplo 09:30.", invalidDate: "Escribe una fecha válida, por ejemplo 2026-03-05.",
@@ -207,6 +208,9 @@ export const esMX = {
     back: "Ir a espacios",
   },
   workspace: {
+    hint: "Cada espacio de trabajo tiene sus propias páginas, etiquetas y ajustes.",
+    current: "Actual",
+    newSection: "Nuevo espacio de trabajo",
     activeLabel: "Espacio activo:",
     pickFolder: "Elegir carpeta…",
     title: "Espacios de trabajo",
@@ -233,7 +237,9 @@ export const esMX = {
     confirmDelete: "Eliminar",
     cancel: "Cancelar",
   },
+  dialog: { discardTitle: "¿Descartar los cambios?", discardBody: "Hay cambios sin guardar que se perderán.", discard: "Descartar cambios", keepEditing: "Seguir editando" },
   shell: {
+    close: "Cerrar",
     sidebar: "Barra lateral",
     hideSidebar: "Ocultar barra lateral",
     showSidebar: "Mostrar barra lateral",
@@ -248,6 +254,7 @@ export const esMX = {
     mosaic: "Mosaico", columns: "Columnas", carousel: "Carrusel", add: "Añadir imágenes", uploading: "Subiendo…", failed: "No se pudo añadir alguna imagen.",
     empty: "Aún no hay imágenes. Añade o arrastra fotos aquí.", image: "Imagen", remove: "Quitar {{name}}", previous: "Imagen anterior", next: "Imagen siguiente",
   },
+  color: { open: "Abrir selector de color: {{label}}", hex: "Color en hexadecimal" },
   editor: {
     noResults: "Sin coincidencias",
     noResultsGroup: "Resultados",
@@ -262,6 +269,8 @@ export const esMX = {
     linkCardHint: "Tarjeta con un enlace",
     codeText: "Texto",
     codeLanguage: "Lenguaje del bloque",
+    codeTheme: "Tema de color del código",
+    codeSuggestions: "Sugerencias de código",
     copy: "Copiar",
     copied: "Copiado",
     copyCode: "Copiar código",
@@ -273,6 +282,10 @@ export const esMX = {
     saveFailed: "No se pudo guardar el cambio: {{message}}. Se reintentará automáticamente.",
   },
   backup: {
+    hint: "Copia de seguridad de tus notas en un repositorio privado de GitHub.",
+    connectSection: "Conectar con GitHub",
+    connectHint: "El token se guarda solo en el llavero del sistema, nunca en archivos ni en registros.",
+    noHistory: "Aún no hay respaldos.",
     title: "Respaldo en GitHub",
     webNotice: "En el navegador, los respaldos programados solo se ejecutan mientras la aplicación esté abierta.",
     independentNotice: "La versión web y la de escritorio no comparten datos; usa la restauración desde GitHub para pasar contenido de una a otra.",
@@ -323,6 +336,9 @@ export const esMX = {
     },
   },
   restore: {
+    steps: { connect: "Conectar", pick: "Elegir respaldo", destination: "Destino" },
+    hint: "Recupera tus notas desde el repositorio de respaldo de GitHub.",
+    stepsLabel: "Pasos de la restauración",
     title: "Restaurar desde GitHub",
     available: "Respaldos disponibles",
     none: "No hay respaldos en este repositorio.",

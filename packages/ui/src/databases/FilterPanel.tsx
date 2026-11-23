@@ -3,6 +3,10 @@ import { useTranslation } from "react-i18next";
 import type { Condition, Filter, Property, Sort } from "@vnote/core";
 import type { DatabaseController } from "./databaseController";
 import { useDatabase } from "./useDatabase";
+import { Dropdown } from "../components/ChoiceMenu";
+import { Button } from "../components/Button";
+import { INPUT_INLINE } from "../components/formStyles";
+import { DateInput } from "../components/DateInput";
 
 const TEXT_OPS = ["is", "is_not", "contains", "not_contains", "starts_with", "ends_with", "is_empty", "is_not_empty"];
 const NUMBER_OPS = ["eq", "neq", "gt", "gte", "lt", "lte", "is_empty", "is_not_empty"];
@@ -84,9 +88,9 @@ export function FilterPanel({ controller }: { controller: DatabaseController }) 
       <div className="flex flex-col gap-2">
         {drafts.length > 1 && (
           <label className="flex items-center gap-2">{t("databases.combine")}
-            <select aria-label={t("databases.combine")} value={combine} onChange={(e) => { const c = e.target.value as "and" | "or"; setCombine(c); apply(drafts, c); }}>
+            <Dropdown aria-label={t("databases.combine")} value={combine} onChange={(e) => { const c = e.target.value as "and" | "or"; setCombine(c); apply(drafts, c); }}>
               <option value="and">{t("databases.and")}</option><option value="or">{t("databases.or")}</option>
-            </select>
+            </Dropdown>
           </label>
         )}
         {drafts.map((d, i) => {
@@ -94,47 +98,49 @@ export function FilterPanel({ controller }: { controller: DatabaseController }) 
           const prop = props.find((p) => p.id === d.property);
           return (
             <div key={i} className="flex flex-wrap items-center gap-2">
-              <select aria-label={t("databases.filterProperty", { n: i + 1 })} value={d.property} onChange={(e) => setDraft(i, { property: e.target.value })}>{propOptions(true)}</select>
-              <select aria-label={t("databases.filterOp", { n: i + 1 })} value={d.op} onChange={(e) => setDraft(i, { op: e.target.value })}>
+              <Dropdown aria-label={t("databases.filterProperty", { n: i + 1 })} value={d.property} onChange={(e) => setDraft(i, { property: e.target.value })}>{propOptions(true)}</Dropdown>
+              <Dropdown aria-label={t("databases.filterOp", { n: i + 1 })} value={d.op} onChange={(e) => setDraft(i, { op: e.target.value })}>
                 {operatorsFor(type).map((o) => <option key={o} value={o}>{t(`databases.op.${o}`)}</option>)}
-              </select>
+              </Dropdown>
               {(needsValue(d.op) || type === "checkbox") && (
                 type === "select" || type === "status" || type === "multi_select" ? (
-                  <select aria-label={t("databases.filterValue", { n: i + 1 })} value={d.value} onChange={(e) => setDraft(i, { value: e.target.value })}>
+                  <Dropdown aria-label={t("databases.filterValue", { n: i + 1 })} value={d.value} onChange={(e) => setDraft(i, { value: e.target.value })}>
                     <option value="" />{(prop?.config.options ?? []).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-                  </select>
+                  </Dropdown>
                 ) : type === "checkbox" ? (
-                  <select aria-label={t("databases.filterValue", { n: i + 1 })} value={d.value || "true"} onChange={(e) => setDraft(i, { value: e.target.value })}>
+                  <Dropdown aria-label={t("databases.filterValue", { n: i + 1 })} value={d.value || "true"} onChange={(e) => setDraft(i, { value: e.target.value })}>
                     <option value="true">{t("databases.checked")}</option><option value="false">{t("databases.unchecked")}</option>
-                  </select>
+                  </Dropdown>
                 ) : (
-                  <input aria-label={t("databases.filterValue", { n: i + 1 })} type={type === "date" || type === "created_time" || type === "last_edited_time" ? "date" : "text"} value={d.value} onChange={(e) => setDraft(i, { value: e.target.value })} className="rounded border px-1" />
+                  (type === "date" || type === "created_time" || type === "last_edited_time"
+                    ? <DateInput type="date" aria-label={t("databases.filterValue", { n: i + 1 })} value={d.value} onChange={(e) => setDraft(i, { value: e.target.value })} className="min-w-0 flex-1 basis-40" />
+                    : <input aria-label={t("databases.filterValue", { n: i + 1 })} type="text" value={d.value} onChange={(e) => setDraft(i, { value: e.target.value })} className={INPUT_INLINE} />)
                 )
               )}
               <button type="button" aria-label={t("databases.removeFilter", { n: i + 1 })} onClick={() => { const next = drafts.filter((_, j) => j !== i); setDrafts(next); apply(next, combine); }}>✕</button>
             </div>
           );
         })}
-        <button type="button" className="self-start" onClick={() => { const first = props[0]; const p = first ? first.id : "title"; const next = [...drafts, { property: p, op: operatorsFor(typeOf(props, p))[0]!, value: "" }]; setDrafts(next); }}>{t("databases.addFilter")}</button>
+        <Button size="sm" className="self-start" onClick={() => { const first = props[0]; const p = first ? first.id : "title"; const next = [...drafts, { property: p, op: operatorsFor(typeOf(props, p))[0]!, value: "" }]; setDrafts(next); }}>{t("databases.addFilter")}</Button>
       </div>
 
       <div className="flex flex-col gap-2">
         {sorts.map((s, i) => (
           <div key={i} className="flex items-center gap-2">
-            <select aria-label={t("databases.sortProperty", { n: i + 1 })} value={s.property} onChange={(e) => setSorts(sorts.map((x, j) => (j === i ? { ...x, property: e.target.value } : x)))}>{propOptions(true)}</select>
-            <select aria-label={t("databases.sortDirection", { n: i + 1 })} value={s.direction} onChange={(e) => setSorts(sorts.map((x, j) => (j === i ? { ...x, direction: e.target.value as Sort["direction"] } : x)))}>
+            <Dropdown aria-label={t("databases.sortProperty", { n: i + 1 })} value={s.property} onChange={(e) => setSorts(sorts.map((x, j) => (j === i ? { ...x, property: e.target.value } : x)))}>{propOptions(true)}</Dropdown>
+            <Dropdown aria-label={t("databases.sortDirection", { n: i + 1 })} value={s.direction} onChange={(e) => setSorts(sorts.map((x, j) => (j === i ? { ...x, direction: e.target.value as Sort["direction"] } : x)))}>
               <option value="asc">{t("databases.asc")}</option><option value="desc">{t("databases.desc")}</option>
-            </select>
+            </Dropdown>
             <button type="button" aria-label={t("databases.removeSort", { n: i + 1 })} onClick={() => setSorts(sorts.filter((_, j) => j !== i))}>✕</button>
           </div>
         ))}
-        <button type="button" className="self-start" onClick={() => setSorts([...sorts, { property: props[0]?.id ?? "title", direction: "asc" }])}>{t("databases.addSort")}</button>
+        <Button size="sm" className="self-start" onClick={() => setSorts([...sorts, { property: props[0]?.id ?? "title", direction: "asc" }])}>{t("databases.addSort")}</Button>
       </div>
 
       <label className="flex items-center gap-2">{t("databases.groupBy")}
-        <select aria-label={t("databases.groupBy")} value={view?.config.groupBy ?? ""} onChange={(e) => void controller.updateViewConfig({ groupBy: e.target.value === "" ? undefined : e.target.value })}>
+        <Dropdown aria-label={t("databases.groupBy")} value={view?.config.groupBy ?? ""} onChange={(e) => void controller.updateViewConfig({ groupBy: e.target.value === "" ? undefined : e.target.value })}>
           <option value="">{t("databases.noGroup")}</option>{propOptions(false)}
-        </select>
+        </Dropdown>
       </label>
     </section>
   );

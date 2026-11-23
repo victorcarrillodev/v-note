@@ -15,8 +15,8 @@ afterEach(async () => { await web?.closeAll(); });
 
 async function chooseZip(p: Page, path: string) {
   await clickButton(p, "Importar");
-  await p.waitFor("document.querySelector('select')", 10000);
-  await setValue(p, 'section[aria-label="Importar"] select', "notion");
+  await p.waitFor("document.querySelector('[role=combobox]')", 10000);
+  await setValue(p, 'section[aria-label="Importar"] [role=combobox]', "notion");
   await p.waitFor("document.querySelector('input[type=file][accept]')", 10000);
   const doc = await p.send<{ root: { nodeId: number } }>("DOM.getDocument", {});
   const q = await p.send<{ nodeId: number }>("DOM.querySelector", { nodeId: doc.root.nodeId, selector: "input[type=file]" });

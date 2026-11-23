@@ -23,7 +23,7 @@ describe("U-163 web", () => {
     expect(await p.eval<boolean>("!!document.querySelector('.bn-editor [data-code-language]')")).toBe(true);
     await setValue(p, ".bn-editor [data-code-language]", "javascript");
     await sleep(200);
-    expect(await p.eval<string>("document.querySelector('.bn-editor [data-code-language]').value")).toBe("javascript");
+    expect(await p.eval<string>("document.querySelector('.bn-editor [data-code-language]').getAttribute('data-value')")).toBe("javascript");
     await p.click(".bn-editor [data-code-content]");
     await p.typeText("const a = 1;");
     await sleep(300);

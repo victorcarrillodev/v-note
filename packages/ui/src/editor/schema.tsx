@@ -13,29 +13,29 @@ import { MatrixEditor, TimelineEditor, TreeEditor } from "../diagram/Organizers"
 import { MindMapEditor } from "../diagram/MindMapEditor";
 import { useToc } from "./TocContext";
 import { GalleryView } from "./GalleryBlock";
+import { Dropdown } from "../components/ChoiceMenu";
 
 export const CALLOUT_VARIANTS = ["info", "success", "warning", "danger"] as const;
 type Variant = (typeof CALLOUT_VARIANTS)[number];
 const ICON: Record<Variant, IconName> = { info: "info", success: "success", warning: "warning", danger: "error" };
 const TONE: Record<Variant, string> = {
-  info: "border-[var(--c-accent)] bg-[var(--chip-info-bg)] text-[var(--chip-info-fg)]",
-  success: "border-[var(--c-success)] bg-[var(--chip-success-bg)] text-[var(--chip-success-fg)]",
-  warning: "border-[var(--c-warning)] bg-[var(--chip-warning-bg)] text-[var(--chip-warning-fg)]",
-  danger: "border-[var(--c-danger)] bg-[var(--chip-error-bg)] text-[var(--chip-error-fg)]",
+  info: "border-l-[var(--c-accent)] bg-[var(--chip-info-bg)] text-[var(--chip-info-fg)]",
+  success: "border-l-[var(--c-success)] bg-[var(--chip-success-bg)] text-[var(--chip-success-fg)]",
+  warning: "border-l-[var(--c-warning)] bg-[var(--chip-warning-bg)] text-[var(--chip-warning-fg)]",
+  danger: "border-l-[var(--c-danger)] bg-[var(--chip-error-bg)] text-[var(--chip-error-fg)]",
 };
 
 export function CalloutView({ variant, onVariant, content }: { variant: string; onVariant: (v: Variant) => void; content: ReactNode }) {
   const { t } = useTranslation();
   const v = (CALLOUT_VARIANTS as readonly string[]).includes(variant) ? (variant as Variant) : "info";
   return (
-    <div data-callout-variant={v} className={`flex w-full items-start gap-2 rounded-md border-l-4 p-3 ${TONE[v]}`}>
+    <div data-callout-variant={v} className={`flex w-full items-start gap-2 rounded-[var(--radius-md)] border border-l-4 border-[var(--c-border)] p-3 ${TONE[v]}`}>
       <span className="mt-0.5 shrink-0" contentEditable={false}><Icon name={ICON[v]} size={20} /></span>
       <div className="min-w-0 flex-1">
         <div contentEditable={false} className="mb-1 flex items-center gap-2 text-[length:var(--text-ui-small-size)] font-semibold">
-          <span data-callout-label>{t(`editor.calloutVariant.${v}`)}</span>
-          <select aria-label={t("editor.calloutType")} value={v} onChange={(e) => onVariant(e.target.value as Variant)} className="rounded border border-[var(--c-border)] bg-[var(--c-card)] px-1 font-normal text-[var(--c-text)]">
+          <Dropdown aria-label={t("editor.calloutType")} value={v} onChange={(e) => onVariant(e.target.value as Variant)} size="sm" className="font-normal">
             {CALLOUT_VARIANTS.map((o) => <option key={o} value={o}>{t(`editor.calloutVariant.${o}`)}</option>)}
-          </select>
+          </Dropdown>
         </div>
         {content}
       </div>

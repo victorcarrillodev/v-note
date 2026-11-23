@@ -2,20 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { defaultBlockSpecs } from "@blocknote/core";
 import { createReactBlockSpec } from "@blocknote/react";
+import { CODE_LANGUAGES, findLanguage } from "./code/languages";
+import { CODE_THEMES, useCodeTheme, type CodeThemeId } from "./code/codeTheme";
+import "./code/code.css";
+import { Dropdown } from "../components/ChoiceMenu";
 
-/** Lenguajes ofrecidos en la cabecera del bloque de código (U-163). */
-export const CODE_LANGUAGES = [
-  { value: "text", label: "Texto" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "python", label: "Python" },
-  { value: "bash", label: "Bash" },
-  { value: "json", label: "JSON" },
-  { value: "html", label: "HTML" },
-  { value: "css", label: "CSS" },
-  { value: "sql", label: "SQL" },
-  { value: "markdown", label: "Markdown" },
-] as const;
+export { CODE_LANGUAGES };
 
 type CodeBlockEditor = { updateBlock: (id: string, update: { props: { language: string } }) => void };
 type CodeBlock = { id: string; props: { language: string } };
@@ -46,6 +38,7 @@ async function copyText(text: string): Promise<void> {
 export function CodeBlockView({ block, editor, contentRef }: { block: CodeBlock; editor: CodeBlockEditor; contentRef: (node: HTMLElement | null) => void }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  const [theme, setTheme] = useCodeTheme();
   const codeRef = useRef<HTMLElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attach = useCallback(
@@ -65,33 +58,45 @@ export function CodeBlockView({ block, editor, contentRef }: { block: CodeBlock;
     timer.current = setTimeout(() => setCopied(false), 1500);
   };
 
-  const known = CODE_LANGUAGES.some((l) => l.value === block.props.language);
-  const language = known ? block.props.language : block.props.language || "text";
+  const found = findLanguage(block.props.language);
+  const known = found !== undefined;
+  const language = found ? found.value : block.props.language || "text";
   return (
-    <div data-code-block className="w-full overflow-hidden rounded-md border border-[var(--c-border)] bg-[var(--c-raised)]">
-      <div contentEditable={false} className="flex items-center justify-between gap-2 border-b border-[var(--c-border)] px-3 py-1">
-        <select
-          data-code-language
+    <div data-code-block className="w-full overflow-hidden rounded-[var(--radius-md)] border border-[var(--c-border)]">
+      <div contentEditable={false} data-code-bar className="flex items-center justify-between gap-2 border-b border-[var(--c-border)] px-3 py-1">
+        <div className="flex items-center gap-2">
+        <Dropdown
+          data-code-language=""
           aria-label={t("editor.codeLanguage")}
           value={language}
           onChange={(e) => editor.updateBlock(block.id, { props: { language: e.target.value } })}
-          className="rounded border border-[var(--c-border)] bg-[var(--c-card)] px-1 text-[length:var(--text-note-size)] text-[var(--c-text)]"
+          size="sm"
         >
           {CODE_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.value === "text" ? t("editor.codeText") : l.label}</option>)}
           {!known && language !== "text" ? <option value={language}>{language}</option> : null}
-        </select>
+        </Dropdown>
+          <Dropdown
+            data-code-theme-select=""
+            aria-label={t("editor.codeTheme")}
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as CodeThemeId)}
+            size="sm"
+          >
+            {CODE_THEMES.map((th) => <option key={th.value} value={th.value}>{th.label}</option>)}
+          </Dropdown>
+        </div>
         <button
           data-copy-code
           type="button"
           aria-label={t("editor.copyCode")}
           onClick={() => void copy()}
-          className="rounded px-2 text-[length:var(--text-note-size)] text-[var(--c-text-muted)] hover:bg-[var(--c-card)] hover:text-[var(--c-text)]"
+          className="rounded-[var(--radius-sm)] px-2 text-[length:var(--text-note-size)] opacity-80 hover:bg-[var(--c-raised)] hover:opacity-100"
         >
           {copied ? t("editor.copied") : t("editor.copy")}
         </button>
       </div>
       <pre className="m-0 overflow-x-auto p-3 text-[length:var(--text-ui-small-size)] leading-[var(--text-ui-small-line)]">
-        <code ref={attach} data-code-content className="block whitespace-pre font-[family-name:var(--font-mono)] text-[var(--c-text)]" />
+        <code ref={attach} data-code-content spellCheck={false} className="block whitespace-pre font-[family-name:var(--font-mono)] " />
       </pre>
     </div>
   );

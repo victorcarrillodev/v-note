@@ -5,6 +5,8 @@ import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DiagramEditor } from "./DiagramEditor";
 import { GRID_PREFS_KEY } from "../canvas/gridPrefs";
 import { addNode, connect, curveHandle, connectorPath, styledPath, emptyDiagram, parseDiagram, pathToSvg, serializeDiagram, type DEdge, type Diagram, type Route } from "@vnote/core";
+import { choose, dropdownOptions } from "../../tests/dropdown";
+import userEvent from "@testing-library/user-event";
 
 // Estas pruebas comprueban gestos con coordenadas exactas: el acomodo a la cuadrícula (spec 004) se prueba aparte, en DiagramEditor.frame.test.tsx.
 beforeEach(() => { try { localStorage.setItem(GRID_PREFS_KEY, JSON.stringify({ show: true, snap: false })); } catch { /* sin almacenamiento */ } });
@@ -47,16 +49,16 @@ describe("selector de trazado (G-108, G-116, CL-9)", () => {
   it("lista los cuatro trazados y cambiar conserva las uniones", async () => {
     const { last } = await mount(withRoute("orthogonal"));
     select();
-    const sel = screen.getByLabelText("Trazado") as HTMLSelectElement;
-    expect([...sel.options].map((o) => o.text)).toEqual(["Recto", "Ángulos de 90°", "Redondeado", "Libre"]);
-    expect(sel.value).toBe("orthogonal");
-    fireEvent.change(sel, { target: { value: "curved" } });
+    const sel = screen.getByLabelText("Trazado");
+    expect((await dropdownOptions(sel)).map((o) => o.label)).toEqual(["Recto", "Ángulos de 90°", "Redondeado", "Libre"]);
+    expect(sel).toHaveAttribute("data-value", "orthogonal");
+    await choose(userEvent, sel, "curved");
     expect(last().edges[0]).toMatchObject({ route: "curved", from: { node: "a", anchor: "e" }, to: { node: "b", anchor: "w" } });
   });
   it("si había ajustes del trazado anterior avisa que se descartaron y Deshacer los devuelve", async () => {
     const { last } = await mount(withRoute("orthogonal", { waypoints: [{ x: 300, y: 130 }] }));
     select();
-    fireEvent.change(screen.getByLabelText("Trazado"), { target: { value: "straight" } });
+    await choose(userEvent, screen.getByLabelText("Trazado"), "straight");
     expect(document.querySelector("[data-diagram-notice]")).toHaveTextContent("Se descartaron los ajustes del trazado anterior.");
     expect(last().edges[0]!.waypoints).toBeUndefined();
     fireEvent.click(screen.getByRole("button", { name: "Deshacer" }));

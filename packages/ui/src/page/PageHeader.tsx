@@ -343,7 +343,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
             aria-label={t("page.iconLabel")}
             autoFocus
             maxLength={8}
-            className="ml-2 h-7 w-16 rounded-[var(--radius-md)] bg-[var(--c-raised)] px-1.5 text-[length:var(--text-ui-small-size)]"
+            className="ml-2 h-8 w-16 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-1.5 text-[length:var(--text-ui-small-size)]"
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.currentTarget.value.trim()) { void controller.setIcon(page.id, e.currentTarget.value.trim()); setEditingIcon(false); }
               if (e.key === "Escape") setEditingIcon(false);

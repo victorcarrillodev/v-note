@@ -4,6 +4,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { EdgeEnds } from "./EdgeEnds";
 import { addNode, connect, emptyDiagram } from "@vnote/core";
+import { choose, dropdownOptions } from "../../tests/dropdown";
+import userEvent from "@testing-library/user-event";
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 let d = emptyDiagram();
@@ -15,29 +17,29 @@ const free = must(connect(d, { node: "a", anchor: "e" }, { x: 10, y: 20 }));
 describe("extremos unidos", () => {
   it("muestra la forma y el punto de unión de Origen y Destino", async () => {
     await renderWithI18n(<EdgeEnds diagram={r.diagram} edge={r.edge} onChange={() => {}} />);
-    expect(screen.getByLabelText("Origen: Forma")).toHaveValue("a");
-    expect(screen.getByLabelText("Origen: Punto de unión")).toHaveValue("e");
-    expect(screen.getByLabelText("Destino: Forma")).toHaveValue("b");
-    expect(screen.getByLabelText("Destino: Punto de unión")).toHaveValue("w");
-    expect(screen.getAllByRole("option", { name: "Decisión (sin texto)" })).toHaveLength(2); // una forma sin texto se nombra por su tipo
-    expect(screen.getAllByRole("option", { name: /^izquierda$|^derecha$|^arriba$|^abajo$/ }).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Origen: Forma")).toHaveAttribute("data-value", "a");
+    expect(screen.getByLabelText("Origen: Punto de unión")).toHaveAttribute("data-value", "e");
+    expect(screen.getByLabelText("Destino: Forma")).toHaveAttribute("data-value", "b");
+    expect(screen.getByLabelText("Destino: Punto de unión")).toHaveAttribute("data-value", "w");
+    expect((await dropdownOptions(screen.getByLabelText("Origen: Forma"))).map((o) => o.label)).toContain("Decisión (sin texto)"); // una forma sin texto se nombra por su tipo
+    expect((await dropdownOptions(screen.getByLabelText("Origen: Punto de unión"))).map((o) => o.label).some((l) => /^(izquierda|derecha|arriba|abajo)$/.test(l))).toBe(true);
   });
   it("cambiar el punto de unión reubica solo ese extremo", async () => {
     const onChange = vi.fn();
     await renderWithI18n(<EdgeEnds diagram={r.diagram} edge={r.edge} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText("Origen: Punto de unión"), { target: { value: "s" } });
+    await choose(userEvent, screen.getByLabelText("Origen: Punto de unión"), "s");
     expect(onChange).toHaveBeenCalledWith("from", { node: "a", anchor: "s" });
   });
   it("cambiar de forma conserva el punto de unión", async () => {
     const onChange = vi.fn();
     await renderWithI18n(<EdgeEnds diagram={r.diagram} edge={r.edge} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText("Destino: Forma"), { target: { value: "a" } });
+    await choose(userEvent, screen.getByLabelText("Destino: Forma"), "a");
     expect(onChange).toHaveBeenCalledWith("to", { node: "a", anchor: "w" });
   });
   it("elegir «Libre» deja el extremo en la posición actual de su punto de unión", async () => {
     const onChange = vi.fn();
     await renderWithI18n(<EdgeEnds diagram={r.diagram} edge={r.edge} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText("Destino: Forma"), { target: { value: "__free__" } });
+    await choose(userEvent, screen.getByLabelText("Destino: Forma"), "__free__");
     expect(onChange).toHaveBeenCalledWith("to", { x: 400, y: 240 });
   });
 });
@@ -46,7 +48,7 @@ describe("extremo libre", () => {
   it("muestra X e Y en lugar del punto de unión y permite editarlos", async () => {
     const onChange = vi.fn();
     await renderWithI18n(<EdgeEnds diagram={free.diagram} edge={free.edge} onChange={onChange} />);
-    expect(screen.getByLabelText("Destino: Forma")).toHaveValue("__free__");
+    expect(screen.getByLabelText("Destino: Forma")).toHaveAttribute("data-value", "__free__");
     expect(screen.queryByLabelText("Destino: Punto de unión")).toBeNull();
     expect(screen.getByLabelText("Destino: X")).toHaveValue(10);
     fireEvent.change(screen.getByLabelText("Destino: Y"), { target: { value: "99" } });
@@ -55,7 +57,7 @@ describe("extremo libre", () => {
   it("volver a elegir una forma lo une a su primer punto de unión", async () => {
     const onChange = vi.fn();
     await renderWithI18n(<EdgeEnds diagram={free.diagram} edge={free.edge} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText("Destino: Forma"), { target: { value: "b" } });
+    await choose(userEvent, screen.getByLabelText("Destino: Forma"), "b");
     expect(onChange).toHaveBeenCalledWith("to", { node: "b", anchor: "w" });
   });
   it("un valor no numérico no genera cambio", async () => {

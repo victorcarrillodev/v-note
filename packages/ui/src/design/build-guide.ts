@@ -105,7 +105,7 @@ ${sizeRows}
 
 ## Tamaños de ventana
 
-Puntos de corte: ≥ 1 280 px amplio; 1 040–1 279 px normal; 900–1 039 px estrecho (la barra lateral se pliega sola y se abre superpuesta); < 900 px solo desplazamiento. **No existe diseño específico para teléfono ni tableta** (fuera de alcance de la spec 002). Ancho de lectura de página: 720 px.
+Puntos de corte: ≥ 1 280 px amplio; 1 040–1 279 px normal; 900–1 039 px estrecho (la barra lateral se pliega sola y se abre superpuesta); < 900 px solo desplazamiento. **No existe diseño específico para teléfono ni tableta** (fuera de alcance de la spec 002). Ancho de lectura de página: 960 px.
 
 ## Foco y objetivos de clic
 

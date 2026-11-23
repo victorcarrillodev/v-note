@@ -106,8 +106,7 @@ function GradientsPane({ onPick }: { onPick: (cover: string) => void }) {
       <div role="group" aria-label={t("cover.gradientEditor")} className="flex flex-col gap-2">
         <div role="group" aria-label={t("cover.gradientColors")} className="flex flex-wrap items-center gap-1.5">
           {colors.map((c, i) => (
-            <input key={i} type="color" aria-label={t("cover.gradientColor", { n: i + 1 })} value={HEX.test(c) ? c : coverEditor.neutral} onChange={(e) => setColor(i, e.target.value)}
-              className="h-8 w-9 rounded-[var(--radius-md)] bg-[var(--c-raised)] p-0.5" />
+            <ColorInput key={i} label={t("cover.gradientColor", { n: i + 1 })} value={HEX.test(c) ? c : coverEditor.neutral} onChange={(hex) => setColor(i, hex)} />
           ))}
           {colors.length < 3
             ? <Button size="sm" variant="ghost" onClick={() => setColors((cs) => [...cs, coverEditor.gradientThird])}>{t("cover.addStop")}</Button>

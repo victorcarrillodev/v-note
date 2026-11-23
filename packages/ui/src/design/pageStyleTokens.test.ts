@@ -11,7 +11,7 @@ const read = (name: string) => new RegExp(`--${name}:\\s*([^;]+);`).exec(root)?.
 describe("tokens del estilo de página (E-025)", () => {
   it("valores del plan: anchos, tamaños, interlineados, separaciones y alturas de portada", () => {
     expect(pageStyle).toEqual({
-      widths: { narrow: 600, normal: 720, wide: 960 },
+      widths: { narrow: 800, normal: 960, wide: 1280 },
       textSizes: { small: 15, normal: 17, large: 19 },
       leadings: { compact: 1.45, normal: 1.625, relaxed: 1.85 },
       gaps: { compact: 0.5, normal: 0.75, relaxed: 1.1 },
@@ -26,8 +26,8 @@ describe("tokens del estilo de página (E-025)", () => {
     for (const [k, v] of Object.entries(pageStyle.coverHeights)) expect(read(`cover-height-${k}`)).toBe(`${v}px`);
   });
   it("el ancho «normal» coincide con el ancho de lectura actual", () => {
-    expect(pageStyle.widths.normal).toBe(720);
-    expect(read("size-reading-width")).toBe("720px");
+    expect(pageStyle.widths.normal).toBe(960);
+    expect(read("size-reading-width")).toBe("960px");
   });
   it("los títulos usan por defecto la fuente del contenido", () => {
     expect(read("font-headings")).toBe("var(--font-content)");

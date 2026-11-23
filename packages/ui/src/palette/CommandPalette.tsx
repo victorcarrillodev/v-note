@@ -42,7 +42,7 @@ const KIND_ICON = { note: "note", board: "board", database: "database" } as cons
 
 function FilterChip({ label, pressed, onClick }: { label: string; pressed: boolean; onClick: () => void }) {
   return (
-    <button type="button" aria-pressed={pressed} onClick={onClick} className={`inline-flex h-6 items-center gap-1 rounded-sm border px-2 text-[length:var(--text-ui-small-size)] ${pressed ? "border-[var(--c-accent)] bg-[var(--chip-info-bg)] font-medium text-[var(--chip-info-fg)]" : "border-[var(--c-border-control)] text-[var(--c-text-muted)] hover:bg-[var(--c-raised)]"}`}>
+    <button type="button" aria-pressed={pressed} onClick={onClick} className={`inline-flex h-6 items-center gap-1 rounded-full border px-2.5 transition-colors duration-100 text-[length:var(--text-ui-small-size)] ${pressed ? "border-[var(--c-accent)] bg-[var(--chip-info-bg)] font-medium text-[var(--chip-info-fg)]" : "border-[var(--c-border-control)] text-[var(--c-text-muted)] hover:bg-[var(--c-raised)]"}`}>
       {pressed && <Icon name="check" size={14} />}
       {label}
     </button>

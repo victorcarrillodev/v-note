@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { SnoozeOption } from "@vnote/core";
+import { Dropdown } from "../components/ChoiceMenu";
 
 /** Ventana pequeña de recordatorio (RF-11): aparece sin quitar el foco y ofrece Abrir, Hecho y Posponer. */
 export function ReminderPopup({ title, when, onOpen, onDone, onSnooze, onClose }: {
@@ -27,12 +28,12 @@ export function ReminderPopup({ title, when, onOpen, onDone, onSnooze, onClose }
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => void act(onOpen)}>{t("reminders.openShort")}</button>
         <button type="button" onClick={() => void act(onDone)}>{t("reminders.done")}</button>
-        <select aria-label={t("reminders.snoozeLabel")} value="" onChange={(e) => { if (e.target.value) void act(() => onSnooze(e.target.value as SnoozeOption)); }}>
+        <Dropdown aria-label={t("reminders.snoozeLabel")} value="" onChange={(e) => { if (e.target.value) void act(() => onSnooze(e.target.value as SnoozeOption)); }}>
           <option value="">{t("reminders.snoozeLabel")}</option>
           <option value="10m">{t("reminders.snooze10")}</option>
           <option value="1h">{t("reminders.snooze1h")}</option>
           <option value="tomorrow">{t("reminders.snoozeTomorrow")}</option>
-        </select>
+        </Dropdown>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import type { WorkspaceController } from "../workspace/controller";
 import { computeLayout } from "./layoutRunner";
 import { connections, fitTransform, hitNode, nodeRadius, panBy, toScreen, toWorld, zoomAt, type Pt, type Transform } from "./graphGeometry";
 import { Checkbox } from "../components/controls";
+import { Dropdown } from "../components/ChoiceMenu";
 
 type Category = "page" | "subpage" | "board" | "database" | "trashed";
 const CATEGORIES: Category[] = ["page", "subpage", "board", "database", "trashed"];
@@ -177,7 +178,6 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
   const neighbours = data && selected ? data.nodes.filter((n) => highlight?.nodes.has(n.id) && n.id !== selected) : [];
 
   const FILTER = "inline-flex items-center gap-2 text-[length:var(--text-ui-small-size)] font-medium";
-  const PICK = cx(INPUT, "h-7 w-auto font-normal text-[length:var(--text-ui-small-size)]");
   const NOTICE = "mx-auto flex max-w-[var(--size-modal-s)] flex-col items-center gap-3 p-8 text-center text-[var(--c-text-muted)]";
 
   return (
@@ -185,24 +185,24 @@ export function GraphView({ controller, currentPageId, onOpen }: { controller: W
       <div role="group" aria-label={t("graph.filters")} className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-lg)] border border-[var(--c-border)] bg-[var(--c-card)] px-3 py-2">
         {currentPageId && (
           <label className={FILTER}>{t("graph.scope")}{" "}
-            <select value={scope} onChange={(e) => setScope(e.target.value as Scope)} className={PICK}>
+            <Dropdown value={scope} onChange={(e) => setScope(e.target.value as Scope)}>
               <option value="local">{t("graph.local")}</option>
               <option value="all">{t("graph.all")}</option>
-            </select>
+            </Dropdown>
           </label>
         )}
         {scope === "local" && currentPageId && (
           <label className={FILTER}>{t("graph.depth")}{" "}
-            <select value={depth} onChange={(e) => setDepth(Number(e.target.value))} className={PICK}>
+            <Dropdown value={depth} onChange={(e) => setDepth(Number(e.target.value))}>
               <option value={1}>1</option><option value={2}>2</option><option value={3}>3</option>
-            </select>
+            </Dropdown>
           </label>
         )}
         <label className={FILTER}>{t("graph.kind")}{" "}
-          <select value={kind} onChange={(e) => setKind(e.target.value as "" | PageKind)} className={PICK}>
+          <Dropdown value={kind} onChange={(e) => setKind(e.target.value as "" | PageKind)}>
             <option value="">{t("graph.anyKind")}</option>
             <option value="note">{t("graph.kinds.note")}</option><option value="board">{t("graph.kinds.board")}</option><option value="database">{t("graph.kinds.database")}</option>
-          </select>
+          </Dropdown>
         </label>
         <Checkbox className="text-[length:var(--text-ui-small-size)]" label={t("graph.hideOrphans")} checked={hideOrphans} onChange={setHideOrphans} />
         <Checkbox className="text-[length:var(--text-ui-small-size)]" label={t("graph.includeTrash")} checked={includeTrashed} onChange={setIncludeTrashed} />

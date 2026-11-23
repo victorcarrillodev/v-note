@@ -48,3 +48,31 @@ export async function editorEl() {
 
 export const editorText = () => run<string>("return document.querySelector('.bn-editor')?.innerText ?? ''");
 export const treeTitles = () => run<string[]>("return [...document.querySelectorAll('[role=treeitem]')].map(e => e.getAttribute('aria-label'))");
+
+/** Abre un `Dropdown` (disparador por selector CSS) con el puntero y pulsa la opción de ese valor. Equivale a asignar `select.value` en el `<select>` nativo que reemplazó. */
+export async function chooseOption(triggerSelector: string, value: string): Promise<void> {
+  await run("document.querySelector(arguments[0]).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerType: 'mouse' }));", [triggerSelector]);
+  await sleep(300);
+  await run("document.querySelector('[role=menuitemradio][data-value=' + JSON.stringify(arguments[0]) + ']').click();", [value]);
+  await sleep(250);
+}
+
+/** Igual, pero el disparador es el `Dropdown` dentro de la primera etiqueta que empieza con `labelStart` (dentro de `scope`, si se da). */
+export async function chooseByLabel(labelStart: string, value: string, scope = ""): Promise<void> {
+  await run("const l = [...document.querySelectorAll(arguments[1] + ' label')].find(x => x.innerText.trim().startsWith(arguments[0])); l.querySelector('[role=combobox]').setAttribute('data-e2e-pick', '1');", [labelStart, scope]);
+  await chooseOption("[data-e2e-pick='1']", value);
+  await run("document.querySelectorAll('[data-e2e-pick]').forEach(e => e.removeAttribute('data-e2e-pick'));");
+}
+
+/** Elige `value` en el primer `Dropdown` de la página que lo ofrezca (abre cada uno y cierra los que no lo tienen). */
+export async function chooseAny(value: string): Promise<void> {
+  const n = await run<number>("return document.querySelectorAll('[role=combobox]').length");
+  for (let i = 0; i < n; i++) {
+    await run("document.querySelectorAll('[role=combobox]')[arguments[0]].dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerType: 'mouse' }));", [i]);
+    await sleep(250);
+    const has = await run<boolean>("return !!document.querySelector('[role=menuitemradio][data-value=' + JSON.stringify(arguments[0]) + ']')", [value]);
+    if (has) { await run("document.querySelector('[role=menuitemradio][data-value=' + JSON.stringify(arguments[0]) + ']').click();", [value]); await sleep(250); return; }
+    await run("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));"); await sleep(150);
+  }
+  throw new Error(`Ningún desplegable ofrece «${value}»`);
+}

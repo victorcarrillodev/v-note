@@ -19,6 +19,8 @@ import { dateProperty } from "./viewHelpers";
 import { TableView } from "./TableView";
 import { useDatabase } from "./useDatabase";
 import { useFormatValue } from "./cells";
+import { Dropdown } from "../components/ChoiceMenu";
+import { INPUT } from "../components/formStyles";
 
 const CREATABLE: PropertyType[] = PROPERTY_TYPES.filter((t) => t !== "relation" && t !== "rollup");
 
@@ -74,9 +76,9 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
         <div className="min-w-0 flex-1">
           <Tabs label={t("databases.views")} value={snap.activeViewId ?? ""} onChange={(id) => void controller.setActiveView(id)} tabs={snap.views.map((v) => ({ value: v.id, label: v.name || t(`databases.view.${v.type}`), icon: VIEW_ICON[v.type] }))} />
         </div>
-        <select aria-label={t("databases.newViewType")} value={newViewType} onChange={(e) => setNewViewType(e.target.value as ViewType)}>
+        <Dropdown size="sm" aria-label={t("databases.newViewType")} value={newViewType} onChange={(e) => setNewViewType(e.target.value as ViewType)}>
           {VIEW_TYPES.map((v) => <option key={v} value={v}>{t(`databases.view.${v}`)}</option>)}
-        </select>
+        </Dropdown>
         <Button size="sm" onClick={() => void controller.createView(newViewType, t(`databases.view.${newViewType}`)).then(async (r) => { if (r.ok) await controller.setActiveView(r.value.id); })}>{t("databases.newView")}</Button>
         <Button size="sm" variant="danger" disabled={snap.views.length <= 1} title={snap.views.length <= 1 ? t("databases.lastView") : undefined} onClick={() => setDeletingView(true)}>{t("databases.deleteView")}</Button>
       </div>
@@ -90,12 +92,12 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
       {adding && (
         <form onSubmit={(e) => void submit(e)} className="flex flex-wrap items-end gap-2 rounded border p-2">
           <label className="flex flex-col gap-1 text-sm">{t("databases.propertyName")}
-            <input aria-label={t("databases.propertyName")} value={name} onChange={(e) => setName(e.target.value)} className="rounded border px-2 py-1" />
+            <input aria-label={t("databases.propertyName")} value={name} onChange={(e) => setName(e.target.value)} className={INPUT} />
           </label>
           <label className="flex flex-col gap-1 text-sm">{t("databases.propertyType")}
-            <select aria-label={t("databases.propertyType")} value={type} onChange={(e) => setType(e.target.value as PropertyType)}>
+            <Dropdown aria-label={t("databases.propertyType")} value={type} onChange={(e) => setType(e.target.value as PropertyType)}>
               {CREATABLE.map((p) => <option key={p} value={p}>{t(`databases.type.${p}`)}</option>)}
-            </select>
+            </Dropdown>
           </label>
           {type === "formula" && (
             <label className="flex flex-col gap-1 text-sm">{t("databases.formula")}
@@ -115,9 +117,9 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
 
       {active && (active.type === "calendar" || active.type === "timeline") && snap.properties.some((p) => p.type === "date") && (
         <label className="flex items-center gap-2 text-sm">{t("databases.dateProperty")}
-          <select aria-label={t("databases.dateProperty")} value={dateProperty(snap)?.id ?? ""} onChange={(e) => void controller.updateViewConfig({ dateProperty: e.target.value })}>
+          <Dropdown aria-label={t("databases.dateProperty")} value={dateProperty(snap)?.id ?? ""} onChange={(e) => void controller.updateViewConfig({ dateProperty: e.target.value })}>
             {snap.properties.filter((p) => p.type === "date").map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          </Dropdown>
         </label>
       )}
       {active && <ViewBody controller={controller} type={active.type} today={today ?? localToday()} onNewProperty={() => setAdding(true)} {...(onOpenRow ? { onOpenRow } : {})} />}

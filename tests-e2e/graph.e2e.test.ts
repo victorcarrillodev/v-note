@@ -1,7 +1,7 @@
 // T-367…T-370 (e2e real en Chrome): grafo — aviso sin enlaces, vista local por defecto, filtros, selección con resaltado, abrir página, zoom y arrastre.
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { Page } from "./cdp";
-import { clickButton, ensureSpace, mention, newPage, openFromTree, startWeb, type Web } from "./webHarness";
+import { clickButton, ensureSpace, mention, newPage, openFromTree, startWeb, type Web, setValue } from "./webHarness";
 
 let web: Web;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -12,7 +12,11 @@ afterEach(async () => { await web?.closeAll(); });
 type G = { nodes: number; edges: number; selected: string | null; k: number; tx: number; ty: number };
 const info = (p: Page) => p.eval<G>("(() => { const g = document.querySelector('[data-testid=graph-canvas]').__graph; return { nodes: g.nodes, edges: g.edges, selected: g.selected, k: g.k, tx: g.tx, ty: g.ty }; })()");
 const openGraph = async (p: Page) => { await clickButton(p, "Grafo"); await p.waitFor("document.querySelector('[data-testid=graph-canvas]') || document.querySelector('[data-testid=graph-empty]')", 15000); };
-const select = (p: Page, label: string, value: string) => p.eval(`(() => { const l = [...document.querySelectorAll('[aria-label="Filtros del grafo"] label')].find(x => x.innerText.trim().startsWith(${JSON.stringify(label)})); const s = l.querySelector('select'); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, ${JSON.stringify(value)}); s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+const select = async (p: Page, label: string, value: string) => {
+  await p.eval(`(() => { const l = [...document.querySelectorAll('[aria-label="Filtros del grafo"] label')].find(x => x.innerText.trim().startsWith(${JSON.stringify(label)})); l.querySelector('[role=combobox]').setAttribute('data-pick', '1'); })()`);
+  await setValue(p, "[data-pick='1']", value);
+  await p.eval("document.querySelectorAll('[data-pick]').forEach(e => e.removeAttribute('data-pick'))");
+};
 const waitNodes = (p: Page, n: number) => p.waitFor(`document.querySelector('[data-testid=graph-canvas]')?.__graph?.nodes === ${n}`, 15000);
 /** Posición en pantalla (coordenadas de la ventana) del nodo con ese título, según la lista accesible. */
 async function nodePoint(p: Page, id: string) {

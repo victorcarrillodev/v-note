@@ -9,6 +9,7 @@ import { createI18n } from "../i18n";
 import { MemoryPreferences } from "../theme/theme";
 import { saveBindings, loadBindings } from "../settings/bindingsStore";
 import { App } from "./App";
+import { choose } from "../../tests/dropdown";
 
 async function mount(prefs = new MemoryPreferences()) {
   const clock = new FakeClock(Date.UTC(2026, 9, 30, 14, 0));
@@ -49,7 +50,7 @@ describe("cambio de idioma", () => {
   it("cambiar el idioma no saca de la pantalla de ajustes ni reabre el espacio", async () => {
     const { user } = await mount();
     await user.click(screen.getByRole("button", { name: "Ajustes" }));
-    await user.selectOptions(await screen.findByLabelText("Idioma"), "en");
+    await choose(user, await screen.findByLabelText("Idioma"), "en");
     expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
     await new Promise((r) => setTimeout(r, 200));
     expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();

@@ -7,6 +7,7 @@ import { createNodeSqliteStore } from "../../../core/tests/support/nodeSqliteSto
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DatabaseController } from "./databaseController";
 import { DatabaseEmbedProvider, EmbeddedDatabaseView, DatabasePicker } from "./EmbeddedDatabase";
+import { choose, dropdownOptions } from "../../tests/dropdown";
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 
@@ -32,8 +33,8 @@ describe("selector de base de datos (T-264)", () => {
     const chosen: string[] = [];
     await renderWithI18n(<DatabaseEmbedProvider value={services}><DatabasePicker onPick={(id) => chosen.push(id)} /></DatabaseEmbedProvider>);
     const sel = await screen.findByLabelText("Base de datos");
-    expect([...sel.querySelectorAll("option")].map((o) => o.textContent)).toEqual(expect.arrayContaining(["Gastos", "Tareas"]));
-    await user.selectOptions(sel, gastos.id);
+    expect((await dropdownOptions(sel)).map((o) => o.label)).toEqual(expect.arrayContaining(["Gastos", "Tareas"]));
+    await choose(user, sel, gastos.id);
     await user.click(screen.getByRole("button", { name: "Insertar base de datos" }));
     expect(chosen).toEqual([gastos.id]);
   });
@@ -67,7 +68,7 @@ describe("vista incrustada y enlazada (T-264, T-277)", () => {
     const seen: string[] = [];
     await renderWithI18n(<DatabaseEmbedProvider value={services}><EmbeddedDatabaseView databaseId={gastos.id} viewId="" onViewChange={(id) => seen.push(id)} /></DatabaseEmbedProvider>);
     await screen.findByRole("tab", { name: "Tabla" });
-    await user.selectOptions(screen.getByLabelText("Tipo de vista nueva"), "list");
+    await choose(user, screen.getByLabelText("Tipo de vista nueva"), "list");
     await user.click(screen.getByRole("button", { name: "Nueva vista" }));
     await waitFor(() => expect(seen.length).toBeGreaterThan(0));
     expect(screen.getByRole("tab", { name: "Lista", selected: true })).toBeInTheDocument();

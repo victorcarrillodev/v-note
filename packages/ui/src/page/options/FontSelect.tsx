@@ -1,3 +1,4 @@
+import { Icon } from "../../design/Icon";
 import { useId, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { FONT_IDS, type FontId } from "@vnote/core";
@@ -45,10 +46,10 @@ export function FontSelect({ label, value, onChange }: { label: string; value: V
       <button
         ref={button} type="button" aria-haspopup="listbox" aria-expanded={open} aria-labelledby={`${id}-label ${id}-value`} aria-controls={open ? `${id}-list` : undefined}
         onClick={toggle} onKeyDown={onButtonKey}
-        className="flex h-8 items-center justify-between rounded bg-[var(--c-raised)] px-2 text-left text-[length:var(--text-ui-size)] [@media(pointer:coarse)]:h-11"
+        className="flex h-8 items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-2.5 text-left text-[length:var(--text-ui-size)] outline-none hover:bg-[var(--c-raised)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--c-accent)] [@media(pointer:coarse)]:h-11"
       >
         <span id={`${id}-value`} style={current.family ? { fontFamily: current.family } : undefined}>{current.text}</span>
-        <span aria-hidden="true" className={cx("text-[var(--c-text-muted)] transition-transform", open && "rotate-180")}>▾</span>
+        <span aria-hidden="true" className={cx("shrink-0 text-[var(--c-text-muted)] transition-transform", open && "rotate-180")}><Icon name="collapse" size={16} /></span>
       </button>
       {open && (
         <div ref={list} id={`${id}-list`} role="listbox" data-handles-escape aria-labelledby={`${id}-label`} onKeyDown={onListKey} className="flex max-h-44 flex-col overflow-y-auto rounded-[var(--radius-md)] border border-[var(--c-border)]">

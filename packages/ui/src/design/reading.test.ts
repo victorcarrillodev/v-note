@@ -17,11 +17,11 @@ describe("texto de lectura", () => {
     expect(compactBlock).toContain("--text-reading-size: 16px;");
     expect(compactBlock).toContain("--text-reading-line: 24px;");
   });
-  it("el ancho de lectura da entre 60 y 80 caracteres por línea en ambas densidades", () => {
+  it("el ancho de lectura da entre 60 y 110 caracteres por línea en ambas densidades", () => {
     for (const size of [16, 15]) {
       const chars = (sizes.readingWidth - GUTTER) / (size * EM);
       expect(chars, `size ${size}`).toBeGreaterThanOrEqual(60);
-      expect(chars, `size ${size}`).toBeLessThanOrEqual(80);
+      expect(chars, `size ${size}`).toBeLessThanOrEqual(110);
     }
   });
 });

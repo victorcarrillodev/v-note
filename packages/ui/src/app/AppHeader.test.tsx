@@ -69,7 +69,7 @@ describe("el marco no cambia de lugar entre pantallas (RF-3.2, RF-3.5)", () => {
       expect(rects()).toEqual(before);
     }
   });
-  it("el contenido de una página usa el ancho de lectura de 720 px centrado", async () => {
+  it("el contenido de una página usa el ancho de lectura de 960 px centrado", async () => {
     await mount();
     const article = screen.getByRole("textbox", { name: "Título de la página" }).closest("article")!;
     expect(article.className).toContain("max-w-[var(--size-reading-width)]");

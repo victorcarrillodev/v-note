@@ -88,7 +88,7 @@ describe("plegado recordado (RF-3.3)", () => {
 });
 
 describe("ancho de lectura (RF-3.5)", () => {
-  it("el contenido de una página usa el ancho de lectura de 720 px centrado", async () => {
+  it("el contenido de una página usa el ancho de lectura de 960 px centrado", async () => {
     setWidth(1400);
     await renderWithI18n(<AppShell sidebar={<p>s</p>}><p>c</p></AppShell>);
     expect(document.documentElement.style.getPropertyValue("--reading-width") || "720").toBeTruthy();
@@ -123,7 +123,7 @@ describe("adaptación a la ventana (RF-15)", () => {
     await renderWithI18n(<AppShell sidebar={<Link />}><p>c</p></AppShell>);
     await userEvent.click(screen.getByRole("button", { name: /mostrar barra lateral/i }));
     await userEvent.click(screen.getByRole("button", { name: "Abrir página" }));
-    expect(screen.getByRole("button", { name: "Abrir página", hidden: true })).not.toBeVisible();
+    expect(screen.getByText("Abrir página")).not.toBeVisible();
   });
   it("por encima de 1 040 px la barra va acoplada y sin velo", async () => {
     setWidth(1200);

@@ -7,6 +7,7 @@ import { loadRecentColors, pushRecentColor } from "./recentColors";
 import { FIELD_CONTROL, FIELD_LABEL, MENU_CHIP, PANEL_BUTTON } from "./panelStyles";
 import { fillFor, strokeFor } from "../design/diagramPalette";
 import { Icon } from "../design/Icon";
+import { Dropdown } from "../components/ChoiceMenu";
 
 const currentTheme = (): "light" | "dark" => (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
 
@@ -82,14 +83,14 @@ export function ShapeStylePanel({ nodes, onPatch, defaults, format }: { nodes: D
         <ColorPicker label={t("diagram.strokeColor")} role="stroke" value={st.stroke} recents={recents} onChange={(v) => apply({ stroke: v })} />
         <div className="flex gap-2">
           <label className={FIELD_LABEL}>{t("diagram.strokeWidth")}
-            <select className={FIELD_CONTROL} aria-label={t("diagram.strokeWidth")} value={st.strokeWidth} onChange={(e) => apply({ strokeWidth: Number(e.target.value) as NodeStyle["strokeWidth"] })}>
+            <Dropdown aria-label={t("diagram.strokeWidth")} value={st.strokeWidth} onChange={(e) => apply({ strokeWidth: Number(e.target.value) as NodeStyle["strokeWidth"] })}>
               {NODE_STROKE_WIDTHS.map((w) => <option key={w} value={w}>{w} px</option>)}
-            </select>
+            </Dropdown>
           </label>
           <label className={FIELD_LABEL}>{t("diagram.strokeDash")}
-            <select className={FIELD_CONTROL} aria-label={t("diagram.strokeDash")} value={st.strokeDash} onChange={(e) => apply({ strokeDash: e.target.value as NodeStyle["strokeDash"] })}>
+            <Dropdown aria-label={t("diagram.strokeDash")} value={st.strokeDash} onChange={(e) => apply({ strokeDash: e.target.value as NodeStyle["strokeDash"] })}>
               {DASHES.map((d) => <option key={d} value={d}>{t(`diagram.dashes.${d}`)}</option>)}
-            </select>
+            </Dropdown>
           </label>
         </div>
       </>
@@ -116,9 +117,9 @@ export function EdgeStylePanel({ edge, onPatch, defaults, format }: { edge: DEdg
   const apply = (p: Partial<EdgeStyle>) => { for (const v of Object.values(p)) if (typeof v === "string") push(v); onPatch(p); };
   const capSelect = (label: string, key: "startCap" | "endCap") => (
     <label className={FIELD_LABEL}>{label}
-      <select className={FIELD_CONTROL} aria-label={label} value={st[key]} onChange={(e) => apply({ [key]: e.target.value as Cap })}>
+      <Dropdown aria-label={label} value={st[key]} onChange={(e) => apply({ [key]: e.target.value as Cap })}>
         {CAPS.map((c) => <option key={c} value={c}>{t(`diagram.caps.${c}`)}</option>)}
-      </select>
+      </Dropdown>
     </label>
   );
   const sections: Section[] = [
@@ -127,14 +128,14 @@ export function EdgeStylePanel({ edge, onPatch, defaults, format }: { edge: DEdg
         <ColorPicker label={t("diagram.lineColor")} role="stroke" value={st.color} recents={recents} onChange={(v) => apply({ color: v })} />
         <div className="flex flex-wrap gap-2">
           <label className={FIELD_LABEL}>{t("diagram.lineWidth")}
-            <select className={FIELD_CONTROL} aria-label={t("diagram.lineWidth")} value={st.width} onChange={(e) => apply({ width: e.target.value as EdgeStyle["width"] })}>
+            <Dropdown aria-label={t("diagram.lineWidth")} value={st.width} onChange={(e) => apply({ width: e.target.value as EdgeStyle["width"] })}>
               {EDGE_WIDTHS.map((w) => <option key={w} value={w}>{t(`diagram.widths.${w}`)}</option>)}
-            </select>
+            </Dropdown>
           </label>
           <label className={FIELD_LABEL}>{t("diagram.lineDash")}
-            <select className={FIELD_CONTROL} aria-label={t("diagram.lineDash")} value={st.dash} onChange={(e) => apply({ dash: e.target.value as EdgeStyle["dash"] })}>
+            <Dropdown aria-label={t("diagram.lineDash")} value={st.dash} onChange={(e) => apply({ dash: e.target.value as EdgeStyle["dash"] })}>
               {DASHES.map((d) => <option key={d} value={d}>{t(`diagram.dashes.${d}`)}</option>)}
-            </select>
+            </Dropdown>
           </label>
           {capSelect(t("diagram.startCap"), "startCap")}{capSelect(t("diagram.endCap"), "endCap")}
         </div>

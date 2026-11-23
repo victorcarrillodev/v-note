@@ -6,6 +6,7 @@ import { renderWithI18n } from "../../tests/renderWithI18n";
 import { ThemeProvider, MemoryPreferences } from "../theme/theme";
 import { SettingsView } from "./SettingsView";
 import { loadBindings } from "./bindingsStore";
+import { choose } from "../../tests/dropdown";
 
 beforeEach(() => document.documentElement.removeAttribute("data-theme"));
 
@@ -24,7 +25,7 @@ describe("ajustes de tema e idioma (T-144)", () => {
   });
   it("cambia el idioma a inglés, la interfaz se traduce y se recuerda", async () => {
     const { user, prefs } = await setup();
-    await user.selectOptions(screen.getByLabelText("Idioma"), "en");
+    await choose(user, screen.getByLabelText("Idioma"), "en");
     expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
     expect(prefs.get("language")).toBe("en");
   });

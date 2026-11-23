@@ -4,6 +4,7 @@ import { screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { TaskBlockView, type TaskProps } from "./TaskBlock";
+import { choose, dropdownOptions } from "../../tests/dropdown";
 
 const base: TaskProps = { checked: false, due: "", remindAt: "", recurrence: "" };
 async function setup(props: Partial<TaskProps> = {}, now = "2026-03-05T10:00") {
@@ -50,19 +51,19 @@ describe("recordatorio (T-309)", () => {
 describe("repetición (T-310)", () => {
   it("ofrece ninguna, diaria, semanal, mensual y anual", async () => {
     await setup({ due: "2026-03-10" });
-    const opts = [...screen.getByLabelText("Repetir").querySelectorAll("option")].map((o) => o.textContent);
+    const opts = (await dropdownOptions(screen.getByLabelText("Repetir"))).map((o) => o.label);
     expect(opts).toEqual(["No se repite", "Cada día", "Cada semana", "Cada mes", "Cada año"]);
   });
   it("elegir una frecuencia la guarda como JSON; «No se repite» la quita", async () => {
     const { onChange, user } = await setup({ due: "2026-03-10" });
-    await user.selectOptions(screen.getByLabelText("Repetir"), "weekly");
+    await choose(user, screen.getByLabelText("Repetir"), "weekly");
     expect(onChange).toHaveBeenLastCalledWith({ recurrence: JSON.stringify({ freq: "weekly", interval: 1 }) });
-    await user.selectOptions(screen.getByLabelText("Repetir"), "");
+    await choose(user, screen.getByLabelText("Repetir"), "");
     expect(onChange).toHaveBeenLastCalledWith({ recurrence: "" });
   });
   it("muestra la frecuencia guardada", async () => {
     await setup({ due: "2026-03-10", recurrence: JSON.stringify({ freq: "monthly", interval: 1 }) });
-    expect(screen.getByLabelText("Repetir")).toHaveValue("monthly");
+    expect(screen.getByLabelText("Repetir")).toHaveAttribute("data-value", "monthly");
   });
   it("marcar una tarea que se repite NO la cierra: programa la siguiente repetición desde la fecha original (CL-32)", async () => {
     const { onChange, user } = await setup({ due: "2026-03-07", remindAt: "2026-03-07T09:00", recurrence: JSON.stringify({ freq: "daily", interval: 1 }) });

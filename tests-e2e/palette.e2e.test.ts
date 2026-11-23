@@ -1,7 +1,7 @@
 // T-135…T-140, T-143, T-144 (e2e real): paleta de comandos, ajustes de tema/idioma y atajos reasignables.
 import { describe, it, expect } from "vitest";
 import { stopApp, click, type, sleep, run, find, findX, button, byLabel } from "./webdriver";
-import { isolatedEnv, launch, ensureWorkspace, newPage, treeTitles } from "./helpers";
+import { isolatedEnv, launch, ensureWorkspace, newPage, treeTitles, chooseAny, chooseByLabel } from "./helpers";
 
 const ENTER = String.fromCharCode(0xe007);
 const CTRL = String.fromCharCode(0xe009);
@@ -51,7 +51,7 @@ describe("paleta de comandos", () => {
       await type(await palInput(), "receta");
       await sleep(700);
       expect((await options()).length).toBeGreaterThan(0);
-      await run("const s=[...document.querySelectorAll('select')].find(x=>[...x.options].some(o=>o.value==='board')); s.value='board'; s.dispatchEvent(new Event('change',{bubbles:true}));");
+      await chooseAny("board");
       await sleep(700);
       expect((await options()).filter((o) => o.includes("Receta")).length).toBe(0);
     } finally { await stopApp(); }
@@ -82,8 +82,7 @@ describe("ajustes", () => {
     try {
       await ensureWorkspace();
       await click(await button("Ajustes"));
-      const setSelect = (label: string, value: string) =>
-        run(`const l=[...document.querySelectorAll('label')].find(x=>x.innerText.startsWith('${label}')); const s=l.querySelector('select'); s.value='${value}'; s.dispatchEvent(new Event('change',{bubbles:true}));`);
+      const setSelect = (label: string, value: string) => chooseByLabel(label, value);
       await setSelect("Tema", "dark");
       await sleep(300);
       expect(await run<string>("return document.documentElement.getAttribute('data-theme')")).toBe("dark");

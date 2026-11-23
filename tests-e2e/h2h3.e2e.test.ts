@@ -51,7 +51,7 @@ describe("ancho completo (U-171, E-121, E-122)", () => {
     expect(await p.eval<boolean>("![...document.querySelectorAll('[role=switch]')].some(s => document.querySelector('label[for=\"' + s.id + '\"]')?.innerText.trim() === 'Ancho completo')")).toBe(true); // ya no hay interruptor en la cabecera
     expect(await width()).toBe("");
     await open();
-    await p.eval(`(() => { const s = ${widthSelect}; const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, 'full'); s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    await setValue(p, `[id="${await p.eval<string>(`${widthSelect}.id`)}"]`, "full");
     await p.waitFor("document.querySelector('[data-testid=page-style-scope]').style.getPropertyValue('--size-reading-width') === 'none'", 5000);
     await sleep(2500); // el volcado a OPFS es asíncrono
     await p.reload();
@@ -60,7 +60,7 @@ describe("ancho completo (U-171, E-121, E-122)", () => {
     await p.waitFor("document.querySelector('[data-testid=page-style-scope]')", 15000);
     expect(await width()).toBe("none");
     await open();
-    expect(await p.eval<string>(`${widthSelect}.value`)).toBe("full");
+    expect(await p.eval<string>(`${widthSelect}.getAttribute("data-value")`)).toBe("full");
     await p.close();
   }, 120000);
 });
@@ -71,9 +71,9 @@ describe("tabla con palabra clave y calendario semanal (U-197, U-229, U-233)", (
     const p = await web.open();
     await ensureSpace(p);
     await clickButton(p, "Nueva base de datos");
-    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nueva fila')");
+    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nuevo')");
     for (const name of ["Taco", "Metro"]) {
-      await clickButton(p, "Nueva fila");
+      await clickButton(p, "Nuevo");
       await p.waitFor("document.querySelector('[role=row][aria-label=\"Sin título\"] input')");
       await p.click('[role=row][aria-label="Sin título"] input[aria-label^="Título de la fila"]');
       await p.typeText(name); await p.key("Enter", "Enter", 13);
@@ -89,10 +89,10 @@ describe("tabla con palabra clave y calendario semanal (U-197, U-229, U-233)", (
     await clickButton(p, "Nueva propiedad");
     await p.waitFor("document.querySelector('[aria-label=\"Nombre de la propiedad\"]')");
     await setValue(p, '[aria-label="Nombre de la propiedad"]', "Fecha");
-    await setValue(p, 'select[aria-label="Tipo de propiedad"]', "date");
+    await setValue(p, '[role=combobox][aria-label="Tipo de propiedad"]', "date");
     await clickButton(p, "Añadir propiedad");
     await sleep(500);
-    await setValue(p, 'select[aria-label="Tipo de vista nueva"]', "calendar");
+    await setValue(p, '[role=combobox][aria-label="Tipo de vista nueva"]', "calendar");
     await clickButton(p, "Nueva vista");
     await p.waitFor("document.querySelector('[role=grid]')");
     await clickButton(p, "Semana");

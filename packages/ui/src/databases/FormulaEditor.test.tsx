@@ -7,6 +7,7 @@ import { createNodeSqliteStore } from "../../../core/tests/support/nodeSqliteSto
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DatabaseController } from "./databaseController";
 import { DatabaseView } from "./DatabaseView";
+import { choose } from "../../tests/dropdown";
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 
@@ -22,7 +23,7 @@ async function setup() {
   await renderWithI18n(<DatabaseView controller={c} showTitle={false} />);
   const user = userEvent.setup();
   await user.click(screen.getByRole("button", { name: "Nueva propiedad" }));
-  await user.selectOptions(screen.getByLabelText("Tipo de propiedad"), "formula");
+  await choose(user, screen.getByLabelText("Tipo de propiedad"), "formula");
   await user.type(screen.getByLabelText("Nombre de la propiedad"), "Calc");
   return { c, user };
 }
@@ -76,7 +77,7 @@ describe("editor de fórmulas (T-269)", () => {
     await renderWithI18n(<DatabaseView controller={c} showTitle={false} />);
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Nueva propiedad" }));
-    await user.selectOptions(screen.getByLabelText("Tipo de propiedad"), "formula");
+    await choose(user, screen.getByLabelText("Tipo de propiedad"), "formula");
     await typeExpr(user, 'prop("A") * 2');
     await waitFor(async () => expect(await preview()).toHaveTextContent(/válida|sin filas/i));
   });

@@ -8,6 +8,7 @@ import { makeController } from "../../../tests/withController";
 import { appendTextUpdate, para, updateFor } from "../../../../core/tests/support/builders";
 import { AppHeader } from "../../layout/AppHeader";
 import { ToastProvider } from "../../feedback/ToastContext";
+import { choose, dropdownOptions } from "../../../tests/dropdown";
 
 async function setup(opts: { props?: object } = {}) {
   const { controller, db, clock } = await makeController();
@@ -70,23 +71,23 @@ describe("espaciado (E-121)", () => {
   it("ancho, tamaño de texto e interlineado: cada valor cambia la variable correcta", async () => {
     const { user, page } = await setup();
     await open(user);
-    await user.selectOptions(screen.getByLabelText("Ancho de la página"), "wide");
+    await choose(user, screen.getByLabelText("Ancho de la página"), "wide");
     expect(cssVarsFor(page().style)["--size-reading-width"]).toBe("var(--page-width-wide)");
-    await user.selectOptions(screen.getByLabelText("Ancho de la página"), "full");
+    await choose(user, screen.getByLabelText("Ancho de la página"), "full");
     expect(cssVarsFor(page().style)["--size-reading-width"]).toBe("none");
-    await user.selectOptions(screen.getByLabelText("Tamaño del texto"), "large");
+    await choose(user, screen.getByLabelText("Tamaño del texto"), "large");
     expect(cssVarsFor(page().style)["--text-reading-size"]).toBe("var(--page-text-large)");
-    await user.selectOptions(screen.getByLabelText("Interlineado"), "relaxed");
+    await choose(user, screen.getByLabelText("Interlineado"), "relaxed");
     expect(cssVarsFor(page().style)["--block-gap"]).toBe("var(--page-gap-relaxed)");
     expect(cssVarsFor(page().style)["--text-reading-line"]).toBe("var(--page-leading-relaxed)");
   });
   it("cada lista ofrece «Predeterminado», que quita el valor", async () => {
     const { user, page } = await setup({ props: { style: { spacing: { width: "narrow", textSize: "small", leading: "compact" } } } });
     await open(user);
-    expect(screen.getByLabelText("Ancho de la página")).toHaveValue("narrow");
+    expect(screen.getByLabelText("Ancho de la página")).toHaveAttribute("data-value", "narrow");
     for (const l of ["Ancho de la página", "Tamaño del texto", "Interlineado"]) {
-      expect(within(screen.getByLabelText(l)).getAllByRole("option")[0]).toHaveTextContent("Predeterminado");
-      await user.selectOptions(screen.getByLabelText(l), "");
+      expect((await dropdownOptions(screen.getByLabelText(l)))[0]!.label).toBe("Predeterminado");
+      await choose(user, screen.getByLabelText(l), "");
     }
     expect(page().style.spacing).toBeUndefined();
     expect(Object.keys(cssVarsFor(page().style))).toEqual([]);
@@ -94,7 +95,7 @@ describe("espaciado (E-121)", () => {
   it("el ancho ofrece los cuatro valores", async () => {
     const { user } = await setup();
     await open(user);
-    expect(within(screen.getByLabelText("Ancho de la página")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Predeterminado", "Estrecho", "Normal", "Amplio", "Completo"]);
+    expect((await dropdownOptions(screen.getByLabelText("Ancho de la página"))).map((o) => o.label)).toEqual(["Predeterminado", "Estrecho", "Normal", "Amplio", "Completo"]);
   });
 });
 
@@ -225,10 +226,10 @@ describe("índice en el menú (E-146)", () => {
     expect(page().style.toc).toEqual({ floating: false });
     await user.click(sw);
     expect(page().style.toc).toBeUndefined();
-    expect(screen.getByLabelText("Niveles del índice")).toHaveValue("3");
-    await user.selectOptions(screen.getByLabelText("Niveles del índice"), "2");
+    expect(screen.getByLabelText("Niveles del índice")).toHaveAttribute("data-value", "3");
+    await choose(user, screen.getByLabelText("Niveles del índice"), "2");
     expect(page().style.toc).toEqual({ maxLevel: 2 });
-    await user.selectOptions(screen.getByLabelText("Niveles del índice"), "3");
+    await choose(user, screen.getByLabelText("Niveles del índice"), "3");
     expect(page().style.toc).toBeUndefined();
   });
 });

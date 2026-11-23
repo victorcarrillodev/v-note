@@ -13,6 +13,7 @@ import { EmptyState } from "../empty/EmptyState";
 
 const DOT: Record<string, string> = { todo: "bg-[var(--c-text-muted)]", in_progress: "bg-[var(--c-accent)]", done: "bg-[var(--c-success)]" };
 import { useUndoToast } from "../feedback/useUndoToast";
+import { Dropdown } from "../components/ChoiceMenu";
 
 function useMoveCard(controller: DatabaseController) {
   const { t } = useTranslation();
@@ -156,9 +157,9 @@ export function BoardView({ controller, onOpenRow, today = new Date().toISOStrin
             <AlertDialog.Title className="font-semibold">{t("databases.board.deleteTitle")}</AlertDialog.Title>
             <AlertDialog.Description className="my-2 text-sm">{t("databases.board.deleteWithCards", { count: deleting?.count ?? 0 })}</AlertDialog.Description>
             <label className="mb-3 flex flex-col gap-1 text-sm">{t("databases.board.moveCardsTo")}
-              <select aria-label={t("databases.board.moveCardsTo")} value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
+              <Dropdown aria-label={t("databases.board.moveCardsTo")} value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
                 {groups.filter((x) => String(x.key) !== deleting?.id).map((x) => <option key={String(x.key)} value={String(x.key)}>{x.label}</option>)}
-              </select>
+              </Dropdown>
             </label>
             <div className="flex justify-end gap-2">
               <AlertDialog.Cancel asChild><button type="button">{t("databases.cancel")}</button></AlertDialog.Cancel>
@@ -219,9 +220,9 @@ function Card({ row, columns, current, dateProp, props, today, hint, controller,
           {tags.more > 0 && <li className="rounded-full bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-small-size)]" aria-label={t("databases.board.moreTags", { count: tags.more })}>+{tags.more}</li>}
         </ul>
       )}
-      <select aria-label={t("databases.board.moveTo", { title })} value={current} onPointerDown={(e) => e.stopPropagation()} onChange={(e) => moveCard(row.pageId, e.target.value)} className="mt-1 w-full bg-transparent text-xs">
+      <Dropdown size="sm" aria-label={t("databases.board.moveTo", { title })} value={current} onPointerDown={(e) => e.stopPropagation()} onChange={(e) => moveCard(row.pageId, e.target.value)} className="mt-1 w-full">
         {columns.map((c) => <option key={String(c.key)} value={String(c.key)}>{c.label}</option>)}
-      </select>
+      </Dropdown>
     </article>
   );
 }

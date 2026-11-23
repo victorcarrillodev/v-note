@@ -7,6 +7,7 @@ import { createNodeSqliteStore } from "../../../core/tests/support/nodeSqliteSto
 import { FakeGithub } from "../../../core/tests/support/fakeGithub";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { BackupPanel } from "./BackupPanel";
+import { choose, dropdownOptions } from "../../tests/dropdown";
 
 async function setup(opts: { broken?: boolean } = {}) {
   const db = await createNodeSqliteStore(":memory:");
@@ -92,11 +93,11 @@ describe("frecuencia (T-206)", () => {
     const { user, gh, service } = await setup();
     await fillAndConnect(user, gh);
     const select = await screen.findByLabelText("Frecuencia del respaldo");
-    expect(select).toHaveValue("1");
-    expect(within(select).getAllByRole("option").map((o) => o.getAttribute("value"))).toEqual(["1", "2", "3", "4", "5", "6", "7"]);
-    await user.selectOptions(select, "3");
+    expect(select).toHaveAttribute("data-value", "1");
+    expect((await dropdownOptions(select)).map((o) => o.value)).toEqual(["1", "2", "3", "4", "5", "6", "7"]);
+    await choose(user, select, "3");
     await waitFor(async () => expect((await service.getSettings()).frequencyDays).toBe(3));
-    expect(screen.getByLabelText("Frecuencia del respaldo")).toHaveValue("3");
+    expect(screen.getByLabelText("Frecuencia del respaldo")).toHaveAttribute("data-value", "3");
   });
 });
 

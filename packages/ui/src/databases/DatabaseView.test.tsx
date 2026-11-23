@@ -7,6 +7,7 @@ import { createNodeSqliteStore } from "../../../core/tests/support/nodeSqliteSto
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DatabaseController } from "./databaseController";
 import { DatabaseView } from "./DatabaseView";
+import { choose } from "../../tests/dropdown";
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 
@@ -50,7 +51,7 @@ describe("tabla (T-266)", () => {
     const { user, c } = await setup();
     await user.click(screen.getByRole("button", { name: "Nueva propiedad" }));
     await user.type(screen.getByLabelText("Nombre de la propiedad"), "Notas");
-    await user.selectOptions(screen.getByLabelText("Tipo de propiedad"), "text");
+    await choose(user, screen.getByLabelText("Tipo de propiedad"), "text");
     await user.click(screen.getByRole("button", { name: "Añadir propiedad" }));
     await waitFor(() => expect(c.getSnapshot().properties.map((p) => p.name)).toEqual(["Notas"]));
     expect(await screen.findByRole("columnheader", { name: /Notas/ })).toBeInTheDocument();
@@ -102,8 +103,8 @@ describe("editores de celda de cada tipo (T-268)", () => {
       must(await dbs.addProperty(id, { name: "Estado", type: "status" })); must(await dbs.addRow(id, { title: "F" }));
     });
     const [prio, st] = c.getSnapshot().properties;
-    await user.selectOptions(within(cell("F", prio!.id)).getByRole("combobox"), "a");
-    await user.selectOptions(within(cell("F", st!.id)).getByRole("combobox"), "in_progress");
+    await choose(user, within(cell("F", prio!.id)).getByRole("combobox"), "a");
+    await choose(user, within(cell("F", st!.id)).getByRole("combobox"), "in_progress");
     await waitFor(() => { const v = c.getSnapshot().result!.rows[0]!.values; expect([v[prio!.id], v[st!.id]]).toEqual(["a", "in_progress"]); });
   });
   it("selección múltiple", async () => {
@@ -150,7 +151,7 @@ describe("selector de vistas (T-265)", () => {
   it("lista las vistas como pestañas, permite crear una y cambiar entre ellas", async () => {
     const { user, c } = await setup(async (dbs, id) => { must(await dbs.addRow(id, { title: "Fila" })); });
     expect(screen.getByRole("tab", { name: "Tabla" })).toHaveAttribute("aria-selected", "true");
-    await user.selectOptions(screen.getByLabelText("Tipo de vista nueva"), "list");
+    await choose(user, screen.getByLabelText("Tipo de vista nueva"), "list");
     await user.click(screen.getByRole("button", { name: "Nueva vista" }));
     await waitFor(() => expect(c.getSnapshot().views.map((v) => v.type)).toEqual(["table", "list"]));
     expect(screen.getByRole("tab", { name: "Lista" })).toHaveAttribute("aria-selected", "true");
@@ -195,7 +196,7 @@ describe("propiedad de fecha como tarea (T-309, T-292)", () => {
     await waitFor(() => expect(c.getSnapshot().result!.rows[0]!.values[p.id]).toEqual({ start: "2026-03-10" }));
     fireEvent.change(within(cell("Informe", p.id)).getByLabelText(/Recordatorio/), { target: { value: "2026-03-09T08:00" } });
     await waitFor(() => expect(c.getSnapshot().result!.rows[0]!.values[p.id]).toMatchObject({ start: "2026-03-10", remind: "2026-03-09T08:00" }));
-    await userEvent.setup().selectOptions(within(cell("Informe", p.id)).getByLabelText("Repetir"), "weekly");
+    await choose(userEvent.setup(), within(cell("Informe", p.id)).getByLabelText("Repetir"), "weekly");
     await waitFor(() => expect(c.getSnapshot().result!.rows[0]!.values[p.id]).toMatchObject({ repeat: { freq: "weekly", interval: 1 } }));
     void dbId;
   });

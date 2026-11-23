@@ -64,8 +64,8 @@ describe("estilo y portapapeles en el navegador real", () => {
     await setValue(p, `${shapeRegion} input[aria-label="Opacidad del relleno"]`, "40");
     await p.waitFor(`document.querySelector('${nodeSel(1)}').dataset.fillOpacity === '0.4'`, 5000);
     await openSection(p, shapeRegion, "Contorno");
-    await setValue(p, `${shapeRegion} select[aria-label="Grosor del contorno"]`, "4");
-    await setValue(p, `${shapeRegion} select[aria-label="Tipo de línea del contorno"]`, "dashed");
+    await setValue(p, `${shapeRegion} [role=combobox][aria-label="Grosor del contorno"]`, "4");
+    await setValue(p, `${shapeRegion} [role=combobox][aria-label="Tipo de línea del contorno"]`, "dashed");
     await pickColor(p, shapeRegion, "Contorno", "Verde");
     await pickColor(p, shapeRegion, "Color del texto", "Azul");
     const css = await p.eval<{ border: string; color: string; bg: string }>(`(() => { const s = getComputedStyle(document.querySelector('${nodeSel(1)}')); return { border: s.borderTopWidth + ' ' + s.borderTopStyle, color: s.color, bg: s.backgroundColor }; })()`);
@@ -102,10 +102,10 @@ describe("estilo y portapapeles en el navegador real", () => {
     await p.eval(`document.querySelector('${Q} [data-connector]').focus()`); await p.key("Enter", "Enter", 13);
     await p.waitFor(`document.querySelector('${edgeRegion}')`, 5000);
     await pickColor(p, edgeRegion, "Color de la línea", "Rojo");
-    await setValue(p, `${edgeRegion} select[aria-label="Grosor de la línea"]`, "thick");
-    await setValue(p, `${edgeRegion} select[aria-label="Tipo de línea"]`, "dotted");
-    await setValue(p, `${edgeRegion} select[aria-label="Punta de origen"]`, "circle");
-    await setValue(p, `${edgeRegion} select[aria-label="Punta de destino"]`, "diamond");
+    await setValue(p, `${edgeRegion} [role=combobox][aria-label="Grosor de la línea"]`, "thick");
+    await setValue(p, `${edgeRegion} [role=combobox][aria-label="Tipo de línea"]`, "dotted");
+    await setValue(p, `${edgeRegion} [role=combobox][aria-label="Punta de origen"]`, "circle");
+    await setValue(p, `${edgeRegion} [role=combobox][aria-label="Punta de destino"]`, "diamond");
     const caps = () => p.eval<string[]>(`[...document.querySelectorAll('${Q} [data-cap]')].map(c => c.getAttribute('data-cap')).sort()`);
     expect(await caps()).toEqual(["circle", "diamond"]);
     expect(await p.eval<string>(`document.querySelector('${Q} [data-connector-path]').getAttribute('stroke-dasharray')`)).toBe("4 10");

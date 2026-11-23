@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TextField, TextArea, Select } from "./fields";
 import { Checkbox, Switch, Segmented } from "./controls";
+import { choose } from "../../tests/dropdown";
 
 describe("TextField", () => {
   it("la etiqueta siempre es visible y asociada al campo", () => {
@@ -11,11 +12,11 @@ describe("TextField", () => {
     expect(screen.getByLabelText("Título")).toBeInTheDocument();
     expect(screen.getByText("Título")).toBeVisible();
   });
-  it("sin borde (relleno), altura de 32 px y radio base", () => {
+  it("borde de control y fondo de tarjeta (igual que los desplegables), altura de 32 px y radio medio", () => {
     render(<TextField label="Nombre" value="" onChange={() => {}} />);
     const cls = screen.getByLabelText("Nombre").className;
-    expect(cls).not.toContain("border");
-    expect(cls).toContain("bg-[var(--c-raised)]");
+    expect(cls).toContain("border-[var(--c-border-control)]");
+    expect(cls).toContain("bg-[var(--c-card)]");
     expect(cls).toContain("h-8");
     expect(cls).toContain("rounded");
   });
@@ -51,7 +52,7 @@ describe("Select (se comporta como lista de opciones accesible)", () => {
   it("elige una opción con teclado", async () => {
     const onChange = vi.fn();
     render(<Select label="Tipo" value="a" onChange={onChange} options={[{ value: "a", label: "Uno" }, { value: "b", label: "Dos" }]} />);
-    await userEvent.selectOptions(screen.getByLabelText("Tipo"), "b");
+    await choose(userEvent, screen.getByLabelText("Tipo"), "b");
     expect(onChange).toHaveBeenCalledWith("b");
   });
 });

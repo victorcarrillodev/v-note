@@ -8,6 +8,7 @@ import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DatabaseController } from "./databaseController";
 import { DatabaseView } from "./DatabaseView";
 import { ToastProvider } from "../feedback/ToastContext";
+import { choose } from "../../tests/dropdown";
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 
@@ -56,7 +57,7 @@ describe("tablero (T-283)", () => {
   });
   it("mover una tarjeta con el selector de columna (alternativa accesible al arrastre) cambia su estado y persiste", async () => {
     const { user, c } = await setup(async (b, id) => { must(await b.createCard(id, { title: "A", columnId: "todo" })); });
-    await user.selectOptions(screen.getByLabelText("Mover A a"), "in_progress");
+    await choose(user, screen.getByLabelText("Mover A a"), "in_progress");
     await waitFor(() => expect(cardsIn("En curso")).toEqual(["A"]));
     expect(cardsIn("Por hacer")).toEqual([]);
     await c.refresh();
@@ -82,7 +83,7 @@ describe("columnas (T-280, T-281 en la interfaz)", () => {
     await user.click(await screen.findByRole("menuitem", { name: "Eliminar columna En curso" }));
     const dlg = await screen.findByRole("alertdialog");
     expect(dlg).toHaveTextContent(/1 tarjeta/);
-    await user.selectOptions(within(dlg).getByLabelText("Mover las tarjetas a"), "done");
+    await choose(user, within(dlg).getByLabelText("Mover las tarjetas a"), "done");
     await user.click(within(dlg).getByRole("button", { name: "Eliminar" }));
     await waitFor(() => expect(screen.queryByRole("group", { name: "En curso" })).toBeNull());
     expect(cardsIn("Hecho")).toEqual(["A"]);
@@ -115,7 +116,7 @@ describe("la tarjeta (T-285, T-286)", () => {
   });
   it("mover una tarjeta ofrece «Deshacer» (U-150, RF-11.1) y la devuelve a su columna", async () => {
     const { user } = await setup(async (b, id) => { must(await b.createCard(id, { title: "A", columnId: "todo" })); });
-    await user.selectOptions(screen.getByLabelText("Mover A a"), "in_progress");
+    await choose(user, screen.getByLabelText("Mover A a"), "in_progress");
     await waitFor(() => expect(cardsIn("En curso")).toEqual(["A"]));
     await user.click(await screen.findByRole("button", { name: "Deshacer" }));
     await waitFor(() => expect(cardsIn("Por hacer")).toEqual(["A"]));

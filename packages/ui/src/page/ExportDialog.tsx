@@ -7,7 +7,8 @@ import type { AssetStore } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
 import { useOptionalTheme } from "../theme/theme";
 import { exportPaletteFor } from "../design/exportPalette";
-import { Checkbox } from "../components/controls";
+import { Checkbox, Radio } from "../components/controls";
+import { Dropdown } from "../components/ChoiceMenu";
 
 /** Lo que cada plataforma aporta para entregar la exportación: guardar el HTML o abrir el diálogo de impresión (para guardar como PDF). */
 export type ExportRuntime = {
@@ -81,16 +82,16 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
 
           <fieldset className="mb-2 flex gap-4" disabled={running}>
             <legend className="sr-only">{t("export.format")}</legend>
-            <label className="flex items-center gap-1"><input type="radio" name="export-format" checked={format === "html"} onChange={() => setFormat("html")} /> HTML</label>
-            <label className="flex items-center gap-1"><input type="radio" name="export-format" checked={format === "pdf"} onChange={() => setFormat("pdf")} /> PDF</label>
+            <label className="flex items-center gap-1"><Radio name="export-format" checked={format === "html"} onChange={() => setFormat("html")} /> HTML</label>
+            <label className="flex items-center gap-1"><Radio name="export-format" checked={format === "pdf"} onChange={() => setFormat("pdf")} /> PDF</label>
           </fieldset>
           {format === "pdf" && <p className="mb-2 text-sm opacity-80">{t("export.pdfHint")}</p>}
 
           {theme && (
             <fieldset className="mb-2 flex flex-wrap gap-4" disabled={running}>
               <legend className="mb-1 text-sm font-medium">{t("export.look")}</legend>
-              <label className="flex items-center gap-1"><input type="radio" name="export-look" checked={look === "standard"} onChange={() => setLook("standard")} /> {t("export.lookStandard")}</label>
-              <label className="flex items-center gap-1"><input type="radio" name="export-look" checked={look === "theme"} onChange={() => setLook("theme")} /> {t("export.lookTheme", { name: t(`theme.${theme.mode}`) })}</label>
+              <label className="flex items-center gap-1"><Radio name="export-look" checked={look === "standard"} onChange={() => setLook("standard")} /> {t("export.lookStandard")}</label>
+              <label className="flex items-center gap-1"><Radio name="export-look" checked={look === "theme"} onChange={() => setLook("theme")} /> {t("export.lookTheme", { name: t(`theme.${theme.mode}`) })}</label>
             </fieldset>
           )}
 
@@ -99,9 +100,9 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
           {views.length > 1 && (
             <label className="mb-2 flex flex-col gap-1 text-sm">
               {t("export.view")}
-              <select value={viewId} disabled={running} onChange={(e) => setViewId(e.target.value)}>
+              <Dropdown value={viewId} disabled={running} onChange={(e) => setViewId(e.target.value)}>
                 {views.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
-              </select>
+              </Dropdown>
             </label>
           )}
 

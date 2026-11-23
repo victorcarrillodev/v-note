@@ -1,6 +1,6 @@
 // Aspecto común de los controles dentro de los menús del lienzo (selectores, botones y etiquetas de campo).
 export const FIELD_LABEL = "flex flex-col gap-1 text-[length:var(--text-note-size)] text-[var(--c-text-muted)]";
-export const FIELD_CONTROL = "h-7 rounded-[var(--radius-md)] bg-[var(--c-raised)] px-1.5 text-[length:var(--text-ui-small-size)] text-[var(--c-text)] [@media(pointer:coarse)]:h-11";
+export const FIELD_CONTROL = "h-8 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-2 text-[length:var(--text-ui-size)] text-[var(--c-text)] outline-none hover:bg-[var(--c-raised)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--c-accent)] [@media(pointer:coarse)]:h-11";
 export const PANEL_BUTTON = "inline-flex h-7 items-center rounded-[var(--radius-md)] bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-small-size)] text-[var(--c-text)] transition-colors duration-100 hover:bg-[var(--c-border)] [@media(pointer:coarse)]:h-11";
 /** Ficha de una barra compacta de menú: botón plano que queda marcado mientras su sección está desplegada. */
 export const MENU_CHIP = "inline-flex h-8 items-center justify-center gap-1.5 rounded-[var(--radius-md)] px-2 text-[length:var(--text-ui-size)] text-[var(--c-text)] transition-colors duration-100 hover:bg-[var(--c-raised)] active:bg-[var(--c-border)] aria-expanded:bg-[var(--c-raised)] [@media(pointer:coarse)]:h-11";

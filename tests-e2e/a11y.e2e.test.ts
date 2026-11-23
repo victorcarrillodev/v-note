@@ -51,7 +51,7 @@ describe("accesibilidad (T-145, RNF-9)", () => {
     await p.typeText("Texto del editor"); await sleep(500);
     expect(await audit(p, "página con editor")).toEqual([]);
 
-    await clickText(p, "Ajustes"); await p.waitFor("document.querySelector('select')");
+    await clickText(p, "Ajustes"); await p.waitFor("document.querySelector('[role=combobox]')");
     expect(await audit(p, "ajustes")).toEqual([]);
 
     await clickText(p, "Respaldo"); await p.waitFor("document.body.innerText.includes('Respaldo en GitHub')");

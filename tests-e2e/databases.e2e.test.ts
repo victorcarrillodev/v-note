@@ -1,7 +1,7 @@
 // T-265, T-266, T-283, T-284 (e2e real en Chrome): bases de datos y tableros kanban, con arrastre de ratón y persistencia.
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { Page } from "./cdp";
-import { clickButton, clickTab, ensureSpace, setValue, startWeb, type Web } from "./webHarness";
+import { clickButton, clickTab, ensureSpace, optionValue, setValue, startWeb, type Web } from "./webHarness";
 
 let web: Web;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -16,14 +16,14 @@ describe("base de datos en la aplicación real", () => {
     const p = await web.open();
     await ensureSpace(p);
     await clickButton(p, "Nueva base de datos");
-    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nueva fila')");
+    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nuevo')");
     await clickButton(p, "Nueva propiedad");
     await p.waitFor("document.querySelector('[aria-label=\"Nombre de la propiedad\"]')");
     await setValue(p, '[aria-label="Nombre de la propiedad"]', "Monto");
-    await setValue(p, 'select[aria-label="Tipo de propiedad"]', "number");
+    await setValue(p, '[role=combobox][aria-label="Tipo de propiedad"]', "number");
     await clickButton(p, "Añadir propiedad");
     await p.waitFor("[...document.querySelectorAll('[role=columnheader]')].some(h => h.innerText.includes('Monto'))");
-    await clickButton(p, "Nueva fila");
+    await clickButton(p, "Nuevo");
     await p.waitFor("document.querySelectorAll('[role=row][aria-label]').length >= 1");
     // título de la fila (teclado real)
     await p.click('input[aria-label^="Título de la fila"]');
@@ -53,13 +53,13 @@ describe("base de datos en la aplicación real", () => {
     await p.waitFor("document.querySelector('aside nav')", 20000);
     await p.click('[role=treeitem]');
     await p.waitFor("document.querySelector('[role=tab]')");
-    await setValue(p, 'select[aria-label="Tipo de vista nueva"]', "list");
+    await setValue(p, '[role=combobox][aria-label="Tipo de vista nueva"]', "list");
     await clickButton(p, "Nueva vista");
     await p.waitFor("[...document.querySelectorAll('[role=tab]')].some(t => t.innerText.trim() === 'Lista' && t.getAttribute('aria-selected') === 'true')");
     // T-271: la vista lista muestra la fila con su valor
     await p.waitFor("[...document.querySelectorAll('li')].some(li => li.innerText.includes('Café') && li.innerText.includes('45.5'))", 8000);
     // T-272: la galería muestra una tarjeta por fila
-    await setValue(p, 'select[aria-label="Tipo de vista nueva"]', "gallery");
+    await setValue(p, '[role=combobox][aria-label="Tipo de vista nueva"]', "gallery");
     await clickButton(p, "Nueva vista");
     await p.waitFor("document.querySelector('article[aria-label=\"Café\"]')", 8000);
     await clickTab(p, "Tabla");
@@ -77,7 +77,7 @@ describe("fórmulas y filtros en la aplicación real", () => {
     await clickButton(p, "Nueva propiedad");
     await p.waitFor("document.querySelector('[aria-label=\"Nombre de la propiedad\"]')");
     await setValue(p, '[aria-label="Nombre de la propiedad"]', "Doble");
-    await setValue(p, 'select[aria-label="Tipo de propiedad"]', "formula");
+    await setValue(p, '[role=combobox][aria-label="Tipo de propiedad"]', "formula");
     await p.waitFor("document.querySelector('input[aria-label=\"Fórmula\"]')");
     await p.click('input[aria-label="Fórmula"]');
     await p.typeText('prop("Monto") / 0');
@@ -99,9 +99,9 @@ describe("fórmulas y filtros en la aplicación real", () => {
     await clickButton(p, "Filtros y orden");
     await p.waitFor("document.querySelector('[role=region][aria-label=\"Filtros y orden\"]')");
     await clickButton(p, "Añadir filtro");
-    const monto = await p.eval<string>("[...document.querySelector('select[aria-label=\"Propiedad del filtro 1\"]').options].find(o => o.text === 'Monto').value");
-    await setValue(p, 'select[aria-label="Propiedad del filtro 1"]', monto);
-    await setValue(p, 'select[aria-label="Operador del filtro 1"]', "gt");
+    const monto = await optionValue(p, '[role=combobox][aria-label="Propiedad del filtro 1"]', "Monto");
+    await setValue(p, '[role=combobox][aria-label="Propiedad del filtro 1"]', monto);
+    await setValue(p, '[role=combobox][aria-label="Operador del filtro 1"]', "gt");
     await p.click('input[aria-label="Valor del filtro 1"]');
     await p.typeText("100");
     await p.waitFor("document.querySelectorAll('[role=row][aria-label=\"Café\"]').length === 0", 8000);
@@ -122,7 +122,7 @@ describe("vista de base de datos dentro de una nota", () => {
     await p.eval("document.querySelector('.bn-editor').focus()"); await sleep(300);
     await p.send("Input.dispatchKeyEvent", { type: "keyDown", key: "/", text: "/" }); await p.send("Input.dispatchKeyEvent", { type: "keyUp", key: "/" });
     await sleep(400); await p.typeText("vista de base"); await sleep(500); await p.key("Enter", "Enter", 13);
-    await p.waitFor("document.querySelector('.bn-editor select[aria-label=\"Base de datos\"]')", 8000);
+    await p.waitFor("document.querySelector('.bn-editor [role=combobox][aria-label=\"Base de datos\"]')", 8000);
     await clickButton(p, "Insertar base de datos");
     await p.waitFor("document.querySelector('.bn-editor [role=row][aria-label=\"Café\"]')", 10000);
     // editar dentro de la nota
@@ -144,7 +144,7 @@ describe("calendario y línea de tiempo en la aplicación real", () => {
   const ym = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
   const openFirst = async (p: Page) => { await p.waitFor("document.querySelector('aside nav')", 20000); await p.click("[role=treeitem]"); await p.waitFor("document.querySelector('[role=tab]')", 15000); };
   const newView = async (p: Page, type: string) => {
-    await setValue(p, 'select[aria-label="Tipo de vista nueva"]', type);
+    await setValue(p, '[role=combobox][aria-label="Tipo de vista nueva"]', type);
     await clickButton(p, "Nueva vista");
   };
 
@@ -155,7 +155,7 @@ describe("calendario y línea de tiempo en la aplicación real", () => {
     await clickButton(p, "Nueva propiedad");
     await p.waitFor("document.querySelector('[aria-label=\"Nombre de la propiedad\"]')");
     await setValue(p, '[aria-label="Nombre de la propiedad"]', "Fecha");
-    await setValue(p, 'select[aria-label="Tipo de propiedad"]', "date");
+    await setValue(p, '[role=combobox][aria-label="Tipo de propiedad"]', "date");
     await clickButton(p, "Añadir propiedad");
     await p.waitFor("document.querySelector('[role=row][aria-label=\"Café\"] input[aria-label^=\"Fecha de inicio\"]')");
     await setValue(p, '[role=row][aria-label="Café"] input[aria-label^="Fecha de inicio"]', `${ym}-10`);

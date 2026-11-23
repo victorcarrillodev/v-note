@@ -1,6 +1,7 @@
 import { SvgLayer } from "../design/SvgLayer";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { DateInput } from "../components/DateInput";
 import {
   NODE_H, NODE_W, addChild, addSibling, deleteTreeNode, findNode, layoutTree, moveTreeNode, newTree, parseTree, renameNode, serializeTree, toggleCollapsed, visibleNodes, type Tree,
   EVENT_H, EVENT_W, addEvent, deleteEvent, moveEvent, parseTimeline, placeEvents, renameEvent, serializeTimeline, sortedEvents, DAY_W, type Timeline,
@@ -140,7 +141,7 @@ export function TimelineEditor({ value, onChange }: Props) {
   return (
     <div data-testid="timeline" role="group" aria-label={t("organizer.timeline.canvas")} style={{ margin: "8px 0" }}>
       <div style={panelStyle}>
-        <label>{t("organizer.timeline.date")}{" "}<input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
+        <label>{t("organizer.timeline.date")}{" "}<DateInput type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
         <label>{t("organizer.timeline.title")}{" "}<input value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") onAdd(); }} /></label>
         <button type="button" onClick={onAdd}>{t("organizer.timeline.add")}</button>
       </div>
@@ -164,7 +165,7 @@ export function TimelineEditor({ value, onChange }: Props) {
       {current ? (
         <div role="region" aria-label={t("organizer.timeline.panel")} style={panelStyle}>
           <label>{t("organizer.timeline.title")}{" "}<input value={current.title} onChange={(e) => commit(renameEvent(tl, current.id, e.target.value))} /></label>
-          <label>{t("organizer.timeline.date")}{" "}<input type="date" value={current.date} onChange={(e) => { if (e.target.value) setDateOf(current.id, e.target.value); }} /></label>
+          <label>{t("organizer.timeline.date")}{" "}<DateInput type="date" value={current.date} onChange={(e) => { if (e.target.value) setDateOf(current.id, e.target.value); }} /></label>
           <button type="button" onClick={() => { commit(deleteEvent(tl, current.id)); setSelected(null); }}>{t("organizer.delete")}</button>
         </div>
       ) : null}

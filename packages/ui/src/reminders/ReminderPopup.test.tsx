@@ -4,6 +4,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { ReminderPopup } from "./ReminderPopup";
+import { choose } from "../../tests/dropdown";
 
 function setup() {
   const h = { onOpen: vi.fn(), onDone: vi.fn(), onSnooze: vi.fn(), onClose: vi.fn() };
@@ -31,7 +32,7 @@ describe("ReminderPopup", () => {
   });
   it("Posponer ofrece 10 minutos, 1 hora y hasta mañana", async () => {
     const { h, user, view } = setup(); await view;
-    await user.selectOptions(screen.getByRole("combobox", { name: "Posponer…" }), "1h");
+    await choose(user, screen.getByRole("combobox", { name: "Posponer…" }), "1h");
     expect(h.onSnooze).toHaveBeenCalledWith("1h");
     expect(h.onClose).toHaveBeenCalled();
   });

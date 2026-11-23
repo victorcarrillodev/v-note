@@ -331,3 +331,15 @@ Los 10 temas, con los 15 colores que sobrescriben (todos verificados con los mí
 | `danger` | #C0312F | #C0312F | #C0312F | #C0312F | #EC6A67 | #EC6A67 | #EC6A67 | #EC6A67 | #C0312F | #EC6A67 |
 
 *Diseño visual de referencia:* lienzo «Temas de v-note» (16 de noviembre de 2026).
+
+## Anexo — Bloque de código: resaltado, autocompletado y temas (pedido por la persona usuaria, 2026-11-23)
+
+Dependencias nuevas de `@vnote/ui`, justificadas por la constitución (stack mínimo):
+
+| Dependencia | Para qué | Alternativa descartada |
+|---|---|---|
+| `@lezer/highlight`, `@lezer/common` | Convertir el árbol sintáctico en clases `tok-*` | Tokenizador propio por lenguaje: más código y peor precisión |
+| `@lezer/javascript`, `python`, `css`, `html`, `json`, `markdown`, `rust`, `cpp`, `java`, `go`, `php`, `yaml`, `xml` | Gramáticas del ecosistema CodeMirror, cargadas a demanda con `import()` | Incrustar CodeMirror 6 completo: cambiaría cómo se guarda el texto del bloque (Yjs, exportación, búsqueda) |
+| `prosemirror-state`, `prosemirror-view`, `prosemirror-model` | Ya llegaban con BlockNote; ahora son directas para escribir el plugin de decoraciones | — |
+
+Decisión: el contenido del bloque sigue siendo texto plano del documento; el color se añade con decoraciones de ProseMirror (no altera el documento ni el respaldo) y el autocompletado es una lista flotante propia (palabras del lenguaje + nombres del bloque). Bash y SQL usan reglas regulares (no existe gramática `@lezer` oficial). El tema de color del código es una preferencia local (`vnote:codeTheme`), no una propiedad del bloque, para no cambiar el formato de respaldo.

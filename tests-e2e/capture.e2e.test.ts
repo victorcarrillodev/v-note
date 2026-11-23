@@ -87,7 +87,7 @@ describe("captura rápida en la aplicación real", () => {
     expect(await p.eval<string>("document.body.innerText")).toContain("La nota salió de la bandeja");
 
     await openNote("nota para tarjeta");
-    await p.waitFor("document.querySelector('[role=region][aria-label=\"Nota de la bandeja\"] select')", 10000);
+    await p.waitFor("document.querySelector('[role=region][aria-label=\"Nota de la bandeja\"] [role=combobox]')", 10000);
     await p.eval("[...document.querySelectorAll('[role=region][aria-label=\"Nota de la bandeja\"] button')].find(b => b.innerText.trim() === 'Crear tarjeta').click()");
     await p.waitFor("!document.querySelector('[role=region][aria-label=\"Nota de la bandeja\"]')", 10000);
   }, 240000);

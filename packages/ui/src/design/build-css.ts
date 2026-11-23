@@ -151,7 +151,7 @@ input[type="checkbox"], input[type="radio"], input[type="range"], input[type="co
     min-height: 32px;
     padding: 0 var(--space-2);
     border: 1px solid var(--c-border-control);
-    border-radius: var(--radius-base);
+    border-radius: var(--radius-md);
     background: var(--c-card);
     color: var(--c-text);
     font-size: var(--text-ui-size);

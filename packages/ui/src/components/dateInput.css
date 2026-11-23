@@ -1,0 +1,5 @@
+/* El selector nativo del navegador se sustituye por el de la app (ver DateInput.tsx): se oculta su icono. */
+input[data-vn-date]::-webkit-calendar-picker-indicator { display: none; }
+input[data-vn-date] { color-scheme: inherit; }
+.vn-date-nav { width: 2rem; height: 2rem; border-radius: var(--radius-sm); color: var(--c-text-muted); }
+.vn-date-nav:hover { background: var(--c-raised); color: var(--c-text); }

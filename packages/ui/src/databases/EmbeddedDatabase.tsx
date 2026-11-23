@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { useTranslation } from "react-i18next";
 import type { DatabaseController } from "./databaseController";
 import { DatabaseView } from "./DatabaseView";
+import { Dropdown } from "../components/ChoiceMenu";
 
 export type DatabaseEmbedServices = {
   list(): Promise<{ id: string; name: string }[]>;
@@ -25,9 +26,9 @@ export function DatabasePicker({ onPick }: { onPick: (databaseId: string) => voi
   return (
     <div className="flex items-center gap-2" contentEditable={false}>
       <label className="flex items-center gap-2">{t("embed.pick")}
-        <select aria-label={t("embed.pick")} value={chosen} onChange={(e) => setChosen(e.target.value)}>
+        <Dropdown aria-label={t("embed.pick")} value={chosen} onChange={(e) => setChosen(e.target.value)}>
           {list.map((d) => <option key={d.id} value={d.id}>{d.name.trim() === "" ? t("app.untitled") : d.name}</option>)}
-        </select>
+        </Dropdown>
       </label>
       <button type="button" onClick={() => chosen && onPick(chosen)}>{t("embed.insert")}</button>
     </div>

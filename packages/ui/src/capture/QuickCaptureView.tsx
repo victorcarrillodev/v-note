@@ -92,7 +92,7 @@ export function QuickCaptureView({ manager, clock, onSaved, onClose }: { manager
       {message && <p role="status" className="rounded-md bg-[var(--chip-success-bg)] px-3 py-2 text-[length:var(--text-ui-small-size)] text-[var(--chip-success-fg)]">{message}</p>}
       {error && <p role="alert" className="text-[length:var(--text-ui-small-size)] text-[var(--c-danger)]">{error}</p>}
       <textarea
-        ref={area} aria-label={t("capture.noteLabel")} value={text} rows={6} className="w-full resize-y rounded-[var(--radius-md)] bg-[var(--c-raised)] p-3 text-[length:var(--text-reading-size)] leading-[var(--text-reading-line)] placeholder:text-[var(--c-text-placeholder)]"
+        ref={area} aria-label={t("capture.noteLabel")} value={text} rows={6} className="w-full resize-y rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] p-3 text-[length:var(--text-reading-size)] leading-[var(--text-reading-line)] placeholder:text-[var(--c-text-placeholder)]"
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); void confirm(); }

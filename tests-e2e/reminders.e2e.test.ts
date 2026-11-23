@@ -53,7 +53,7 @@ describe("recordatorios en el escritorio real", () => {
     await launch(env);
     try {
       await find('[aria-label="Vencidos"]', 20000);
-      await run(`const s = document.querySelector('select[aria-label="Posponer Pagar luz"]'); s.value = '1h'; s.dispatchEvent(new Event('change', { bubbles: true }));`);
+      await run(`const s = document.querySelector('[role=combobox][aria-label="Posponer Pagar luz"]'); s.value = '1h'; s.dispatchEvent(new Event('change', { bubbles: true }));`);
       await sleep(800);
       expect(await run<boolean>("return !document.querySelector('[aria-label=\"Vencidos\"]')")).toBe(true);
     } finally { await stopApp(); }

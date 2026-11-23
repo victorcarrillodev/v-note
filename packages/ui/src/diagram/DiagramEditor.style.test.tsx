@@ -8,6 +8,8 @@ import { DiagramDefaultsProvider, type DiagramDefaultsApi } from "./DiagramDefau
 import { clearDiagramClipboard } from "./diagramClipboard";
 import { DIAGRAM_SHORTCUTS } from "./shortcuts";
 import { addNode, connect, emptyDiagram, parseDiagram, serializeDiagram, setNodeStyle, ACTIONS, normalizeCombo, type Diagram, type DiagramDefaults, type EdgeStyle, type NodeStyle, type Route } from "@vnote/core";
+import { choose } from "../../tests/dropdown";
+import userEvent from "@testing-library/user-event";
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 const base = (): Diagram => {
@@ -49,9 +51,9 @@ describe("estilo de la forma en el panel (G-128, G-134)", () => {
     expect(last().nodes[0]!.style.fillOpacity).toBe(0.4);
     open(p, "Contorno"); fireEvent.click(within(within(p).getByRole("group", { name: "Contorno" })).getByRole("button", { name: "Verde" }));
     expect(last().nodes[0]!.style.stroke).toBe("palette:green");
-    fireEvent.change(within(p).getByLabelText("Grosor del contorno"), { target: { value: "3" } });
+    await choose(userEvent, within(p).getByLabelText("Grosor del contorno"), "3");
     expect(last().nodes[0]!.style.strokeWidth).toBe(3);
-    fireEvent.change(within(p).getByLabelText("Tipo de línea del contorno"), { target: { value: "dashed" } });
+    await choose(userEvent, within(p).getByLabelText("Tipo de línea del contorno"), "dashed");
     expect(last().nodes[0]!.style.strokeDash).toBe("dashed");
     open(p, "Color del texto"); fireEvent.click(within(within(p).getByRole("group", { name: "Color del texto" })).getByRole("button", { name: "Azul" }));
     expect(last().nodes[0]!.style.textColor).toBe("palette:blue");
@@ -125,10 +127,10 @@ describe("estilo del conector (G-139, G-140)", () => {
     const p = edgePanel(); open(p, "Línea");
     fireEvent.click(within(within(p).getByRole("group", { name: "Color de la línea" })).getByRole("button", { name: "Rojo" }));
     expect(last().edges[0]!.style.color).toBe("palette:red");
-    fireEvent.change(within(p).getByLabelText("Grosor de la línea"), { target: { value: "thick" } });
-    fireEvent.change(within(p).getByLabelText("Tipo de línea"), { target: { value: "dotted" } });
-    fireEvent.change(within(p).getByLabelText("Punta de origen"), { target: { value: "circle" } });
-    fireEvent.change(within(p).getByLabelText("Punta de destino"), { target: { value: "diamond" } });
+    await choose(userEvent, within(p).getByLabelText("Grosor de la línea"), "thick");
+    await choose(userEvent, within(p).getByLabelText("Tipo de línea"), "dotted");
+    await choose(userEvent, within(p).getByLabelText("Punta de origen"), "circle");
+    await choose(userEvent, within(p).getByLabelText("Punta de destino"), "diamond");
     open(p, "Color del texto del conector"); fireEvent.click(within(within(p).getByRole("group", { name: "Color del texto del conector" })).getByRole("button", { name: "Azul" }));
     expect(last().edges[0]!.style).toMatchObject({ color: "palette:red", width: "thick", dash: "dotted", startCap: "circle", endCap: "diamond", textColor: "palette:blue" });
     const path = document.querySelector("[data-connector-path]")!;

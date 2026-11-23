@@ -76,7 +76,7 @@ describe("trazados en el navegador real", () => {
     await click(p, "Rehacer"); expect(await waitD(p, d0)).toBe(d1);
 
     // redondeado: cambia a curva; arrastrar el asa cambia la curvatura
-    await setValue(p, `${panel} select[aria-label="Trazado"]`, "curved");
+    await setValue(p, `${panel} [role=combobox][aria-label="Trazado"]`, "curved");
     const d2 = await waitD(p, d1);
     expect(d2).toMatch(/ C /);
     await p.waitFor(`document.querySelector('${Q} [data-curve-hit]')`, 5000);
@@ -87,7 +87,7 @@ describe("trazados en el navegador real", () => {
     await click(p, "Rehacer"); expect(await waitD(p, d2)).toBe(d3);
 
     // libre: añadir un punto desde el panel, arrastrarlo y suavizar
-    await setValue(p, `${panel} select[aria-label="Trazado"]`, "free");
+    await setValue(p, `${panel} [role=combobox][aria-label="Trazado"]`, "free");
     const d4 = await waitD(p, d3);
     expect(d4).toMatch(/^M [\d.-]+ [\d.-]+ L [\d.-]+ [\d.-]+$/);
     await click(p, "Añadir punto");
@@ -106,7 +106,7 @@ describe("trazados en el navegador real", () => {
     await click(p, "Rehacer"); await click(p, "Rehacer"); expect(await waitD(p, d5)).toBe(d7);
 
     // recto: una sola línea
-    await setValue(p, `${panel} select[aria-label="Trazado"]`, "straight");
+    await setValue(p, `${panel} [role=combobox][aria-label="Trazado"]`, "straight");
     expect(await waitD(p, d7)).toMatch(/^M [\d.-]+ [\d.-]+ L [\d.-]+ [\d.-]+$/);
     await p.close();
   }, 150000);

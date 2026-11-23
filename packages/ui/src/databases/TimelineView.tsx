@@ -7,6 +7,7 @@ import { dateOf, dateProperty, titleOf } from "./viewHelpers";
 import { SidePanel } from "../components/SidePanel";
 import { Button } from "../components/Button";
 import { useDatabase } from "./useDatabase";
+import { DateInput } from "../components/DateInput";
 
 const DAY_W = 32;
 const ROW_H = 44;
@@ -109,8 +110,8 @@ function Row({ row, date, origin, prop, controller, title, onOpenRow, onSelect }
       <div style={{ width: LABEL_W }} className="flex shrink-0 flex-col gap-0.5 px-2 text-xs">
         <button type="button" className="truncate text-left font-medium" onClick={() => onOpenRow?.(row.pageId)}>{title}</button>
         <span className="flex gap-1">
-          <input type="date" aria-label={t("databases.startOf", { title })} value={start} onChange={(e) => e.target.value && void controller.setCell(row.pageId, prop.id, { ...date, start: e.target.value, ...(date.end && date.end < e.target.value ? { end: e.target.value } : {}) })} className="w-28" />
-          <input type="date" aria-label={t("databases.endOf", { title })} value={date.end ? end : ""} onChange={(e) => void controller.setCell(row.pageId, prop.id, e.target.value ? { ...date, end: e.target.value } : { start: date.start })} className="w-28" />
+          <DateInput type="date" aria-label={t("databases.startOf", { title })} value={start} onChange={(e) => e.target.value && void controller.setCell(row.pageId, prop.id, { ...date, start: e.target.value, ...(date.end && date.end < e.target.value ? { end: e.target.value } : {}) })} compact size="sm" />
+          <DateInput type="date" aria-label={t("databases.endOf", { title })} value={date.end ? end : ""} onChange={(e) => void controller.setCell(row.pageId, prop.id, e.target.value ? { ...date, end: e.target.value } : { start: date.start })} compact size="sm" />
         </span>
       </div>
       <div className="relative h-full flex-1">

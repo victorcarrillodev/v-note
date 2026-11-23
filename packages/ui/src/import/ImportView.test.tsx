@@ -7,6 +7,7 @@ import { createNodeSqliteStore } from "../../../core/tests/support/nodeSqliteSto
 import { notionExport, obsidianVault, zipOf } from "../../../core/tests/fixtures/importFixtures";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { ImportView } from "./ImportView";
+import { choose } from "../../tests/dropdown";
 
 async function setup() {
   const store = await createNodeSqliteStore(":memory:");
@@ -21,7 +22,7 @@ const file = (bytes: Uint8Array, name: string) => new File([bytes as BlobPart], 
 describe("importar (T-398)", () => {
   it("un ZIP de Notion se importa y se muestra el informe con lo importado, aproximado, omitido y roto", async () => {
     const { repo, opened, user } = await setup();
-    await user.selectOptions(screen.getByLabelText("Origen"), "notion");
+    await choose(user, screen.getByLabelText("Origen"), "notion");
     fireEvent.change(screen.getByLabelText("Nombre de la página contenedora"), { target: { value: "Desde Notion" } });
     fireEvent.change(screen.getByLabelText("Archivo ZIP"), { target: { files: [file(zipOf(notionExport()), "export.zip")] } });
     await user.click(screen.getByRole("button", { name: "Importar" }));
@@ -45,7 +46,7 @@ describe("importar (T-398)", () => {
   });
   it("un ZIP dañado muestra un error y no escribe nada", async () => {
     const { repo, user } = await setup();
-    await user.selectOptions(screen.getByLabelText("Origen"), "notion");
+    await choose(user, screen.getByLabelText("Origen"), "notion");
     fireEvent.change(screen.getByLabelText("Archivo ZIP"), { target: { files: [file(new Uint8Array([1, 2, 3]), "malo.zip")] } });
     await user.click(screen.getByRole("button", { name: "Importar" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("dañado");
@@ -53,7 +54,7 @@ describe("importar (T-398)", () => {
   });
   it("el error es un aviso persistente con ícono de gravedad (U-136, RF-11.2, RF-14.9)", async () => {
     const { user } = await setup();
-    await user.selectOptions(screen.getByLabelText("Origen"), "notion");
+    await choose(user, screen.getByLabelText("Origen"), "notion");
     fireEvent.change(screen.getByLabelText("Archivo ZIP"), { target: { files: [file(new Uint8Array([1, 2, 3]), "malo.zip")] } });
     await user.click(screen.getByRole("button", { name: "Importar" }));
     const alert = await screen.findByRole("alert");
@@ -70,7 +71,7 @@ describe("progreso y cancelación (T-397)", () => {
   it("muestra el progreso y al cancelar no queda nada importado", async () => {
     const { repo, user } = await setup();
     const many = Array.from({ length: 400 }, (_, i) => ({ path: `n/p${i}.md`, data: new TextEncoder().encode(`# P${i}\n\ntexto ${i}`) }));
-    await user.selectOptions(screen.getByLabelText("Origen"), "notion");
+    await choose(user, screen.getByLabelText("Origen"), "notion");
     fireEvent.change(screen.getByLabelText("Archivo ZIP"), { target: { files: [file(zipOf(many), "grande.zip")] } });
     await user.click(screen.getByRole("button", { name: "Importar" }));
     const bar = await screen.findByRole("progressbar");

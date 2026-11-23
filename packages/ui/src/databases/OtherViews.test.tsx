@@ -7,6 +7,7 @@ import { createNodeSqliteStore } from "../../../core/tests/support/nodeSqliteSto
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { DatabaseController } from "./databaseController";
 import { DatabaseView } from "./DatabaseView";
+import { choose } from "../../tests/dropdown";
 
 const must = <T,>(r: { ok: boolean; value?: T; error?: { message: string } }): T => { if (!r.ok) throw new Error(r.error?.message); return r.value as T; };
 
@@ -87,7 +88,7 @@ describe("calendario (T-273, T-274)", () => {
     const { c, dbs, dbId, user } = await setup("calendar", async (dbs, id, f) => { must(await dbs.addRow(id, { title: "R", values: { [f]: "2026-03-10" } })); });
     const otra = must(await dbs.addProperty(dbId, { name: "Entrega", type: "date" }));
     await c.refresh();
-    await user.selectOptions(await screen.findByLabelText("Propiedad de fecha"), otra.id);
+    await choose(user, await screen.findByLabelText("Propiedad de fecha"), otra.id);
     await waitFor(() => expect(c.getSnapshot().views.find((v) => v.id === c.getSnapshot().activeViewId)!.config.dateProperty).toBe(otra.id));
   });
 });

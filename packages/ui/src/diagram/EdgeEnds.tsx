@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { ANCHORS, anchorPosition, isAttached, type DEdge, type Diagram, type Endpoint } from "@vnote/core";
 import { nodeLabel } from "./labels";
 import { FIELD_CONTROL, FIELD_LABEL } from "./panelStyles";
+import { Dropdown } from "../components/ChoiceMenu";
 
 const FREE = "__free__";
 type End = "from" | "to";
@@ -30,16 +31,16 @@ export function EdgeEnds({ diagram, edge, onChange }: { diagram: Diagram; edge: 
       <fieldset key={end} className="flex flex-wrap items-end gap-2 rounded-[var(--radius-md)] border border-[var(--c-border)] p-2">
         <legend className="px-1 text-[length:var(--text-note-size)] font-medium text-[var(--c-text-muted)]">{title}</legend>
         <label className={FIELD_LABEL}>{t("diagram.endShape")}
-          <select className={FIELD_CONTROL} aria-label={field(t("diagram.endShape"))} value={attached ? e.node : FREE} onChange={(ev) => pickShape(ev.target.value)}>
+          <Dropdown aria-label={field(t("diagram.endShape"))} value={attached ? e.node : FREE} onChange={(ev) => pickShape(ev.target.value)}>
             {diagram.nodes.map((n) => <option key={n.id} value={n.id}>{nodeLabel(t, n)}</option>)}
             <option value={FREE}>{t("diagram.endFree")}</option>
-          </select>
+          </Dropdown>
         </label>
         {attached ? (
           <label className={FIELD_LABEL}>{t("diagram.endAnchor")}
-            <select className={FIELD_CONTROL} aria-label={field(t("diagram.endAnchor"))} value={e.anchor} onChange={(ev) => onChange(end, { node: e.node, anchor: ev.target.value as typeof e.anchor })}>
+            <Dropdown aria-label={field(t("diagram.endAnchor"))} value={e.anchor} onChange={(ev) => onChange(end, { node: e.node, anchor: ev.target.value as typeof e.anchor })}>
               {ANCHORS.map((a) => <option key={a} value={a}>{t(`diagram.anchors.${a}`)}</option>)}
-            </select>
+            </Dropdown>
           </label>
         ) : (
           <>

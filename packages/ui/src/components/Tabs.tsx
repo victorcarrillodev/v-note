@@ -20,7 +20,7 @@ export function Tabs({ label, value, onChange, tabs }: { label: string; value: s
   return (
     <T.Root value={value} onValueChange={onChange}>
       <div className="relative" {...(overflow ? { "data-overflow": "" } : {})}>
-        <T.List ref={list} aria-label={label} className="flex gap-1 overflow-x-auto border-b border-[var(--c-border)]">
+        <T.List ref={list} aria-label={label} className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-[var(--c-border)]">
           {tabs.map((t) => (
             <T.Trigger key={t.value} value={t.value} aria-controls={undefined} className={cx("-mb-px h-8 shrink-0 border-b-2 px-3 text-[length:var(--text-ui-size)]", t.value === value ? "border-[var(--c-accent)] font-semibold text-[var(--c-text)]" : "border-transparent text-[var(--c-text-muted)] hover:text-[var(--c-text)]")}>
               <span className="inline-flex items-center gap-1.5">{t.icon && <Icon name={t.icon} size={16} />}{t.label}</span>

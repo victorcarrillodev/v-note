@@ -19,6 +19,6 @@ describe("tocFits", () => {
     expect(tocFits(5000, contentWidthOf("full"))).toBe(false);
   });
   it("el ancho de contenido sale de los tokens", () => {
-    expect([contentWidthOf("narrow"), contentWidthOf(undefined), contentWidthOf("wide")]).toEqual([600, 720, 960]);
+    expect([contentWidthOf("narrow"), contentWidthOf(undefined), contentWidthOf("wide")]).toEqual([800, 960, 1280]);
   });
 });

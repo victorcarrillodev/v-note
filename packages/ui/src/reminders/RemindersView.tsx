@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import type { SnoozeOption, Task } from "@vnote/core";
 import { useUndoToast } from "../feedback/useUndoToast";
 import type { ReminderCenter, Summary, SummaryItem } from "./reminderCenter";
+import { Dropdown } from "../components/ChoiceMenu";
 
 /** Recordatorios: vencidos de todos los espacios, tareas de hoy y agenda del espacio activo (RF-11, RF-12). */
 export function RemindersView({ center, activeWorkspaceId, onOpen }: { center: ReminderCenter; activeWorkspaceId: string | null; onOpen: (workspaceId: string, pageId: string) => void }) {
@@ -49,12 +50,12 @@ export function RemindersView({ center, activeWorkspaceId, onOpen }: { center: R
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
                   <Button size="sm" variant="primary" aria-label={t("reminders.markDone", { title: o.task.title })} onClick={() => complete(o.workspace.id, o.task.id)}>{t("reminders.done")}</Button>
                   <Button size="sm" aria-label={t("reminders.open", { title: o.task.title })} onClick={() => onOpen(o.workspace.id, o.task.pageId)}>{t("reminders.openShort")}</Button>
-                  <select aria-label={t("reminders.snooze", { title: o.task.title })} value="" onChange={(e) => e.target.value && void center.snooze(o.workspace.id, o.task.id, e.target.value as SnoozeOption)} className={cx(INPUT, "h-7 w-auto text-[length:var(--text-ui-small-size)]")}>
+                  <Dropdown aria-label={t("reminders.snooze", { title: o.task.title })} value="" onChange={(e) => e.target.value && void center.snooze(o.workspace.id, o.task.id, e.target.value as SnoozeOption)} className={cx(INPUT, "h-7 w-auto text-[length:var(--text-ui-small-size)]")}>
                     <option value="">{t("reminders.snoozeLabel")}</option>
                     <option value="10m">{t("reminders.snooze10")}</option>
                     <option value="1h">{t("reminders.snooze1h")}</option>
                     <option value="tomorrow">{t("reminders.snoozeTomorrow")}</option>
-                  </select>
+                  </Dropdown>
                   <Button size="sm" variant="ghost" aria-label={t("reminders.dismiss", { title: o.task.title })} onClick={() => void center.dismiss(o.workspace.id, o.task.id)}>{t("reminders.dismissShort")}</Button>
                 </div>
               </li>

@@ -1,7 +1,7 @@
 // T-121, T-122 (prueba primero): el menú «/» y los atajos de Markdown insertan los bloques estándar en la app real.
 import { describe, it, expect } from "vitest";
 import { stopApp, click, type, sleep, run } from "./webdriver";
-import { isolatedEnv, launch, ensureWorkspace, newPage, editorEl, editorText } from "./helpers";
+import { isolatedEnv, launch, ensureWorkspace, newPage, editorEl, editorText, chooseOption } from "./helpers";
 
 const ENTER = String.fromCharCode(0xe007);
 const env = isolatedEnv();
@@ -96,7 +96,7 @@ describe("bloques propios (T-123, T-125)", () => {
       await type(ed, "Cuidado con esto");
       await sleep(300);
       expect(await run<string>("return document.querySelector('.bn-editor [data-content-type=\"callout\"]').innerText")).toContain("Cuidado con esto");
-      await run("const s = document.querySelector('.bn-editor [data-content-type=\"callout\"] select'); s.value = 'danger'; s.dispatchEvent(new Event('change', { bubbles: true }));");
+      await chooseOption('.bn-editor [data-content-type="callout"] [role=combobox]', "danger");
       await sleep(400);
       expect(await run<string>("return document.querySelector('.bn-editor [data-callout-variant]').getAttribute('data-callout-variant')")).toBe("danger");
     } finally { await stopApp(); }
@@ -177,9 +177,9 @@ describe("bloque de código (U-163)", () => {
       await type(ed, ENTER);
       await sleep(500);
       expect(await count('[data-content-type="codeBlock"]')).toBe(1);
-      await run("const s = document.querySelector('.bn-editor [data-code-language]'); s.value = 'javascript'; s.dispatchEvent(new Event('change', { bubbles: true }));");
+      await chooseOption(".bn-editor [data-code-language]", "javascript");
       await sleep(300);
-      expect(await run<string>("return document.querySelector('.bn-editor [data-code-language]').value")).toBe("javascript");
+      expect(await run<string>("return document.querySelector('.bn-editor [data-code-language]').getAttribute('data-value')")).toBe("javascript");
       await run("try { Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__copiado = t; } }, configurable: true }); } catch (e) { window.__clipboardError = String(e); } window.__copiado = null;");
       await click(await find('.bn-editor [data-code-content]'));
       await type(ed, "const a = 1;");

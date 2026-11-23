@@ -4,7 +4,7 @@ import { PageStyleScope } from "./PageStyleScope";
 
 /**
  * Clases del contenedor de página: el ancho sale de la variable `--size-reading-width` que declara el estilo de la página
- * (estrecho, normal, amplio o sin límite). Sin estilo vale el ancho de lectura de siempre (720 px).
+ * (estrecho, normal, amplio o sin límite). Sin estilo vale el ancho de lectura de siempre (960 px).
  */
 export const pageLayoutClass = (): string => "mx-auto w-full max-w-[var(--size-reading-width)] p-6";
 

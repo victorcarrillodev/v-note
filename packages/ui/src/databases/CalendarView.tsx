@@ -10,6 +10,7 @@ import { addDaysIso, dayOf, daysBetween, monthMatrix, shiftRange } from "./dateU
 import { dateOf, dateProperty, titleOf } from "./viewHelpers";
 import { useDatabase } from "./useDatabase";
 import { EmptyState } from "../empty/EmptyState";
+import { DateInput } from "../components/DateInput";
 
 /** Vista calendario (mes): las filas en su día; arrastrar a otro día cambia la fecha (T-273, T-274). */
 export function CalendarView({ controller, today, onOpenRow, now = () => Date.now(), offsetMinutes = -new Date().getTimezoneOffset(), onCreateAt }: { controller: DatabaseController; today: string; onOpenRow?: (pageId: string) => void; now?: () => number; offsetMinutes?: number; onCreateAt?: (date: string, minute: number) => void }) {
@@ -152,7 +153,7 @@ function Chip({ row, prop, title, controller, onMove, onOpenRow }: { row: QueryR
   return (
     <div ref={drag.setNodeRef} {...drag.listeners} className={`flex items-center gap-1 rounded bg-[var(--selected)] px-1 ${drag.isDragging ? "opacity-50" : ""}`} style={{ touchAction: "none" }}>
       <button type="button" className="min-w-0 flex-1 truncate text-left" onClick={() => onOpenRow?.(row.pageId)}>{title}</button>
-      <input type="date" aria-label={t("databases.changeDate", { title })} value={cur ? dayOf(cur.start) : ""} onPointerDown={(e) => e.stopPropagation()} onChange={(e) => e.target.value && onMove(row, e.target.value)} className="w-5 shrink-0 opacity-60" />
+      <DateInput type="date" aria-label={t("databases.changeDate", { title })} value={cur ? dayOf(cur.start) : ""} onPointerDown={(e) => e.stopPropagation()} onChange={(e) => e.target.value && onMove(row, e.target.value)} compact className="shrink-0" />
     </div>
   );
 }

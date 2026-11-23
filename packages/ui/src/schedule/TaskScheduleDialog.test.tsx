@@ -4,6 +4,7 @@ import { screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { TaskScheduleDialog, type ScheduleValues } from "./TaskScheduleDialog";
+import { choose } from "../../tests/dropdown";
 
 const NOW = "2026-03-04T10:00";
 async function open(props: Partial<React.ComponentProps<typeof TaskScheduleDialog>> = {}) {
@@ -98,7 +99,7 @@ describe("validación del horario (U-231)", () => {
   });
   it("cambiar la duración mueve la hora de fin", async () => {
     const { user } = await open({ initial: { date: "2026-03-06", startTime: "15:00" } });
-    await user.selectOptions(screen.getByLabelText("Duración"), "90");
+    await choose(user, screen.getByLabelText("Duración"), "90");
     expect(screen.getByLabelText("Hora de fin")).toHaveValue("16:30");
   });
 });
@@ -107,7 +108,7 @@ describe("recordatorio en el pasado (U-232)", () => {
   it("avisa y ofrece guardar como vencida o cambiar la hora", async () => {
     const { onSave, user } = await open({ initial: { date: "2026-03-04", startTime: "09:00" } });
     await user.type(screen.getByLabelText("Título"), "Ya pasó");
-    await user.selectOptions(screen.getByLabelText("Recordatorio"), "at_start");
+    await choose(user, screen.getByLabelText("Recordatorio"), "at_start");
     await user.click(screen.getByRole("button", { name: "Guardar" }));
     expect(onSave).not.toHaveBeenCalled();
     const alert = await screen.findByRole("group", { name: "Recordatorio en el pasado" });
@@ -118,7 +119,7 @@ describe("recordatorio en el pasado (U-232)", () => {
   it("«Cambiar la hora» devuelve el foco al campo de inicio", async () => {
     const { user } = await open({ initial: { date: "2026-03-04", startTime: "09:00" } });
     await user.type(screen.getByLabelText("Título"), "X");
-    await user.selectOptions(screen.getByLabelText("Recordatorio"), "at_start");
+    await choose(user, screen.getByLabelText("Recordatorio"), "at_start");
     await user.click(screen.getByRole("button", { name: "Guardar" }));
     await user.click(within(await screen.findByRole("group", { name: "Recordatorio en el pasado" })).getByRole("button", { name: "Cambiar la hora" }));
     await waitFor(() => expect(screen.getByLabelText("Hora de inicio")).toHaveFocus());

@@ -30,7 +30,7 @@ describe("recordatorios en el navegador", () => {
     await p.waitFor("document.querySelector('.bn-editor input[type=datetime-local]')");
     // fecha límite, repetición diaria (T-310) y un aviso ya pasado
     await setValue(p, '.bn-editor input[type=date][aria-label="Fecha límite"]', "2026-01-01");
-    await setValue(p, '.bn-editor select[aria-label="Repetir"]', "daily");
+    await setValue(p, '.bn-editor [role=combobox][aria-label="Repetir"]', "daily");
     await setValue(p, '.bn-editor input[aria-label="Recordatorio"]', "2026-01-01T09:00");
     await p.waitFor("document.querySelector('.bn-editor [role=note]')", 5000); // T-299: avisa que ya pasó
     // T-308: el navegador recibe una notificación con el título de la tarea
@@ -50,8 +50,8 @@ describe("recordatorios en el navegador", () => {
     await p.waitFor("document.querySelector('.bn-editor input[aria-label=\"Fecha límite\"]')?.value === '2026-01-02'", 10000);
     // posponer: desaparece de vencidos
     await clickButton(p, "Recordatorios");
-    await p.waitFor("document.querySelector('select[aria-label=\"Posponer Pagar luz\"]')");
-    await setValue(p, 'select[aria-label="Posponer Pagar luz"]', "tomorrow");
+    await p.waitFor("document.querySelector('[role=combobox][aria-label=\"Posponer Pagar luz\"]')");
+    await setValue(p, '[role=combobox][aria-label="Posponer Pagar luz"]', "tomorrow");
     await p.waitFor("!document.querySelector('[aria-label=\"Vencidos\"]')", 8000);
     await p.close();
   }, 120000);

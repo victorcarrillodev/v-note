@@ -64,14 +64,18 @@ export function AppShell({ sidebar, header, children, preferences }: { sidebar: 
           <aside
             id="barra-lateral"
             aria-label={t("shell.sidebar")}
-            hidden={!visible}
+            style={{
+              visibility: visible ? "visible" : "hidden",
+              transition: `${overlay ? "transform" : "width"} var(--motion-slow) var(--ease-out), visibility 0s linear ${visible ? "0s" : "var(--motion-slow)"}`,
+              ...(overlay ? { transform: visible ? "translateX(0)" : "translateX(-100%)" } : { width: visible ? "var(--size-sidebar-width)" : "0px" }),
+            }}
             className={
               overlay
-                ? "fixed left-0 top-0 z-[calc(var(--z-sidebar-overlay)+1)] h-full w-[var(--size-sidebar-width)] overflow-y-auto border-r border-[var(--c-border)] bg-[var(--c-sidebar)] shadow-[var(--elevation-3)]"
-                : "w-[var(--size-sidebar-width)] shrink-0 overflow-y-auto border-r border-[var(--c-border)] bg-[var(--c-sidebar)]"
+                ? "fixed left-0 top-0 z-[calc(var(--z-sidebar-overlay)+1)] h-full w-[var(--size-sidebar-width)] overflow-hidden border-r border-[var(--c-border)] bg-[var(--c-sidebar)] shadow-[var(--elevation-3)]"
+                : "w-[var(--size-sidebar-width)] shrink-0 overflow-hidden bg-[var(--c-sidebar)]"
             }
           >
-            {sidebar}
+            <div className={`h-full w-[var(--size-sidebar-width)] overflow-y-auto ${overlay ? "" : "border-r border-[var(--c-border)]"}`}>{sidebar}</div>
           </aside>
           <div className="flex min-w-0 flex-1 flex-col">
             <header className="flex h-[var(--size-header-height)] shrink-0 items-center gap-2 border-b border-[var(--c-border)] bg-[var(--c-canvas)] px-3">

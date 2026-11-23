@@ -95,6 +95,8 @@ export const pageFonts: Record<string, { family: string; file: string; fallback:
 };
 
 /** Valores de partida del editor de portadas (selector de color y degradado propio), fijos para cualquier tema. */
+/** Colores predefinidos del selector de color estándar (`ColorInput`). */
+export const colorPresets = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#14b8a6", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6", "#d946ef", "#ec4899", "#64748b", "#1f2937", "#ffffff"];
 export const coverEditor = { neutral: "#808080", gradientStart: "#f3e7d3", gradientEnd: "#b9d6f2", gradientThird: "#e9d4b5" } as const;
 
 type Level = { size: number; line: number; weight: 400 | 500 | 600 | 700 };
@@ -138,12 +140,12 @@ export const motion = { instant: 0, fast: 100, base: 150, slow: 220, exit: 120, 
 export const layers = { content: 0, sticky: 10, sidebarOverlay: 30, menu: 40, tooltip: 50, scrim: 55, dialog: 60, toast: 70, skipLink: 100 } as const;
 
 /** Tamaños estructurales (modales, panel lateral, popover). */
-export const sizes = { modalS: 400, modalM: 520, modalL: 720, popoverMax: 360, panelWidth: 380, drawerWidth: 560, paletteWidth: 640, sidebarWidth: 240, headerHeight: 44, readingWidth: 720, windowMargin: 24, windowMin: 900 } as const;
+export const sizes = { modalS: 400, modalM: 520, modalL: 720, popoverMax: 360, panelWidth: 380, drawerWidth: 560, paletteWidth: 640, sidebarWidth: 240, headerHeight: 44, readingWidth: 960, windowMargin: 24, windowMin: 900 } as const;
 
 
 /** Estilo de página (spec 005, plan §4.1): valores de cada opción del menú. El núcleo solo nombra estas variables (cssVarsFor). */
 export const pageStyle = {
-  widths: { narrow: 600, normal: 720, wide: 960 },
+  widths: { narrow: 800, normal: 960, wide: 1280 },
   textSizes: { small: 15, normal: 17, large: 19 },
   /** Altura de línea sin unidad: así sigue al tamaño de texto que se elija. */
   leadings: { compact: 1.45, normal: 1.625, relaxed: 1.85 },

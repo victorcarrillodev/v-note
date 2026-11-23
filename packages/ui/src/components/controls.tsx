@@ -1,8 +1,11 @@
 import * as S from "@radix-ui/react-switch";
 import * as TG from "@radix-ui/react-toggle-group";
-import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { Popover } from "./Popover";
 import { cx } from "../design/cx";
 import { Icon } from "../design/Icon";
+import { colorPresets } from "../design/tokens";
 
 /** Casilla estándar de la aplicación: ≥ 18 px, foco visible y estado marcado con ícono (forma), no solo con color. Sin `label` visible, pasa `ariaLabel`. */
 export function Checkbox({ label, ariaLabel, checked, onChange, disabled = false, className }: { label?: ReactNode; ariaLabel?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; className?: string }) {
@@ -20,12 +23,53 @@ export function Checkbox({ label, ariaLabel, checked, onChange, disabled = false
   );
 }
 
-/** Selector de color estándar: muestra el color como una muestra redonda sin borde; el selector nativo del sistema queda invisible encima. */
+const HEX6 = /^#[0-9a-fA-F]{6}$/;
+
+/** Botón de opción estándar: círculo con punto interior (forma, no solo color), foco visible; el `<input type="radio">` sigue siendo el control real. */
+export function Radio({ name, checked, onChange, disabled = false, ariaLabel }: { name: string; checked: boolean; onChange: () => void; disabled?: boolean; ariaLabel?: string }) {
+  return (
+    <span className="relative inline-flex size-4.5 shrink-0 items-center justify-center [@media(pointer:coarse)]:size-6">
+      <input type="radio" name={name} checked={checked} disabled={disabled} onChange={onChange} {...(ariaLabel ? { "aria-label": ariaLabel } : {})} className="peer absolute inset-0 m-0 h-full w-full cursor-[inherit] opacity-0" />
+      <span aria-hidden="true" className={cx("inline-flex h-full w-full items-center justify-center rounded-full border transition-colors duration-100 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--c-accent)]", checked ? "border-[var(--c-accent)]" : "border-[var(--c-border-control)] bg-[var(--c-card)]")}>
+        {checked && <span className="size-2 rounded-full bg-[var(--c-accent)]" />}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * Selector de color estándar: una muestra redonda que abre un panel con colores predefinidos y un campo hexadecimal, con el mismo
+ * estilo que el resto de menús (ya no se abre la ventana de color del sistema). El `<input type="color">` sigue en el documento,
+ * oculto, como respaldo accesible y para pruebas.
+ */
 export function ColorInput({ label, value, onChange, className }: { label: string; value: string; onChange: (hex: string) => void; className?: string }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState(value);
+  const [shown, setShown] = useState(value);
+  if (value !== shown) { setShown(value); setText(value); }
+  const apply = (hex: string) => { setText(hex); onChange(hex); };
   return (
     <span className={cx("relative inline-block size-8 shrink-0 [@media(pointer:coarse)]:size-11", className)}>
-      <input type="color" aria-label={label} title={label} value={value} onChange={(e) => onChange(e.target.value)} className="peer absolute inset-0 m-0 h-full w-full cursor-pointer opacity-0" />
-      <span aria-hidden="true" style={{ background: value }} className="pointer-events-none block h-full w-full rounded-full transition-shadow duration-100 peer-hover:ring-2 peer-hover:ring-[var(--c-border-control)] peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--c-accent)]" />
+      <input type="color" aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} tabIndex={-1} className="sr-only" />
+      <Popover open={open} onOpenChange={setOpen} align="start" trigger={
+        <button type="button" title={label} aria-label={t("color.open", { label })} aria-haspopup="dialog" className="peer block h-full w-full cursor-pointer rounded-full outline-none ring-offset-0 transition-shadow duration-100 hover:ring-2 hover:ring-[var(--c-border-control)] focus-visible:ring-2 focus-visible:ring-[var(--c-accent)]" style={{ background: value }} />
+      }>
+        <div className="flex w-48 flex-col gap-2">
+          <div role="group" aria-label={label} className="grid grid-cols-8 gap-1">
+            {colorPresets.map((c) => (
+              <button key={c} type="button" aria-label={c} aria-pressed={c.toLowerCase() === value.toLowerCase()} onClick={() => apply(c)} style={{ background: c }} className="size-5 rounded-full border border-[var(--c-border)] outline-none hover:scale-110 focus-visible:ring-2 focus-visible:ring-[var(--c-accent)] aria-pressed:ring-2 aria-pressed:ring-[var(--c-accent)]" />
+            ))}
+          </div>
+          <input
+            aria-label={t("color.hex")}
+            value={text}
+            spellCheck={false}
+            onChange={(e) => { setText(e.target.value); if (HEX6.test(e.target.value)) onChange(e.target.value); }}
+            className="h-8 w-full rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-2.5 font-[family-name:var(--font-mono)] text-[length:var(--text-ui-size)] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--c-accent)]"
+          />
+        </div>
+      </Popover>
     </span>
   );
 }

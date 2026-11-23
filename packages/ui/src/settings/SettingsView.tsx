@@ -12,6 +12,7 @@ import { IconButton } from "../components/IconButton";
 import { ViewLayout, ViewSection } from "../components/ViewLayout";
 import { Drawer } from "../components/Drawer";
 import { INPUT, MUTED } from "../components/formStyles";
+import { Dropdown } from "../components/ChoiceMenu";
 
 type Pending = { actionId: string; combo: string; others: string[] };
 
@@ -56,7 +57,7 @@ export function SettingsContent({ preferences }: { preferences: PreferenceStore 
       <ViewSection title={t("settings.language")} flush>
         <div className={SETTING}>
           <span className={MUTED}>{t("settings.languageHint")}</span>
-          <select
+          <Dropdown
             aria-label={t("settings.language")}
             value={i18n.language === "en" ? "en" : "es-MX"}
             onChange={(e) => { preferences.set("language", e.target.value); void i18n.changeLanguage(e.target.value); }}
@@ -64,7 +65,7 @@ export function SettingsContent({ preferences }: { preferences: PreferenceStore 
           >
             <option value="es-MX">{t("settings.spanish")}</option>
             <option value="en">{t("settings.english")}</option>
-          </select>
+          </Dropdown>
         </div>
       </ViewSection>
 

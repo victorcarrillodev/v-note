@@ -30,8 +30,21 @@ export async function startWeb(serverPort: number, cdpPort: number): Promise<Web
 /** Campo «Nombre del espacio»: el rediseño usa una etiqueta visible en lugar de aria-label. */
 const SPACE_INPUT_EXPR = `(() => { const l = [...document.querySelectorAll('label')].find(l => l.innerText.trim() === 'Nombre del espacio'); return l && document.getElementById(l.htmlFor); })()`;
 export const clickButton = (p: Page, text: string) => p.eval(`[...document.querySelectorAll('button')].find(b => b.innerText.trim() === ${JSON.stringify(text)} || b.getAttribute('aria-label') === ${JSON.stringify(text)}).click()`);
-export const setValue = (p: Page, selector: string, value: string) =>
-  p.eval(`(() => { const i = document.querySelector(${JSON.stringify(selector)}); const proto = i instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype; const set = Object.getOwnPropertyDescriptor(proto, 'value').set; set.call(i, ${JSON.stringify(value)}); i.dispatchEvent(new Event(i instanceof HTMLSelectElement ? 'change' : 'input', { bubbles: true })); })()`);
+/** Escribe en un campo o elige una opción de un `Dropdown` (menú propio de la app: se abre con un clic y se pulsa la opción por su valor). */
+export async function setValue(p: Page, selector: string, value: string): Promise<void> {
+  const dropdown = await p.eval<boolean>(`document.querySelector(${JSON.stringify(selector)})?.getAttribute('role') === 'combobox'`);
+  if (dropdown) {
+    await p.eval(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({ block: 'center', inline: 'center' })`);
+    await new Promise((r) => setTimeout(r, 400)); // el panel puede estar deslizándose
+    await p.click(selector);
+    const option = `[role=menuitemradio][data-value=${JSON.stringify(value)}]`;
+    await p.waitFor(`!!document.querySelector(${JSON.stringify(option)})`);
+    await p.click(option);
+    await p.waitFor(`!document.querySelector('[role=menuitemradio]')`);
+    return;
+  }
+  await p.eval(`(() => { const i = document.querySelector(${JSON.stringify(selector)}); const proto = i instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype; const set = Object.getOwnPropertyDescriptor(proto, 'value').set; set.call(i, ${JSON.stringify(value)}); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+}
 
 /** Crea el espacio si es el primer inicio y espera la barra lateral. */
 export async function ensureSpace(p: Page, name = "Personal") {
@@ -72,4 +85,14 @@ export async function clickTab(p: Page, text: string) {
   await p.eval(`(() => { const t = [...document.querySelectorAll('[role=tab]')].find(t => t.innerText.trim() === ${JSON.stringify(text)}); t.setAttribute('data-e2e-tab', ''); })()`);
   await p.click("[data-e2e-tab]");
   await p.eval("document.querySelector('[data-e2e-tab]')?.removeAttribute('data-e2e-tab')");
+}
+
+/** Valor de la opción con ese texto en un `Dropdown` (equivale a buscar en `select.options`): abre el menú, lo lee y lo cierra con Escape. */
+export async function optionValue(p: Page, selector: string, label: string): Promise<string> {
+  await p.click(selector);
+  await p.waitFor("!!document.querySelector('[role=menuitemradio]')");
+  const value = await p.eval<string>(`[...document.querySelectorAll('[role=menuitemradio]')].find(o => o.textContent.trim() === ${JSON.stringify(label)}).getAttribute('data-value')`);
+  await p.key("Escape", "Escape", 27);
+  await p.waitFor("!document.querySelector('[role=menuitemradio]')");
+  return value;
 }

@@ -26,7 +26,7 @@ export function DatabaseSearch({ controller }: { controller: DatabaseController 
         onChange={(e) => void controller.setKeyword(e.target.value)}
         onBlur={() => setOpen(false)}
         onKeyDown={(e) => { if (e.key === "Escape") { void controller.setKeyword(""); setOpen(false); input.current?.blur(); } }}
-        className={cx("h-8 rounded-[var(--radius-md)] bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-size)] transition-[width,opacity] duration-200 motion-reduce:transition-none", shown ? "w-48 opacity-100" : "w-0 px-0 opacity-0")}
+        className={cx("h-8 rounded-[var(--radius-md)] bg-[var(--c-card)] px-2 text-[length:var(--text-ui-size)] outline-none transition-[width,opacity] duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--c-accent)] motion-reduce:transition-none", shown ? "w-48 border border-[var(--c-border-control)] opacity-100" : "w-0 border-0 px-0 opacity-0")}
       />
     </span>
   );

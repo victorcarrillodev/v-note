@@ -1,7 +1,8 @@
 import { useId, type ReactNode } from "react";
 import { cx } from "../design/cx";
+import { Dropdown } from "./ChoiceMenu";
 
-const CONTROL = "w-full rounded bg-[var(--c-raised)] px-2 text-[length:var(--text-ui-size)] text-[var(--c-text)] placeholder:text-[var(--c-text-placeholder)] disabled:cursor-not-allowed disabled:opacity-60";
+const CONTROL = "w-full rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-2.5 outline-none hover:bg-[var(--c-raised)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--c-accent)] text-[length:var(--text-ui-size)] text-[var(--c-text)] placeholder:text-[var(--c-text-placeholder)] disabled:cursor-not-allowed disabled:opacity-60";
 const border = (error?: string) => (error ? "ring-1 ring-[var(--c-danger)]" : "");
 
 function Field({ id, label, error, children }: { id: string; label: string; error?: string | undefined; children: ReactNode }) {
@@ -39,9 +40,9 @@ export function Select({ label, value, onChange, options, error }: { label: stri
   const id = useId();
   return (
     <Field id={id} label={label} error={error}>
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} {...describe(id, error)} className={cx(CONTROL, "h-8", border(error))}>
+      <Dropdown id={id} value={value} onChange={(e) => onChange(e.target.value)} className={error ? "!border-[var(--c-danger)]" : ""}>
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      </Dropdown>
     </Field>
   );
 }

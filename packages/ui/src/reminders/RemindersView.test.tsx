@@ -10,6 +10,7 @@ import { MemoryNotifier } from "./notifier";
 import { ReminderCenter } from "./reminderCenter";
 import { RemindersView } from "./RemindersView";
 import { ToastProvider } from "../feedback/ToastContext";
+import { choose, dropdownOptions } from "../../tests/dropdown";
 
 const task = (id: string, title: string, props: Record<string, unknown>): Block => ({ id, type: "task", props: { checked: false, due: "", remindAt: "", recurrence: "", ...props }, content: [{ type: "text", text: title, styles: {} }], children: [] });
 const upd = (blocks: Block[]) => { const d = new Y.Doc(); toYjs(blocks, d.getXmlFragment("doc")); return Y.encodeStateAsUpdate(d); };
@@ -75,8 +76,8 @@ describe("acciones sobre un vencido (T-307, T-313)", () => {
   it("«Posponer» ofrece 10 minutos, 1 hora o mañana, y lo oculta", async () => {
     const { user } = await setup({ Personal: [task("a", "Pagar luz", { remindAt: "2026-03-04T09:00" })] });
     const sel = await screen.findByLabelText("Posponer Pagar luz");
-    expect([...sel.querySelectorAll("option")].map((o) => o.textContent)).toEqual(["Posponer…", "10 minutos", "1 hora", "Hasta mañana"]);
-    await user.selectOptions(sel, "1h");
+    expect((await dropdownOptions(sel)).map((o) => o.label)).toEqual(["Posponer…", "10 minutos", "1 hora", "Hasta mañana"]);
+    await choose(user, sel, "1h");
     await waitFor(() => expect(screen.queryByRole("list", { name: "Vencidos" })).toBeNull());
   });
   it("«Descartar» lo quita sin marcar la tarea", async () => {

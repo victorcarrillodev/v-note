@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { COMPUTED_TYPES, type CellValue, type DateValue, type ErrorValue, type Property, type Result } from "@vnote/core";
 import { Checkbox } from "../components/controls";
+import { Dropdown } from "../components/ChoiceMenu";
+import { DateInput } from "../components/DateInput";
+import { INPUT } from "../components/formStyles";
 
 export type CellProps = {
   prop: Property;
@@ -60,10 +63,10 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
     case "status":
       return (
         <>
-          <select aria-label={prop.name} value={typeof value === "string" ? value : ""} onChange={(e) => void commit(e.target.value === "" ? null : e.target.value)} className="w-full bg-transparent">
+          <Dropdown aria-label={prop.name} value={typeof value === "string" ? value : ""} onChange={(e) => void commit(e.target.value === "" ? null : e.target.value)} className="w-full">
             <option value="">{t("databases.noValue")}</option>
             {(prop.config.options ?? []).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-          </select>
+          </Dropdown>
           <ErrorNote message={error} />
         </>
       );
@@ -82,7 +85,7 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
       const asTask = prop.config.asTask === true;
       return (
         <>
-          <input
+          <DateInput
             type={d?.start?.includes("T") ? "datetime-local" : "date"}
             aria-label={t("databases.startDate", { name: prop.name })}
             value={d?.start ?? ""}
@@ -90,10 +93,10 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
           />
           {asTask && (
             <div className="mt-1 flex flex-col gap-1 text-xs">
-              <input type="datetime-local" disabled={!d} aria-label={t("databases.remindAt", { name: prop.name })} value={d?.remind ?? ""} onChange={(e) => { if (!d) return; const { remind: _r, ...rest } = d; void commit(e.target.value === "" ? rest : { ...rest, remind: e.target.value }); }} />
-              <select aria-label={t("task.repeat")} disabled={!d} value={d?.repeat?.freq ?? ""} onChange={(e) => { if (!d) return; const { repeat: _p, ...rest } = d; void commit(e.target.value === "" ? rest : { ...rest, repeat: { freq: e.target.value, interval: 1 } }); }}>
+              <DateInput type="datetime-local" disabled={!d} aria-label={t("databases.remindAt", { name: prop.name })} value={d?.remind ?? ""} onChange={(e) => { if (!d) return; const { remind: _r, ...rest } = d; void commit(e.target.value === "" ? rest : { ...rest, remind: e.target.value }); }} />
+              <Dropdown aria-label={t("task.repeat")} disabled={!d} value={d?.repeat?.freq ?? ""} onChange={(e) => { if (!d) return; const { repeat: _p, ...rest } = d; void commit(e.target.value === "" ? rest : { ...rest, repeat: { freq: e.target.value, interval: 1 } }); }}>
                 <option value="">{t("task.never")}</option><option value="daily">{t("task.daily")}</option><option value="weekly">{t("task.weekly")}</option><option value="monthly">{t("task.monthly")}</option><option value="yearly">{t("task.yearly")}</option>
-              </select>
+              </Dropdown>
             </div>
           )}
           <ErrorNote message={error} />
@@ -115,7 +118,7 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
             onChange={(e) => setDraft(e.target.value)}
             onBlur={(e) => { const cur = typeof value === "number" || typeof value === "string" ? String(value) : ""; const typed = e.currentTarget.value; /* se lee del campo: el borrador puede ir un render por detrás si se pulsa Enter justo al escribir */ if (typed !== cur) void commit(typed); }}
             onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-            className="w-full bg-transparent"
+            className="w-full"
           />
           <ErrorNote message={error} />
         </>

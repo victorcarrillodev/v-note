@@ -172,6 +172,7 @@ export const en: Widen<typeof esMX> = {
     },
   },
   trash: {
+    hint: "Deleted pages are kept for {{days}} days before being removed for good.",
     title: "Trash",
     empty: "The trash is empty.",
     restore: "Restore",
@@ -193,7 +194,7 @@ export const en: Widen<typeof esMX> = {
   calendar: { mode: "Calendar view", month: "Month", week: "Week", grid: "Weekly calendar", allDay: "All day", hour: "Hour", moreSimultaneous: "+{{count}} more", simultaneous: "Simultaneous events" },
   schedule: {
     title: "New scheduled task", titleLabel: "Title", date: "Date", start: "Start time", end: "End time", duration: "Duration", remind: "Reminder", repeat: "Repeat",
-    pickDate: "Pick a date", pickStart: "Pick start time", pickEnd: "Pick end time", hours: "Hours",
+    pickTime: "Pick a time", minutes: "Minutes", pickDate: "Pick a date", pickStart: "Pick start time", pickEnd: "Pick end time", hours: "Hours",
     minutes_one: "{{count}} minute", minutes_other: "{{count}} minutes",
     remindOption: { none: "No reminder", at_start: "At start", "10m": "10 minutes before", "1h": "1 hour before", "1d": "1 day before" },
     invalidTime: "Enter a valid time, for example 09:30.", invalidDate: "Enter a valid date, for example 2026-03-05.",
@@ -211,6 +212,9 @@ export const en: Widen<typeof esMX> = {
     back: "Go to workspaces",
   },
   workspace: {
+    hint: "Each workspace has its own pages, tags and settings.",
+    current: "Current",
+    newSection: "New workspace",
     activeLabel: "Active workspace:",
     pickFolder: "Choose folder…",
     title: "Workspaces",
@@ -237,7 +241,9 @@ export const en: Widen<typeof esMX> = {
     confirmDelete: "Delete",
     cancel: "Cancel",
   },
+  dialog: { discardTitle: "Discard changes?", discardBody: "There are unsaved changes that will be lost.", discard: "Discard changes", keepEditing: "Keep editing" },
   shell: {
+    close: "Close",
     sidebar: "Sidebar",
     hideSidebar: "Hide sidebar",
     showSidebar: "Show sidebar",
@@ -252,6 +258,7 @@ export const en: Widen<typeof esMX> = {
     mosaic: "Mosaic", columns: "Columns", carousel: "Carousel", add: "Add images", uploading: "Uploading…", failed: "Some images could not be added.",
     empty: "No images yet. Add or drag photos here.", image: "Image", remove: "Remove {{name}}", previous: "Previous image", next: "Next image",
   },
+  color: { open: "Open color picker: {{label}}", hex: "Hex color" },
   editor: {
     noResults: "No matches",
     noResultsGroup: "Results",
@@ -266,6 +273,8 @@ export const en: Widen<typeof esMX> = {
     linkCardHint: "Card with a link",
     codeText: "Text",
     codeLanguage: "Block language",
+    codeTheme: "Code color theme",
+    codeSuggestions: "Code suggestions",
     copy: "Copy",
     copied: "Copied",
     copyCode: "Copy code",
@@ -277,6 +286,10 @@ export const en: Widen<typeof esMX> = {
     saveFailed: "The change could not be saved: {{message}}. It will be retried automatically.",
   },
   backup: {
+    hint: "Back up your notes to a private GitHub repository.",
+    connectSection: "Connect to GitHub",
+    connectHint: "The token is stored only in the system keychain, never in files or logs.",
+    noHistory: "No backups yet.",
     title: "GitHub backup",
     webNotice: "In the browser, scheduled backups only run while the app is open.",
     independentNotice: "The web and desktop versions do not share data; use restore from GitHub to move content between them.",
@@ -327,6 +340,9 @@ export const en: Widen<typeof esMX> = {
     },
   },
   restore: {
+    steps: { connect: "Connect", pick: "Choose backup", destination: "Destination" },
+    hint: "Recover your notes from the GitHub backup repository.",
+    stepsLabel: "Restore steps",
     title: "Restore from GitHub",
     available: "Available backups",
     none: "There are no backups in this repository.",

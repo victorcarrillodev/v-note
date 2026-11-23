@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { FIELD_CONTROL, FIELD_LABEL, PANEL_BUTTON } from "./panelStyles";
 import { CURVATURE_MAX, CURVATURE_MIN, DEFAULT_CURVATURE, ROUTES, type DEdge, type Point, type Route } from "@vnote/core";
 import { Checkbox } from "../components/controls";
+import { Dropdown } from "../components/ChoiceMenu";
 
 /** Controles del trazado del conector seleccionado: son la vía de teclado equivalente a arrastrar tramos, asas y puntos (RF-18, DP-10). */
 export function RouteControls({ edge, onRoute, onReset, onCurvature, onSmooth, onPointChange, onAddPoint, onRemovePoint }: {
@@ -13,9 +14,9 @@ export function RouteControls({ edge, onRoute, onReset, onCurvature, onSmooth, o
   return (
     <div className="flex flex-wrap items-end gap-3">
       <label className={FIELD_LABEL}>{t("diagram.route")}
-        <select className={FIELD_CONTROL} aria-label={t("diagram.route")} value={edge.route} onChange={(e) => onRoute(e.target.value as Route)}>
+        <Dropdown aria-label={t("diagram.route")} value={edge.route} onChange={(e) => onRoute(e.target.value as Route)}>
           {ROUTES.map((r) => <option key={r} value={r}>{t(`diagram.routes.${r}`)}</option>)}
-        </select>
+        </Dropdown>
       </label>
       {edge.route === "orthogonal" && (edge.waypoints?.length ?? 0) > 0 && <button type="button" className={PANEL_BUTTON} onClick={onReset}>{t("diagram.resetRoute")}</button>}
       {edge.route === "curved" && (

@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { advanceSchedule, validateRecurrence, type Frequency, type Recurrence } from "@vnote/core";
 import { Checkbox } from "../components/controls";
+import { Dropdown } from "../components/ChoiceMenu";
+import { DateInput } from "../components/DateInput";
 
 export type TaskProps = { checked: boolean; due: string; remindAt: string; recurrence: string; durationMin?: string };
 
@@ -33,19 +35,19 @@ export function TaskBlockView({ props, onChange, now, content }: { props: TaskPr
       </div>
       <div className="ml-6 flex flex-wrap items-center gap-2 text-xs" contentEditable={false}>
         <label className="flex items-center gap-1">{t("task.due")}
-          <input type="date" aria-label={t("task.due")} value={props.due} onChange={(e) => onChange({ due: e.target.value })} />
+          <DateInput type="date" aria-label={t("task.due")} value={props.due} onChange={(e) => onChange({ due: e.target.value })} />
         </label>
         <label className="flex items-center gap-1">{t("task.remind")}
-          <input type="datetime-local" aria-label={t("task.remind")} value={props.remindAt} onChange={(e) => onChange({ remindAt: e.target.value })} />
+          <DateInput type="datetime-local" aria-label={t("task.remind")} value={props.remindAt} onChange={(e) => onChange({ remindAt: e.target.value })} />
         </label>
         <label className="flex items-center gap-1">{t("task.repeat")}
-          <select aria-label={t("task.repeat")} value={rule?.freq ?? ""} onChange={(e) => onChange({ recurrence: e.target.value === "" ? "" : JSON.stringify({ freq: e.target.value as Frequency, interval: 1 }) })}>
+          <Dropdown aria-label={t("task.repeat")} value={rule?.freq ?? ""} onChange={(e) => onChange({ recurrence: e.target.value === "" ? "" : JSON.stringify({ freq: e.target.value as Frequency, interval: 1 }) })}>
             <option value="">{t("task.never")}</option>
             <option value="daily">{t("task.daily")}</option>
             <option value="weekly">{t("task.weekly")}</option>
             <option value="monthly">{t("task.monthly")}</option>
             <option value="yearly">{t("task.yearly")}</option>
-          </select>
+          </Dropdown>
         </label>
       </div>
       {pastReminder && <p role="note" className="ml-6 text-xs text-[var(--chip-warning-fg)]">{t("task.pastReminder")}</p>}

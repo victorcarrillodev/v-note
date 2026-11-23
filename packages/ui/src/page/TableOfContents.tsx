@@ -21,7 +21,7 @@ function useFits(contentWidth: number): boolean {
 }
 
 /** Tabla de contenidos: columna lateral en ventanas amplias, menú «En esta página» en las demás (RF-5.8). */
-export function TableOfContents({ headings, activeId, onJump, contentWidth = 720 }: { headings: readonly Heading[]; activeId: string | null; onJump: (id: string, behavior: JumpBehavior) => void; contentWidth?: number }) {
+export function TableOfContents({ headings, activeId, onJump, contentWidth = 960 }: { headings: readonly Heading[]; activeId: string | null; onJump: (id: string, behavior: JumpBehavior) => void; contentWidth?: number }) {
   const { t } = useTranslation();
   const wide = useFits(contentWidth);
   if (!shouldShowToc(headings)) return null;

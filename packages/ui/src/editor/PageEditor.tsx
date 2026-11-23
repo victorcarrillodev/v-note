@@ -29,6 +29,7 @@ import { saveStatusStore } from "../layout/saveStatusStore";
 import { handlePaste } from "./pasteHandler";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
+import { codeExtension } from "./code/codeExtension";
 import "./editor.css";
 
 function findPage(tree: readonly PageNode[], id: string): Page | null {
@@ -173,8 +174,9 @@ function Editor({ session, locked, handlers, findPages }: { session: DocSession;
     () => ({ fragment: session.doc.getXmlFragment("doc"), provider: { awareness: new Awareness(session.doc) }, user: { name: "yo", color: "var(--c-accent)" } }),
     [session],
   );
+  const collabOptions = useMemo(() => withCollaboration({ collaboration }), [collaboration]);
   const editor = useCreateBlockNote(
-    { ...withCollaboration({ collaboration }), schema, domAttributes: { editor: { "aria-label": t("editor.label") } }, pasteHandler: handlePaste, ...(handlers ? { uploadFile: handlers.uploadFile, resolveFileUrl: handlers.resolveFileUrl } : {}), dictionary: i18n.language.startsWith("es") ? bnEs : bnEn },
+    { ...collabOptions, extensions: [...(collabOptions.extensions ?? []), codeExtension(t("editor.codeSuggestions"))], schema, domAttributes: { editor: { "aria-label": t("editor.label") } }, pasteHandler: handlePaste, ...(handlers ? { uploadFile: handlers.uploadFile, resolveFileUrl: handlers.resolveFileUrl } : {}), dictionary: i18n.language.startsWith("es") ? bnEs : bnEn },
     [session, i18n.language],
   );
   /** Menú de menciones (`@` o `[[`): páginas que coinciden con lo escrito. */
