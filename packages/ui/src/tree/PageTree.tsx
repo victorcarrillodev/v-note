@@ -98,7 +98,7 @@ export function PageTree({ nodes, expanded, selectedId, onSelect, onToggle, onMo
       aria-activedescendant={selectedId ? `ti-${selectedId}` : undefined}
       tabIndex={0}
       onKeyDown={onKeyDown}
-      style={{ height, overflow: "auto", position: "relative" }}
+      style={{ height, maxHeight: "100%", overflow: "auto", position: "relative" }}
     >
       <div style={{ height: virtualizer.getTotalSize(), position: "relative", width: "100%" }}>
         {virtualizer.getVirtualItems().map((v) => {

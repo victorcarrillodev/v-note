@@ -243,6 +243,7 @@ export const en: Widen<typeof esMX> = {
     reveal: "Open folder",
     revealItem: "Open folder of {{name}}",
     renameItem: "Rename {{name}}",
+    colorItem: "Color of {{name}}",
     newName: "New name for {{name}}",
     deleteItem: "Delete workspace {{name}}",
     confirmDelete: "Delete",

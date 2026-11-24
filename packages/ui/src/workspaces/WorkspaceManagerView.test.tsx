@@ -22,6 +22,29 @@ describe("WorkspaceManagerView", () => {
     expect(await screen.findByRole("button", { name: "Abrir Personal" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Abrir Trabajo" })).toBeInTheDocument();
   });
+  it("cada espacio muestra su inicial y un color distinto sin repetición", async () => {
+    await setup(["Personal", "Personal", "Trabajo"]);
+    await screen.findByRole("button", { name: "Abrir Trabajo" });
+    const avatars = Array.from(document.querySelectorAll("[data-workspace-avatar]"));
+    expect(avatars.map((a) => a.textContent)).toEqual(["P", "P", "T"]);
+    const hues = avatars.map((a) => a.getAttribute("data-workspace-hue"));
+    expect(new Set(hues).size).toBe(3);
+  });
+  it("permite cambiar el color entre vivos, pastel, degradados o volver a predeterminado", async () => {
+    const { manager, user } = await setup(["Personal"]);
+    await user.click(await screen.findByRole("button", { name: "Color de Personal" }));
+    expect(await screen.findByRole("tab", { name: "Vivos" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Pastel" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Degradados" })).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Pastel" }));
+    await user.click(screen.getByRole("radio", { name: "Pastel 1" }));
+    await waitFor(async () => expect(((await manager.list()) as { value: { color?: string }[] }).value[0]!.color).toMatch(/^#[0-9a-f]{6}$/));
+    await user.click(screen.getByRole("tab", { name: "Degradados" }));
+    await user.click(screen.getByRole("radio", { name: "Degradado 1" }));
+    await waitFor(async () => expect(((await manager.list()) as { value: { color?: string }[] }).value[0]!.color).toMatch(/^#[0-9a-f]{6}~#[0-9a-f]{6}$/));
+    await user.click(screen.getByRole("radio", { name: "Predeterminado" }));
+    await waitFor(async () => expect(((await manager.list()) as { value: { color?: string }[] }).value[0]!.color).toBeUndefined());
+  });
   it("crea un espacio y lo muestra", async () => {
     const { manager, user } = await setup([]);
     await user.type(await screen.findByRole("textbox", { name: "Nombre del espacio" }), "Casa");

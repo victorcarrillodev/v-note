@@ -18,11 +18,25 @@ async function setup() {
 }
 
 describe("WorkspaceSwitcher", () => {
-  it("muestra el logotipo y el nombre del espacio activo", async () => {
+  it("muestra la inicial y el nombre del espacio activo (sin el logotipo de la app)", async () => {
     await setup();
     const btn = screen.getByRole("button", { name: /Espacio activo: Personal/ });
     expect(btn).toHaveTextContent("Personal");
-    expect(btn.querySelector("[data-logo-symbol]")).not.toBeNull();
+    expect(btn.querySelector("img[data-logo-symbol]")).toBeNull();
+    const avatar = btn.querySelector("[data-workspace-avatar]");
+    expect(avatar).not.toBeNull();
+    expect(avatar).toHaveTextContent("P");
+  });
+  it("los espacios en el menú muestran su inicial con colores distintos sin repetición", async () => {
+    const { user } = await setup();
+    await user.click(screen.getByRole("button", { name: /Espacio activo/ }));
+    const personal = await screen.findByRole("menuitem", { name: "Personal" });
+    const trabajo = screen.getByRole("menuitem", { name: "Trabajo" });
+    const pAvatar = personal.querySelector("[data-workspace-avatar]");
+    const tAvatar = trabajo.querySelector("[data-workspace-avatar]");
+    expect(pAvatar).toHaveTextContent("P");
+    expect(tAvatar).toHaveTextContent("T");
+    expect(pAvatar?.getAttribute("data-workspace-hue")).not.toBe(tAvatar?.getAttribute("data-workspace-hue"));
   });
   it("el menú lista todos los espacios, y «Gestionar espacios»", async () => {
     const { user } = await setup();

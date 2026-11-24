@@ -1,21 +1,29 @@
 import * as D from "@radix-ui/react-dropdown-menu";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Workspace, WorkspaceManager } from "@vnote/core";
 import { Icon } from "../design/Icon";
-import { Logo } from "../identity/Logo";
+import { WorkspaceAvatar } from "../shared/WorkspaceAvatar";
+import { assignWorkspaceColors } from "../shared/workspaceAvatar";
 
-/** Selector del espacio activo: logotipo, nombre y menú con los espacios, y «Gestionar espacios» (plan 10.2). */
-export function WorkspaceSwitcher({ manager, active, onOpen, onManage }: { manager: WorkspaceManager; active: { id: string; name: string }; onOpen: (id: string) => void; onManage: () => void }) {
+/** Selector del espacio activo: inicial con color único, nombre y menú con los espacios, y «Gestionar espacios» (plan 10.2). */
+export function WorkspaceSwitcher({ manager, active, onOpen, onManage, refreshKey }: { manager: WorkspaceManager; active: { id: string; name: string }; onOpen: (id: string) => void; onManage: () => void; refreshKey?: number }) {
   const { t } = useTranslation();
   const [list, setList] = useState<Workspace[]>([]);
   const [open, setOpen] = useState(false);
-  useEffect(() => { if (open) void manager.list().then((r) => { if (r.ok) setList(r.value); }); }, [open, manager]);
+  useEffect(() => {
+    let cancelled = false;
+    void manager.list().then((r) => {
+      if (!cancelled && r.ok) setList(r.value);
+    });
+    return () => { cancelled = true; };
+  }, [manager, open, active.id, active.name, refreshKey]);
+  const colors = useMemo(() => assignWorkspaceColors(list.length > 0 ? list : [active]), [list, active]);
   return (
     <D.Root open={open} onOpenChange={setOpen}>
       <D.Trigger asChild>
         <button type="button" className="flex h-9 w-full items-center gap-2 rounded px-2 text-left hover:bg-[var(--c-raised)]">
-          <Logo size={20} />
+          <WorkspaceAvatar name={active.name} color={colors.get(active.id)} size={20} />
           <span className="sr-only">{t("workspace.activeLabel")}</span>{" "}
           <span className="min-w-0 flex-1 truncate text-[length:var(--text-ui-size)] font-semibold">{active.name}</span>
           <Icon name="collapse" size={14} />
@@ -26,6 +34,7 @@ export function WorkspaceSwitcher({ manager, active, onOpen, onManage }: { manag
           {list.map((w) => (
             <D.Item key={w.id} onSelect={() => onOpen(w.id)} className="flex h-8 cursor-pointer items-center gap-2 rounded px-2 outline-none data-[highlighted]:bg-[var(--c-raised)]">
               <span className="w-4">{w.id === active.id && <Icon name="check" />}</span>
+              <WorkspaceAvatar name={w.name} color={colors.get(w.id)} size={18} />
               {w.name}
             </D.Item>
           ))}

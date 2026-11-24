@@ -6,7 +6,7 @@ export type SidebarLink = { id: string; label: string; icon: IconName; onClick: 
 /** Accesos secundarios de la barra lateral: agrupados, con jerarquía visual menor (texto suave de 13 px) para que el contenido sea el protagonista. */
 export function SidebarLinks({ groups }: { groups: SidebarLink[][] }) {
   return (
-    <div className="flex flex-col gap-3 p-2">
+    <div className="flex shrink-0 flex-col gap-3 p-2">
       {groups.map((g, i) => (
         <div key={i} role="group" className="flex flex-col">
           {g.map((l) => (

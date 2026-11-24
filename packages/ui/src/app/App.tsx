@@ -228,15 +228,16 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
   useEffect(() => installInputModality(), []); // puntero frente a teclado: decide si se ve el anillo de foco (spec 004, RF-5)
   const [noWorkspaces, setNoWorkspaces] = useState(false);
   const density = useDensity();
+  const [workspacesVersion, setWorkspacesVersion] = useState(0);
   const searchCombo = formatCombo(loadBindings(preferences)["palette.open"] ?? null, detectPlatform());
   const sidebar = useMemo(
     () =>
       opened ? (
         <div className="flex h-full flex-col">
           <div className="border-b border-[var(--c-border)] p-2">
-            <WorkspaceSwitcher manager={workspaces} active={{ id: opened.workspace.id, name: opened.workspace.name }} onOpen={(id) => void openWorkspace(id)} onManage={() => setView("workspaces")} />
+            <WorkspaceSwitcher manager={workspaces} active={{ id: opened.workspace.id, name: opened.workspace.name }} onOpen={(id) => void openWorkspace(id)} onManage={() => setView("workspaces")} refreshKey={workspacesVersion} />
           </div>
-          <div className="min-h-0 flex-1">
+          <div className="min-h-64 flex-1 overflow-hidden">
             <WorkspaceAssetsContext.Provider value={backup?.assetsFor(opened.workspace.location)}>
             <Sidebar controller={opened.controller} onOpenTrash={() => setView("trash")} onPageOpened={() => setView("page")} onSearch={() => setPaletteOpen(true)} searchCombo={searchCombo} rowHeight={rowHeightFor(density)} />
             </WorkspaceAssetsContext.Provider>
@@ -263,7 +264,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
       ) : (
         <div className="p-2"><button type="button" onClick={() => setView("workspaces")}>{t("workspace.title")}</button></div>
       ),
-    [opened, t, view, workspaces, openWorkspace, backup, center, density, searchCombo],
+    [opened, t, view, workspaces, openWorkspace, backup, center, density, searchCombo, workspacesVersion],
   );
 
   return (
@@ -279,7 +280,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
         />
       )}
       {view === "workspaces" && !(noWorkspaces && !opened) && (
-        <WorkspaceManagerView manager={workspaces} activeId={opened?.workspace.id ?? null} onOpen={(id) => void openWorkspace(id)} onCreated={(w) => void openWorkspace(w.id)} onDeleted={(id) => void afterWorkspaceDeleted(id)} {...(revealLocation ? { onRevealLocation: revealLocation } : {})} {...(pickFolder ? { pickFolder } : {})} />
+        <WorkspaceManagerView manager={workspaces} activeId={opened?.workspace.id ?? null} onOpen={(id) => void openWorkspace(id)} onCreated={(w) => void openWorkspace(w.id)} onDeleted={(id) => void afterWorkspaceDeleted(id)} onUpdated={() => setWorkspacesVersion((v) => v + 1)} {...(revealLocation ? { onRevealLocation: revealLocation } : {})} {...(pickFolder ? { pickFolder } : {})} />
       )}
       {view === "workspaces" && !opened && !noWorkspaces && backup && (
         <div className="px-4">

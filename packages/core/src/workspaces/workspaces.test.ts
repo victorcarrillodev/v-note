@@ -102,6 +102,17 @@ describe("predeterminado para captura (T-087)", () => {
     must(await mgr.setCaptureDefault(b.id));
     expect(must(await mgr.list()).filter((w) => w.isCaptureDefault).map((w) => w.id)).toEqual([b.id]);
   });
+  it("setColor guarda un color sólido o degradado y permite volver al automático (undefined)", async () => {
+    const a = must(await mgr.create({ name: "A" }));
+    must(await mgr.setColor(a.id, "#ff5500"));
+    expect(must(await mgr.list()).find((w) => w.id === a.id)!.color).toBe("#ff5500");
+    must(await mgr.setColor(a.id, "#112233~#445566"));
+    expect(must(await mgr.list()).find((w) => w.id === a.id)!.color).toBe("#112233~#445566");
+    must(await mgr.setColor(a.id, undefined));
+    expect(must(await mgr.list()).find((w) => w.id === a.id)!.color).toBeUndefined();
+    expect((await mgr.setColor(a.id, "invalid" as never)).ok).toBe(false);
+    expect((await mgr.setColor("missing", "#ff5500")).ok).toBe(false);
+  });
   it("marcar un espacio inexistente devuelve NOT_FOUND y no cambia nada", async () => {
     const a = must(await mgr.create({ name: "A" }));
     expect((await mgr.setCaptureDefault("x")).ok).toBe(false);

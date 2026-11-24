@@ -1,17 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { InlineAlert } from "../components/InlineAlert";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { Button } from "../components/Button";
 import { Chip } from "../components/Chip";
 import { IconButton } from "../components/IconButton";
 import { ViewLayout, ViewSection, VIEW_ROW } from "../components/ViewLayout";
+import { Popover } from "../components/Popover";
 import { INPUT, MUTED } from "../components/formStyles";
+import { AccentPicker } from "../page/options/AccentPicker";
+import { WorkspaceAvatar } from "../shared/WorkspaceAvatar";
+import { assignWorkspaceColors } from "../shared/workspaceAvatar";
 import { useTranslation } from "react-i18next";
-import type { Workspace, WorkspaceManager } from "@vnote/core";
+import { parseCustomAccent, type Workspace, type WorkspaceManager } from "@vnote/core";
 
 type DeleteInfo = { lastBackupAt: number | null; hasNoBackup: boolean; backupUnknown: boolean } | null;
 
-export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onDeleted, onRevealLocation, pickFolder }: { manager: WorkspaceManager; activeId: string | null; onOpen: (id: string) => void; onCreated?: (w: Workspace) => void; /** Se eliminó un espacio: quien muestra el espacio abierto decide a dónde ir. */ onDeleted?: (id: string) => void; onRevealLocation?: (location: string) => void; /** Solo escritorio: diálogo nativo para elegir la carpeta de datos del espacio nuevo (RF-25). */ pickFolder?: () => Promise<string | null> }) {
+export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onDeleted, onUpdated, onRevealLocation, pickFolder }: { manager: WorkspaceManager; activeId: string | null; onOpen: (id: string) => void; onCreated?: (w: Workspace) => void; /** Se eliminó un espacio: quien muestra el espacio abierto decide a dónde ir. */ onDeleted?: (id: string) => void; onUpdated?: () => void; onRevealLocation?: (location: string) => void; /** Solo escritorio: diálogo nativo para elegir la carpeta de datos del espacio nuevo (RF-25). */ pickFolder?: () => Promise<string | null> }) {
   const [folder, setFolder] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const [items, setItems] = useState<Workspace[]>([]);
@@ -29,6 +33,7 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onD
     if (r.ok) setItems(r.value);
   }, [manager]);
   useEffect(() => { void reload(); }, [reload]);
+  const colors = useMemo(() => assignWorkspaceColors(items), [items]);
 
   const create = async () => {
     if (name.trim() === "") return;
@@ -57,7 +62,29 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onD
         <ul className="flex flex-col">
           {items.map((w) => (
             <li key={w.id} className={VIEW_ROW}>
-              <span aria-hidden="true" className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--c-accent)] text-[length:var(--text-ui-small-size)] font-semibold text-[var(--c-on-accent)]">{(w.name.trim()[0] ?? "·").toUpperCase()}</span>
+              <Popover
+                wide
+                trigger={(
+                  <button
+                    type="button"
+                    aria-label={t("workspace.colorItem", { name: w.name })}
+                    title={t("workspace.colorItem", { name: w.name })}
+                    className="inline-flex shrink-0 cursor-pointer rounded-[var(--radius-md)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--c-accent)]"
+                  >
+                    <WorkspaceAvatar name={w.name} color={colors.get(w.id)} size={28} />
+                  </button>
+                )}
+              >
+                <AccentPicker
+                  value={w.color}
+                  label={t("workspace.colorItem", { name: w.name })}
+                  onChange={(c) => {
+                    void manager.setColor(w.id, parseCustomAccent(c)).then(async (r) => {
+                      if (r.ok) { await reload(); onUpdated?.(); }
+                    });
+                  }}
+                />
+              </Popover>
               <div className="flex min-w-0 flex-1 flex-col">
                 {renaming === w.id ? (
                   <input
@@ -66,7 +93,7 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onD
                     defaultValue={w.name}
                     className={INPUT}
                     onKeyDown={async (e) => {
-                      if (e.key === "Enter") { await manager.rename(w.id, e.currentTarget.value); setRenaming(null); await reload(); }
+                      if (e.key === "Enter") { await manager.rename(w.id, e.currentTarget.value); setRenaming(null); await reload(); onUpdated?.(); }
                       if (e.key === "Escape") setRenaming(null);
                     }}
                   />

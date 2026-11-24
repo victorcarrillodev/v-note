@@ -239,6 +239,7 @@ export const esMX = {
     reveal: "Abrir carpeta",
     revealItem: "Abrir carpeta de {{name}}",
     renameItem: "Renombrar {{name}}",
+    colorItem: "Color de {{name}}",
     newName: "Nuevo nombre de {{name}}",
     deleteItem: "Eliminar espacio {{name}}",
     confirmDelete: "Eliminar",

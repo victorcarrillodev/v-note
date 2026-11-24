@@ -4,9 +4,10 @@ import { newId } from "../ids";
 import { migrate } from "../db/migrate";
 import { migrations } from "../db/migrations";
 import type { SqlStore } from "../ports/sqlStore";
+import { parseCustomAccent, type CustomAccent } from "../pages/accent";
 import type { AppConfigStore, WorkspaceStorage } from "./ports";
 
-export type Workspace = { id: string; name: string; location: string; isCaptureDefault: boolean };
+export type Workspace = { id: string; name: string; location: string; isCaptureDefault: boolean; color?: CustomAccent };
 type Registry = { version: 1; workspaces: Workspace[] };
 const REGISTRY_VERSION = 1;
 
@@ -113,6 +114,22 @@ export class WorkspaceManager {
     for (const w of reg.value.workspaces) w.isCaptureDefault = w.id === id;
     await this.save(reg.value);
     return ok(target);
+  }
+
+  async setColor(id: string, color: CustomAccent | undefined): Promise<Result<Workspace>> {
+    const reg = await this.load();
+    if (!reg.ok) return reg;
+    const ws = reg.value.workspaces.find((w) => w.id === id);
+    if (!ws) return err(appError("NOT_FOUND", "El espacio de trabajo no existe", { id }));
+    if (color === undefined) {
+      delete ws.color;
+    } else {
+      const parsed = parseCustomAccent(color);
+      if (!parsed) return err(appError("INVALID", "El color del espacio de trabajo no es válido"));
+      ws.color = parsed;
+    }
+    await this.save(reg.value);
+    return ok(ws);
   }
 
   async captureDefault(): Promise<Result<Workspace | null>> {

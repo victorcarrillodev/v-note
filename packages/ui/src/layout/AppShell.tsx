@@ -75,7 +75,7 @@ export function AppShell({ sidebar, header, children, preferences }: { sidebar: 
                 : "w-[var(--size-sidebar-width)] shrink-0 overflow-hidden bg-[var(--c-sidebar)]"
             }
           >
-            <div className={`h-full w-[var(--size-sidebar-width)] overflow-y-auto ${overlay ? "" : "border-r border-[var(--c-border)]"}`}>{sidebar}</div>
+            <div className={`h-full w-[var(--size-sidebar-width)] overflow-y-auto overscroll-contain${overlay ? "" : "border-r border-[var(--c-border)]"}`}>{sidebar}</div>
           </aside>
           <div className="flex min-w-0 flex-1 flex-col">
             <header className="flex h-[var(--size-header-height)] shrink-0 items-center gap-2 border-b border-[var(--c-border)] bg-[var(--c-canvas)] px-3">
