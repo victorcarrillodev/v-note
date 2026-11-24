@@ -71,9 +71,9 @@ describe("tabla con palabra clave y calendario semanal (U-197, U-229, U-233)", (
     const p = await web.open();
     await ensureSpace(p);
     await clickButton(p, "Nueva base de datos");
-    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nuevo')");
+    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nueva fila')");
     for (const name of ["Taco", "Metro"]) {
-      await clickButton(p, "Nuevo");
+      await clickButton(p, "Nueva fila");
       await p.waitFor("document.querySelector('[role=row][aria-label=\"Sin título\"] input')");
       await p.click('[role=row][aria-label="Sin título"] input[aria-label^="Título de la fila"]');
       await p.typeText(name); await p.key("Enter", "Enter", 13);
@@ -101,9 +101,13 @@ describe("tabla con palabra clave y calendario semanal (U-197, U-229, U-233)", (
     await p.click('[data-slot$="T10:00"]');
     await p.waitFor("document.querySelector('[role=dialog]')", 8000);
     expect(await p.eval<string>(`${byLabel("Hora de inicio")}.value`)).toBe("10:00");
+    await sleep(500); // el diálogo enfoca su campo al abrirse: sin pausa se pierde lo escrito
     await p.click('[role=dialog] input[id]'); // el primer campo es el título
     await p.typeText("Dentista");
-    await p.key("Enter", "Enter", 13);
+    await clickButton(p, "Guardar");
+    // si la franja de hoy ya pasó (según la hora a la que corra la prueba) la app pregunta antes de guardar: se confirma
+    await sleep(500);
+    if (await p.eval<boolean>("[...document.querySelectorAll('[role=dialog] button')].some(b => b.innerText.trim() === 'Guardar como vencida')")) await clickButton(p, "Guardar como vencida");
     await p.waitFor("[...document.querySelectorAll('[role=grid] button')].some(b => b.getAttribute('aria-label')?.startsWith('Dentista 10:00'))", 10000);
     await p.close();
   }, 120000);

@@ -1,7 +1,7 @@
 // T-307 (e2e de escritorio real): la ventana pequeña de recordatorio y sus tres acciones.
 import { describe, it, expect, afterEach } from "vitest";
 import { stopApp, find, run, sleep, windowHandles, currentHandle, switchWindow, click, button } from "./webdriver";
-import { isolatedEnv, launch, ensureWorkspace } from "./helpers";
+import { isolatedEnv, launch, ensureWorkspace, chooseOption } from "./helpers";
 
 afterEach(async () => { await stopApp(); });
 
@@ -36,7 +36,7 @@ describe("ventana de recordatorio en escritorio (T-307)", () => {
     const main = await currentHandle();
     await open("Llamar");
     await popup(main);
-    await run("const s = document.querySelector('select'); s.value = '1h'; s.dispatchEvent(new Event('change', { bubbles: true })); return 1;");
+    await chooseOption("[role=combobox]", "1h"); // el desplegable es un menú de Radix, no un <select>
     expect(await closed()).toBe(true);
   });
   it("Abrir cierra la ventana y pide a la principal abrir la tarea", async () => {

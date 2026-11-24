@@ -40,14 +40,20 @@ async function enableUnsplash(p: Page) {
   await setInput(p, "Clave de acceso de Unsplash", KEY);
   await click(p, "Guardar clave");
   await p.waitFor("document.body.innerText.includes('Clave guardada')", 5000);
+  // Ajustes es un panel lateral modal: se cierra para poder usar el resto de la pantalla
+  await p.eval("(document.querySelector('[data-drawer] button[aria-label=\"Cerrar\"]'))?.click()");
+  await p.waitFor("!document.querySelector('[data-drawer-overlay]')", 5000);
 }
 async function pickFromUnsplash(p: Page) {
   await click(p, "Añadir portada");
   await p.waitFor(`!!${labelled("Unsplash")}`, 10000);
+  await sleep(700); // el diálogo se desliza al abrirse: un clic a mitad de la animación cae en el fondo y lo cierra
   await clickTab(p, "Unsplash"); // las pestañas de Radix se activan con el ratón
   const box = 'input[type=search][aria-label="Buscar en Unsplash"]'; // hay otros campos de búsqueda en la pantalla
   await p.waitFor(`document.querySelector(${q(box)})`, 5000);
+  await p.waitFor("document.querySelector('[aria-label=\"Resultados de Unsplash\"] button')", 10000); // al abrir la pestaña ya carga un tema al azar
   await p.click(box); await p.typeText("mar"); await click(p, "Buscar");
+  await sleep(1200); // la búsqueda escrita reemplaza a la selección inicial
   await p.waitFor("document.querySelector('[aria-label=\"Resultados de Unsplash\"] button')", 10000);
 }
 const withPage = async (title = "Privada") => {
@@ -84,10 +90,10 @@ describe("privacidad: Unsplash encendido con una búsqueda (E-173, RF-9.3, RNF-2
     await openFromTree(p, "Privada nueva");
     await pickFromUnsplash(p);
     expect(hosts(p)).toEqual([ORIGIN, "api.unsplash.com", "images.unsplash.com"].sort());
-    // solo se pide lo necesario: la búsqueda (con lo escrito en el buscador) y miniaturas
+    // solo se pide lo necesario: la búsqueda (un tema inicial y lo escrito en el buscador) y miniaturas
     const api = p.seen.filter((r) => new URL(r.url).host === "api.unsplash.com");
-    expect(api.map((r) => new URL(r.url).pathname)).toEqual(["/search/photos"]);
-    expect(new URL(api[0]!.url).searchParams.get("query")).toBe("mar");
+    expect(api.map((r) => new URL(r.url).pathname)).toEqual(["/search/photos", "/search/photos"]); // el tema inicial al azar y la búsqueda escrita
+    expect(new URL(api[1]!.url).searchParams.get("query")).toBe("mar");
     // ni el título ni el contenido de las páginas viajan en ninguna dirección, cabecera o cuerpo
     const everything = JSON.stringify(p.seen);
     expect(everything).not.toContain("Privada nueva");
@@ -144,6 +150,7 @@ describe("portada de Unsplash sin red (E-175, RNF-1)", () => {
     await p.key("Escape", "Escape", 27);
     await clickButton(p, "Nueva página");
     await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+    await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
     const before = p.seen.length;
     await p.setOffline(true);
     try {

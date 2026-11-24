@@ -80,7 +80,9 @@ describe("respaldo y restauración de punta a punta (E-176, RNF-5)", () => {
     await p.waitFor("document.querySelector('[data-testid=cover] img')", 20000);
     await p.key("Escape", "Escape", 27); await sleep(300);
     await openMenu(p);
-    await p.eval("document.querySelector('[role=radiogroup][aria-label=\"Color de acento\"] [aria-label=\"Morado\"]').click()");
+    // el selector ya no tiene colores con nombre: se elige la primera muestra «Vivos» y se espera su color base
+    const accent = await p.eval<string>("(() => { const b = document.querySelector('[role=radiogroup][aria-label=\"Vivos\"] [role=radio]'); b.click(); return b.dataset.accent; })()");
+    expect(accent).toMatch(/^#[0-9a-f]{6}$/i);
     await click(p, "Descripción");
     await click(p, "Usar como predeterminado");
     await sleep(400);
@@ -112,15 +114,16 @@ describe("respaldo y restauración de punta a punta (E-176, RNF-5)", () => {
     await openFromTree(p, "Origen").catch(async () => { await p.eval("[...document.querySelectorAll('[role=treeitem]')].find(e => e.getAttribute('aria-label') === 'Origen').click()"); });
     await p.waitFor("document.querySelector('[data-testid=cover] img')", 20000);
     expect(await p.eval<boolean>("(() => { const i = document.querySelector('[data-testid=cover] img'); return i.complete && i.naturalWidth > 0; })()")).toBe(true);
-    expect(await scopeVar(p, "--c-accent")).toBe("var(--block-purple-text)");
+    expect((await scopeVar(p, "--c-accent")).toLowerCase()).toBe(accent.toLowerCase());
     expect(await p.eval<string>("[...document.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') ?? '').startsWith('Descripción de la página'))?.innerText ?? ''")).toContain("Resumen de origen");
     expect(await p.eval<boolean>("!!document.querySelector('[data-testid=lock-indicator]')")).toBe(true);
     expect(await p.eval<string>("document.querySelector('.bn-editor')?.getAttribute('contenteditable') ?? ''")).toBe("false");
 
-    // el predeterminado del espacio también viajó: una página nueva sale con el acento morado
+    // el predeterminado del espacio también viajó: una página nueva sale con el mismo acento
     await clickButton(p, "Nueva página");
     await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
-    expect(await scopeVar(p, "--c-accent")).toBe("var(--block-purple-text)");
+    await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
+    expect((await scopeVar(p, "--c-accent")).toLowerCase()).toBe(accent.toLowerCase());
   }, 240000);
 });
 

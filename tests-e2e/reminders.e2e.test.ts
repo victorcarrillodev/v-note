@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { spawn } from "node:child_process";
 import { stopApp, click, type, sleep, run, find, findX, button } from "./webdriver";
-import { isolatedEnv, launch, ensureWorkspace, newPage, editorEl } from "./helpers";
+import { isolatedEnv, launch, ensureWorkspace, newPage, editorEl, chooseOption } from "./helpers";
 
 const ENTER = String.fromCharCode(0xe007);
 const env = { ...isolatedEnv(), VNOTE_TICK_MS: "500" };
@@ -53,7 +53,7 @@ describe("recordatorios en el escritorio real", () => {
     await launch(env);
     try {
       await find('[aria-label="Vencidos"]', 20000);
-      await run(`const s = document.querySelector('[role=combobox][aria-label="Posponer Pagar luz"]'); s.value = '1h'; s.dispatchEvent(new Event('change', { bubbles: true }));`);
+      await chooseOption('[role=combobox][aria-label="Posponer Pagar luz"]', "1h"); // el desplegable es un menú de Radix, no un <select>
       await sleep(800);
       expect(await run<boolean>("return !document.querySelector('[aria-label=\"Vencidos\"]')")).toBe(true);
     } finally { await stopApp(); }

@@ -54,7 +54,7 @@ describe("exportar a PDF en escritorio (T-409)", () => {
       await sleep(600);
       await click(await button("Exportar"));
       await find("[role=alertdialog]");
-      await click(await findX('//*[@role="alertdialog"]//label[contains(.,"PDF")]/input'));
+      await run("[...document.querySelectorAll('[role=alertdialog] input[name=export-format]')][1].click(); return 1;"); // el radio visible es una muestra: el <input> está oculto
       await click(await findX('//*[@role="alertdialog"]//button[normalize-space(.)="Exportar"]'));
       let state = "sin-dialogo";
       for (let i = 0; i < 20 && state !== "dialogo"; i++) { await sleep(500); state = keys(display, "Imprimir"); }

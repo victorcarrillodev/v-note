@@ -26,11 +26,11 @@ function stopServer() {
   try { execFileSync("pkill", ["-f", `vite preview --port ${SERVER_PORT}`]); } catch { /* ya terminó */ }
 }
 /** Crea el espacio si la app está en el primer inicio, y espera a que la barra lateral esté lista. */
-const SPACE_INPUT = 'input[aria-label="Nombre del espacio"]';
+const SPACE_EXPR = `(() => { const l = [...document.querySelectorAll('label')].find(l => l.innerText.trim() === 'Nombre del espacio'); return l && document.getElementById(l.htmlFor); })()`; // el rediseño usa una etiqueta visible, no aria-label
 async function ensureSpace(p: Page, name = "Personal") {
-  await p.waitFor(`document.querySelector('${SPACE_INPUT}') || document.querySelector('aside nav')`, 20000);
-  if (await p.eval<boolean>(`!!document.querySelector('${SPACE_INPUT}')`)) {
-    await p.eval(`(() => { const i = document.querySelector('${SPACE_INPUT}'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ${JSON.stringify(name)}); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await p.waitFor(`${SPACE_EXPR} || document.querySelector('aside nav')`, 20000);
+  if (await p.eval<boolean>(`!!${SPACE_EXPR}`)) {
+    await p.eval(`(() => { const i = ${SPACE_EXPR}; const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ${JSON.stringify(name)}); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
     await p.eval("[...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Crear espacio').click()");
   }
   await p.waitFor("document.querySelector('aside nav')", 20000);
@@ -66,8 +66,8 @@ describe("PWA", () => {
     await p.reload();
     await p.waitFor("document.body.innerText.includes('Espacios de trabajo') || document.body.innerText.includes('Nueva página')", 20000);
     // El .wasm de SQLite también sale de la caché: se puede crear un espacio, que abre la base
-    await p.waitFor("document.querySelector('[aria-label=\"Nombre del espacio\"]')");
-    await p.eval("(() => { const i = document.querySelector('[aria-label=\"Nombre del espacio\"]'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'Sin red'); i.dispatchEvent(new Event('input', { bubbles: true })); })()");
+    await p.waitFor(`${SPACE_EXPR}`);
+    await p.eval(`(() => { const i = ${SPACE_EXPR}; const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'Sin red'); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
     await p.eval("[...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Crear espacio').click()");
     await p.waitFor("document.querySelector('aside nav') && document.body.innerText.includes('Nueva página')", 20000);
     await startServer();
@@ -81,9 +81,9 @@ describe("PWA", () => {
     await swReady(p);
     await p.setOffline(true);
     await p.reload();
-    await p.waitFor("document.querySelector('[aria-label=\"Nombre del espacio\"]') || document.querySelector('aside nav')", 20000);
-    if (await p.eval<boolean>("!!document.querySelector('[aria-label=\"Nombre del espacio\"]')")) {
-      await p.eval("(() => { const i = document.querySelector('[aria-label=\"Nombre del espacio\"]'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'Personal'); i.dispatchEvent(new Event('input', { bubbles: true })); })()");
+    await p.waitFor(`${SPACE_EXPR} || document.querySelector('aside nav')`, 20000);
+    if (await p.eval<boolean>(`!!${SPACE_EXPR}`)) {
+      await p.eval(`(() => { const i = ${SPACE_EXPR}; const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'Personal'); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
       await p.eval("[...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Crear espacio').click()");
     }
     await p.waitFor("document.querySelector('aside nav')", 20000);
@@ -93,6 +93,8 @@ describe("PWA", () => {
       const n = (await titles()).length;
       await p.eval("[...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Nueva página').click()");
       await p.waitFor(`document.querySelectorAll('[role=treeitem]').length === ${n + 1} && document.querySelector('[aria-label="Título de la página"]')?.value === ''`);
+      await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
+      await sleep(600); // el título se vuelve a montar al abrir la página: sin esta pausa se pierde lo escrito
       await p.click('[aria-label="Título de la página"]');
       await p.typeText(title);
       await p.key("Enter", "Enter", 13);
@@ -135,6 +137,7 @@ describe("PWA", () => {
     await p.reload();
     await p.waitFor("document.querySelector('aside nav') && document.querySelectorAll('[role=treeitem]').length === 3", 20000);
     expect(await titles()).toEqual(reordered);
+    await sleep(1000); // la barra lateral aún se está montando tras recargar: un clic inmediato se pierde
     await p.click('[role=treeitem][aria-label="Beta"]');
     await p.waitFor("document.querySelector('.bn-editor')?.innerText.includes('sin conexion')", 15000);
     await p.close();
@@ -148,6 +151,8 @@ describe("PWA", () => {
     const click = (label: string) => p.eval(`[...document.querySelectorAll('button')].find(b => b.innerText.trim() === ${JSON.stringify(label)}).click()`);
     const rename = async (title: string) => {
       await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+      await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
+      await sleep(600); // ídem
       await p.click('[aria-label="Título de la página"]'); await p.typeText(title); await p.key("Enter", "Enter", 13);
       await p.waitFor(`[...document.querySelectorAll('[role=treeitem]')].some(e => e.getAttribute('aria-label') === ${JSON.stringify(title)})`);
     };

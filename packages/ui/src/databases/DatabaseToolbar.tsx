@@ -44,7 +44,7 @@ export function DatabaseToolbar({ controller, onEditFilters }: { controller: Dat
     <ul aria-label={t("databases.activeChips")} className="flex flex-wrap gap-1">
       {chips.map((c) => (
         <li key={c.key} className="inline-flex items-center gap-1 rounded-full bg-[var(--c-raised)] pl-3 pr-1 text-[length:var(--text-ui-small-size)]">
-          <button type="button" aria-label={t("databases.editChip", { name: c.label })} onClick={onEditFilters} className="py-1">{text(c)}</button>
+          <button type="button" aria-label={`${text(c)}. ${t("databases.editChip", { name: c.label })}`} onClick={onEditFilters} className="py-1">{text(c)}</button>
           <button type="button" aria-label={t("databases.removeChip", { name: c.label })} onClick={() => void controller.updateViewConfig(removeChip(view!.config, c))} className="rounded-full p-1 hover:bg-[var(--c-border)]"><Icon name="close" size={14} /></button>
         </li>
       ))}

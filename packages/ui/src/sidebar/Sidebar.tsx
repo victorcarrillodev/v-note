@@ -34,7 +34,7 @@ export function Sidebar({ controller, onOpenTrash, onPageOpened, onSearch, searc
   return (
     <nav aria-label={t("sidebar.pages")} className="flex h-full flex-col gap-2 p-2">
       {onSearch && (
-        <button type="button" onClick={onSearch} className="flex h-8 items-center gap-2 rounded bg-[var(--c-raised)] px-2 text-left text-[length:var(--text-ui-small-size)] text-[var(--c-text-placeholder)] hover:bg-[var(--c-raised)]">
+        <button type="button" onClick={onSearch} className="flex h-8 items-center gap-2 rounded bg-[var(--c-raised)] px-2 text-left text-[length:var(--text-ui-small-size)] text-[var(--c-text-muted)] hover:bg-[var(--c-raised)]">
           <Icon name="search" />
           <span className="flex-1">{t("app.search")}</span>
           {searchCombo && <kbd className="rounded-sm bg-[var(--c-raised)] px-1 font-mono text-[length:var(--text-note-size)] text-[var(--c-text-muted)]">{searchCombo}</kbd>}

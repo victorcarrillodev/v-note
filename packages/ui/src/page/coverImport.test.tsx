@@ -51,7 +51,10 @@ describe("aviso de baja resolución (E-080)", () => {
   it("una imagen de 300 px avisa que puede verse borrosa y se guarda igual", async () => {
     const { page, header } = await setup(async () => result(300));
     fireEvent.drop(header, { dataTransfer: { files: [pngFile()], items: [{ kind: "file" }] } });
-    expect(await screen.findByText("La imagen es pequeña y puede verse borrosa.")).toBeInTheDocument();
+    const aviso = await screen.findByText("La imagen es pequeña y puede verse borrosa.");
+    expect(aviso).toBeInTheDocument();
+    // la portada sube con margen negativo: el aviso debe apilarse por encima para no quedar tapado por ella
+    expect(aviso.closest("[data-testid=cover-alerts]")?.className).toMatch(/\brelative\b.*\bz-30\b/);
     expect(page().cover).toMatch(/^asset:/);
   });
   it("una imagen grande no avisa", async () => {

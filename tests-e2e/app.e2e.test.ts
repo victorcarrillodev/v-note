@@ -14,7 +14,8 @@ describe("aplicación de escritorio", () => {
   it("primer inicio: crear espacio y página, y editar el título", async () => {
     await startApp(undefined, env);
     try {
-      await click(await findX('//h1[normalize-space(.)="Espacios de trabajo"]').then(() => byLabel("Nombre del espacio")));
+      await findX('//h1[normalize-space(.)="Tu cuaderno de notas, solo tuyo"]'); // pantalla de bienvenida
+      await click(await byLabel("Nombre del espacio"));
       await type(await byLabel("Nombre del espacio"), "Personal");
       await click(await button("Crear espacio"));
       await click(await button("Nueva página"));
@@ -33,7 +34,7 @@ describe("aplicación de escritorio", () => {
     try {
       await find("[role=tree]", 20000);
       expect(await run<string>("return document.querySelector('[role=treeitem]')?.getAttribute('aria-label') ?? ''")).toBe("Mi primera nota");
-      expect(await run<string>("return document.querySelector('[role=status]')?.textContent ?? ''")).toBe("Personal");
+      expect(await run<string>("return document.querySelector('aside button .truncate')?.textContent ?? ''")).toBe("Personal"); // el espacio activo, en el selector de la barra lateral
     } finally {
       await stopApp();
     }

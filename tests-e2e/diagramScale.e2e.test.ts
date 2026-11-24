@@ -16,6 +16,7 @@ async function openDiagram(p: Page) {
   await ensureSpace(p);
   await clickButton(p, "Nueva página");
   await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+  await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
   await p.click('[aria-label="Título de la página"]'); await p.typeText("Grande"); await p.key("Enter", "Enter", 13);
   await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
   await p.eval("document.querySelector('.bn-editor').focus()"); await sleep(300);

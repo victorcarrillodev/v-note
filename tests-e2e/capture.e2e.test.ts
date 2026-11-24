@@ -10,7 +10,8 @@ afterAll(() => web?.stop());
 afterEach(async () => { await web?.closeAll(); });
 
 const dialog = "[role=dialog][aria-label=\"Captura rápida\"]";
-const openCapture = async (p: Page) => { await clickButton(p, "Captura rápida"); await p.waitFor(`document.querySelector('${dialog} textarea')`, 10000); };
+const openCapture = async (p: Page) => { await clickButton(p, "Captura rápida"); await p.waitFor(`document.querySelector('${dialog} textarea')`, 10000); await sleep(500); // el diálogo enfoca y monta el campo: sin pausa se pierde lo escrito
+};
 const closed = (p: Page) => p.waitFor(`!document.querySelector('${dialog}')`, 10000);
 const treeTitles = (p: Page) => p.eval<string[]>("[...document.querySelectorAll('[role=treeitem]')].map(e => e.getAttribute('aria-label'))");
 
@@ -95,13 +96,14 @@ describe("captura rápida en la aplicación real", () => {
   it("T-377/T-378: espacio predeterminado, captura sin abrirlo y elegir otro si se eliminó", async () => {
     const p = await web.open();
     await ensureSpace(p, "Personal");
-    const spaces = () => clickButton(p, "Espacios de trabajo");
+    // el menú del espacio activo (Radix lo abre con el ratón) ofrece «Gestionar espacios»
+    const spaces = async () => { await sleep(1000); await p.click("aside button"); await p.waitFor("document.querySelector('[role=menuitem]')", 5000); await p.eval(`[...document.querySelectorAll('[role=menuitem]')].find(e => e.innerText.trim() === 'Gestionar espacios').click()`); };
     // crear un segundo espacio: queda abierto, pero el predeterminado sigue siendo Personal
     await spaces();
     await p.waitFor("document.querySelector('input[aria-label=\"Nombre del espacio\"]')", 10000);
     await setValue(p, 'input[aria-label="Nombre del espacio"]', "Trabajo");
     await clickButton(p, "Crear espacio");
-    await p.waitFor("document.querySelector('aside')?.innerText.startsWith('Trabajo')", 15000); // el espacio nuevo queda abierto
+    await p.waitFor("document.querySelector('aside')?.innerText.replace(/^Espacio activo:\\s*/, '').startsWith('Trabajo')", 15000); // el espacio nuevo queda abierto
     // T-375: la captura va al predeterminado aunque esté abierto otro espacio
     await openCapture(p);
     expect(await p.eval<string>(`document.querySelector('${dialog}').innerText`)).toContain("«Personal»");

@@ -37,6 +37,7 @@ async function openWithPage(p: Page, title: string) {
   await p.waitFor("document.querySelector('aside nav')", 20000);
   await clickButton(p, "Nueva página");
   await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+  await sleep(500); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
   await p.click('[aria-label="Título de la página"]'); await p.typeText(title); await p.key("Enter", "Enter", 13);
   await sleep(300);
 }
@@ -120,9 +121,11 @@ describe("portada de ida y vuelta (E-113, RF-1.1, RF-2.2, RF-3.1)", () => {
     await p.reload();
     await p.waitFor("document.querySelector('aside nav')", 20000);
     await p.waitFor("document.querySelector('[role=treeitem]')", 20000);
-    await p.eval("document.querySelector('[role=treeitem]').click()");
+    await sleep(1000); // la barra lateral aún se monta tras recargar: un clic inmediato se pierde
+    await p.eval("[...document.querySelectorAll('[role=treeitem]')].find(e => e.getAttribute('aria-label') === 'Con portada').click()");
     await p.waitFor("document.querySelector('[data-testid=cover] img')", 20000);
     expect(await p.eval<string>("document.querySelector('[data-testid=page-header]').getAttribute('data-mode')")).toBe("card");
+    await p.waitFor("document.querySelector('[data-testid=cover] img').style.objectPosition === '50% 55%'", 5000); // el estilo llega un instante después de la imagen
     expect(await p.eval<string>("document.querySelector('[data-testid=cover] img').style.objectPosition")).toBe("50% 55%");
     expect(await p.eval<boolean>("(() => { const i = document.querySelector('[data-testid=cover] img'); return i.complete && i.naturalWidth > 0; })()")).toBe(true);
     } finally { await p.close(); }
@@ -138,6 +141,7 @@ describe("sin red (E-114, RNF-1)", () => {
     await p.key("Escape", "Escape", 27); await sleep(300);
     await clickButton(p, "Nueva página");
     await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+    await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
     await p.setOffline(true);
     try {
       await p.eval("[...document.querySelectorAll('[role=treeitem]')].find(e => e.getAttribute('aria-label') === 'Sin red').click()");

@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Page } from "./cdp";
-import { clickButton, ensureSpace, newPage, openFromTree, startWeb, type Web } from "./webHarness";
+import { clickButton, ensureSpace, newPage, openFromTree, setValue, startWeb, type Web } from "./webHarness";
 
 const AXE = readFileSync(resolve(__dirname, "../node_modules/axe-core/axe.min.js"), "utf8");
 let web: Web;
@@ -18,6 +18,19 @@ const labelled = (name: string) => `(() => { const n = ${q(name)}; const ctl = [
 const click = (p: Page, name: string) => p.eval(`(() => { const b = ${labelled(name)}; if (!b) throw new Error('sin control ' + ${q(name)}); b.click(); })()`);
 const choose = (p: Page, label: string, value: string) => p.eval(`(() => { const s = ${labelled(label)}; const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, ${q(value)}); s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
 const radioIn = (p: Page, group: string, name: string) => p.eval(`(() => { const g = document.querySelector('[role=radiogroup][aria-label=${q(group)}]'); const r = [...g.querySelectorAll('[role=radio]')].find(r => (r.getAttribute('aria-label') ?? r.innerText).trim().startsWith(${q(name)})); r.click(); })()`);
+/** Selector de fuente propio (botón + lista): se abre el botón que cuelga de la etiqueta y se pulsa la opción por su identificador. */
+const fontButton = (label: string) => `[...document.querySelectorAll('span')].find(s => s.innerText.trim() === ${q(label)} && s.nextElementSibling?.getAttribute('aria-haspopup') === 'listbox').nextElementSibling`;
+const fontIn = async (p: Page, label: string, font: string) => {
+  await p.eval(`(${fontButton(label)}).setAttribute('data-e2e-font', '')`);
+  // el panel se desliza al abrirse: se espera a que el botón sea el que recibe el clic
+  await p.waitFor("(() => { const b = document.querySelector('[data-e2e-font]'); const r = b.getBoundingClientRect(); const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return !!e && b.contains(e); })()", 5000);
+  await p.click("[data-e2e-font]");
+  await p.eval(`document.querySelector('[data-e2e-font]').removeAttribute('data-e2e-font')`);
+  await p.waitFor(`!!document.querySelector('[role=option][data-font=${font}]')`);
+  await p.eval(`document.querySelector('[role=option][data-font=${font}]').scrollIntoView({ block: 'nearest' })`);
+  await p.eval(`document.querySelector('[role=option][data-font=${font}]').click()`);
+  await p.waitFor("!document.querySelector('[role=listbox]')");
+};
 const openMenu = async (p: Page) => { await click(p, "Opciones de la página"); await p.waitFor("document.querySelector('[role=group][aria-label=\"Opciones de la página\"]')"); };
 // Se cierra con el propio botón (alterna): Escape depende de dónde esté el foco en ese momento.
 const closeMenu = async (p: Page) => { await click(p, "Opciones de la página"); await p.waitFor("!document.querySelector('[role=group][aria-label=\"Opciones de la página\"]')"); };
@@ -62,19 +75,22 @@ describe("el estilo elegido se conserva (E-149, RF-4.3, RF-4.5)", () => {
     await ensureSpace(p);
     await newPage(p, "Con estilo");
     await openMenu(p);
-    await radioIn(p, "Fuente del texto", "Lora");
-    await radioIn(p, "Fuente de los títulos", "Caveat");
-    await choose(p, "Ancho de la página", "wide");
-    await radioIn(p, "Color de acento", "Morado");
+    await fontIn(p, "Fuente del texto", "lora");
+    await fontIn(p, "Fuente de los títulos", "caveat");
+    const widthId = await p.eval<string>(`(() => { const l = [...document.querySelectorAll('label')].find(l => l.innerText.trim() === 'Ancho de la página'); return l.htmlFor; })()`);
+    await setValue(p, `[id="${widthId}"]`, "wide");
+    // el selector ya no tiene colores con nombre: se elige la primera muestra de «Vivos»
+    const accent = await p.eval<string>("(() => { const b = document.querySelector('[role=radiogroup][aria-label=\"Vivos\"] [role=radio]'); b.click(); return b.dataset.accent; })()");
+    expect(accent).toMatch(/^#[0-9a-f]{6}$/i);
     await sleep(300);
     expect(await scopeVar(p, "--font-content")).toBe("var(--font-lora)");
     expect(await scopeVar(p, "--font-headings")).toBe("var(--font-caveat)");
     expect(await scopeVar(p, "--size-reading-width")).toBe("var(--page-width-wide)");
-    expect(await scopeVar(p, "--c-accent")).toBe("var(--block-purple-text)");
+    expect((await scopeVar(p, "--c-accent")).toLowerCase()).toBe(accent.toLowerCase());
     // el estilo vale solo dentro de la página: <html> no cambia
     expect(await p.eval<string>("document.documentElement.style.getPropertyValue('--font-content')")).toBe("");
-    // y se aplica de verdad: el ancho medido es el de la variable (960 px)
-    expect(await p.eval<number>("Math.round(document.querySelector('[data-testid=page-style-scope]').getBoundingClientRect().width)")).toBeLessThanOrEqual(960);
+    // y se aplica de verdad: el ancho medido no pasa del de la variable (1280 px; en esta ventana lo limita el espacio disponible)
+    expect(await p.eval<number>("Math.round(document.querySelector('[data-testid=page-style-scope]').getBoundingClientRect().width)")).toBeLessThanOrEqual(1280);
     await closeMenu(p);
     await sleep(2500); // el volcado a OPFS es asíncrono: se espera antes de recargar
 
@@ -84,9 +100,9 @@ describe("el estilo elegido se conserva (E-149, RF-4.3, RF-4.5)", () => {
     expect(await scopeVar(p, "--font-content")).toBe("var(--font-lora)");
     expect(await scopeVar(p, "--font-headings")).toBe("var(--font-caveat)");
     expect(await scopeVar(p, "--size-reading-width")).toBe("var(--page-width-wide)");
-    expect(await scopeVar(p, "--c-accent")).toBe("var(--block-purple-text)");
+    expect((await scopeVar(p, "--c-accent")).toLowerCase()).toBe(accent.toLowerCase());
     await openMenu(p);
-    expect(await p.eval<string>("document.querySelector('[role=radiogroup][aria-label=\"Fuente del texto\"] [role=radio][aria-checked=true]').innerText.trim()")).toContain("Lora");
+    expect(await p.eval<string>(`(${fontButton("Fuente del texto")}).innerText.trim()`)).toContain("Lora");
     // otra página nueva no hereda el estilo
     await closeMenu(p);
     await newPage(p, "Sin estilo");

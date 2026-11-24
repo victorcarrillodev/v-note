@@ -61,7 +61,15 @@ export const findX = async (xpath: string, timeoutMs = 15000): Promise<string> =
     catch (e) { if (Date.now() > end) throw e; await sleep(250); }
   }
 };
-export const click = (el: string) => call("POST", s(`/element/${el}/click`), {});
+/** Un elemento que aún se anima (aparece, se desliza) rechaza el clic con «click intercepted»: se reintenta hasta que se asienta. */
+export async function click(el: string, attempts = 12): Promise<void> {
+  for (let i = 0; ; i++) {
+    try { await call("POST", s(`/element/${el}/click`), {}); return; } catch (e) {
+      if (i >= attempts - 1 || !/click intercepted/.test(String(e))) throw e;
+      await sleep(250);
+    }
+  }
+}
 export const type = (el: string, text: string) => call("POST", s(`/element/${el}/value`), { text });
 export const clear = (el: string) => call("POST", s(`/element/${el}/clear`), {});
 export const text = async (el: string) => (await call("GET", s(`/element/${el}/text`))) as string;

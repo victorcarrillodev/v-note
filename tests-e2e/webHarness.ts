@@ -39,6 +39,8 @@ export async function setValue(p: Page, selector: string, value: string): Promis
     await p.click(selector);
     const option = `[role=menuitemradio][data-value=${JSON.stringify(value)}]`;
     await p.waitFor(`!!document.querySelector(${JSON.stringify(option)})`);
+    await p.eval(`document.querySelector(${JSON.stringify(option)}).scrollIntoView({ block: 'nearest' })`); // las últimas opciones pueden quedar fuera de la ventana
+    await new Promise((r) => setTimeout(r, 150));
     await p.click(option);
     await p.waitFor(`!document.querySelector('[role=menuitemradio]')`);
     return;
@@ -61,11 +63,14 @@ export async function ensureSpace(p: Page, name = "Personal") {
 export async function newPage(p: Page, title: string) {
   await clickButton(p, "Nueva página");
   await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+  await sleep(500); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
   await p.click('[aria-label="Título de la página"]'); await p.typeText(title); await p.key("Enter", "Enter", 13);
   await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
   await sleep(300);
 }
 export const openFromTree = async (p: Page, title: string) => {
+  await p.waitFor(`[...document.querySelectorAll('[role=treeitem]')].some(e => e.getAttribute('aria-label') === ${JSON.stringify(title)})`, 15000);
+  await sleep(500); // la barra lateral aún se monta tras recargar: un clic inmediato se pierde
   await p.eval(`[...document.querySelectorAll('[role=treeitem]')].find(e => e.getAttribute('aria-label') === ${JSON.stringify(title)}).click()`);
   await p.waitFor(`document.querySelector('[aria-label="Título de la página"]')?.value === ${JSON.stringify(title)}`, 10000);
   await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
@@ -82,6 +87,8 @@ export async function mention(p: Page, trigger: "@" | "[[", query: string) {
 
 /** Clic REAL (ratón) en una pestaña por su texto: las pestañas de Radix se activan con el botón del ratón, no con `element.click()`. */
 export async function clickTab(p: Page, text: string) {
+  // un panel que se desliza al abrirse deja la pestaña a mitad de camino: se espera a que sea ella la que recibe el clic
+  await p.waitFor(`(() => { const t = [...document.querySelectorAll('[role=tab]')].find(t => t.innerText.trim() === ${JSON.stringify(text)}); if (!t) return false; const r = t.getBoundingClientRect(); const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return !!e && t.contains(e); })()`, 5000);
   await p.eval(`(() => { const t = [...document.querySelectorAll('[role=tab]')].find(t => t.innerText.trim() === ${JSON.stringify(text)}); t.setAttribute('data-e2e-tab', ''); })()`);
   await p.click("[data-e2e-tab]");
   await p.eval("document.querySelector('[data-e2e-tab]')?.removeAttribute('data-e2e-tab')");

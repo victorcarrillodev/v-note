@@ -16,14 +16,14 @@ describe("base de datos en la aplicación real", () => {
     const p = await web.open();
     await ensureSpace(p);
     await clickButton(p, "Nueva base de datos");
-    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nuevo')");
+    await p.waitFor("[...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Nueva fila')");
     await clickButton(p, "Nueva propiedad");
     await p.waitFor("document.querySelector('[aria-label=\"Nombre de la propiedad\"]')");
     await setValue(p, '[aria-label="Nombre de la propiedad"]', "Monto");
     await setValue(p, '[role=combobox][aria-label="Tipo de propiedad"]', "number");
     await clickButton(p, "Añadir propiedad");
     await p.waitFor("[...document.querySelectorAll('[role=columnheader]')].some(h => h.innerText.includes('Monto'))");
-    await clickButton(p, "Nuevo");
+    await clickButton(p, "Nueva fila");
     await p.waitFor("document.querySelectorAll('[role=row][aria-label]').length >= 1");
     // título de la fila (teclado real)
     await p.click('input[aria-label^="Título de la fila"]');
@@ -42,6 +42,7 @@ describe("base de datos en la aplicación real", () => {
     await sleep(800);
     await p.reload();
     await p.waitFor("document.querySelector('aside nav')", 20000);
+    await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
     await p.click('[role=treeitem]');
     await p.waitFor("document.querySelector('[role=row][aria-label=\"Café\"]')", 15000);
     expect(await p.eval<string>("document.querySelector('[role=row][aria-label=\"Café\"] input[aria-label=\"Monto\"]').value")).toBe("45.5");
@@ -51,6 +52,7 @@ describe("base de datos en la aplicación real", () => {
   it("T-265: crear otra vista y cambiar entre vistas", async () => {
     const p = await web.open();
     await p.waitFor("document.querySelector('aside nav')", 20000);
+    await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
     await p.click('[role=treeitem]');
     await p.waitFor("document.querySelector('[role=tab]')");
     await setValue(p, '[role=combobox][aria-label="Tipo de vista nueva"]', "list");
@@ -72,6 +74,7 @@ describe("fórmulas y filtros en la aplicación real", () => {
   it("T-269: la fórmula muestra su vista previa y el error en español; al guardarla, la columna calcula", async () => {
     const p = await web.open();
     await p.waitFor("document.querySelector('aside nav')", 20000);
+    await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
     await p.click("[role=treeitem]");
     await p.waitFor("document.querySelector('[role=tab]')", 15000);
     await clickButton(p, "Nueva propiedad");
@@ -93,6 +96,7 @@ describe("fórmulas y filtros en la aplicación real", () => {
   it("T-270: el panel de filtros filtra las filas y se puede quitar el filtro", async () => {
     const p = await web.open();
     await p.waitFor("document.querySelector('aside nav')", 20000);
+    await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
     await p.click("[role=treeitem]");
     await p.waitFor("document.querySelector('[role=tab]')", 15000);
     await clickTab(p, "Tabla");
@@ -117,6 +121,7 @@ describe("vista de base de datos dentro de una nota", () => {
     await p.waitFor("document.querySelector('aside nav')", 20000);
     await clickButton(p, "Nueva página");
     await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+    await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
     await p.click('[aria-label="Título de la página"]'); await p.typeText("Resumen"); await p.key("Enter", "Enter", 13);
     await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
     await p.eval("document.querySelector('.bn-editor').focus()"); await sleep(300);
@@ -142,7 +147,8 @@ describe("calendario y línea de tiempo en la aplicación real", () => {
   const pad = (n: number) => String(n).padStart(2, "0");
   const now = new Date();
   const ym = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
-  const openFirst = async (p: Page) => { await p.waitFor("document.querySelector('aside nav')", 20000); await p.click("[role=treeitem]"); await p.waitFor("document.querySelector('[role=tab]')", 15000); };
+  const openFirst = async (p: Page) => { await p.waitFor("document.querySelector('aside nav')", 20000); await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
+ await p.click("[role=treeitem]"); await p.waitFor("document.querySelector('[role=tab]')", 15000); };
   const newView = async (p: Page, type: string) => {
     await setValue(p, '[role=combobox][aria-label="Tipo de vista nueva"]', type);
     await clickButton(p, "Nueva vista");
@@ -191,6 +197,7 @@ describe("calendario y línea de tiempo en la aplicación real", () => {
     await sleep(500);
     await p.reload();
     await p.waitFor("document.querySelector('aside nav')", 20000);
+    await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
     await p.click("[role=treeitem]");
     await p.waitFor("document.querySelector('[role=tab]')", 15000);
     await clickTab(p, "Línea de tiempo");
@@ -208,6 +215,7 @@ describe("tablero kanban en la aplicación real", () => {
     for (const title of ["Alfa", "Beta"]) {
       await p.eval(`document.querySelector('section[role=group][aria-label="Por hacer"] button[aria-label="Nueva tarjeta"]').click()`);
       await p.waitFor("document.querySelector('section[role=group][aria-label=\"Por hacer\"] input[aria-label=\"Título de la nueva tarjeta\"]')");
+      await sleep(500); // el campo se vuelve a montar al abrirse: sin pausa se pierde lo escrito
       await p.click('section[role=group][aria-label="Por hacer"] input[aria-label="Título de la nueva tarjeta"]');
       await p.typeText(title); await p.key("Enter", "Enter", 13);
       await p.waitFor(`document.querySelector('section[role=group][aria-label="Por hacer"] article[aria-label=${JSON.stringify(title)}]')`);
@@ -232,6 +240,7 @@ describe("tablero kanban en la aplicación real", () => {
     await sleep(800);
     await p.reload();
     await p.waitFor("document.querySelector('aside nav')", 20000);
+    await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
     await p.eval("[...document.querySelectorAll('[role=treeitem]')].at(-1).click()");
     await p.waitFor(`document.querySelector('section[role=group][aria-label="Hecho"] article')`, 15000);
     expect(await cardTitles(p, "Hecho")).toEqual(["Beta", "Alfa"]);
@@ -242,6 +251,7 @@ describe("tablero kanban en la aplicación real", () => {
   it("T-286: abrir una tarjeta la muestra como página completa con el editor y se puede escribir", async () => {
     const p = await web.open();
     await p.waitFor("document.querySelector('aside nav')", 20000);
+    await sleep(1000); // la barra lateral aún se monta: un clic inmediato se pierde
     await p.eval("[...document.querySelectorAll('[role=treeitem]')].at(-1).click()");
     await p.waitFor(`document.querySelector('button[aria-label="Abrir Alfa"]')`, 15000);
     await p.eval(`document.querySelector('button[aria-label="Abrir Alfa"]').click()`);

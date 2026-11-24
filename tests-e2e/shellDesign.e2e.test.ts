@@ -66,6 +66,7 @@ describe("marco y navegación en navegador real", () => {
     await p.waitFor("document.querySelector('aside nav')", 30000).catch(async (e) => { console.log("DEBUG BODY", (await p.eval<string>("document.body.innerText")).slice(0, 500), "ALERT", await p.eval<string>("document.querySelector('[role=alert]')?.innerText ?? 'ninguna'")); throw e; });
     await clickText(p, "Nueva página");
     await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')?.value === ''");
+    await new Promise((r) => setTimeout(r, 500)); // el título se vuelve a montar al abrir la página: sin pausa se pierde lo escrito
     await p.click('[aria-label="Título de la página"]'); await p.typeText("Plan"); await p.key("Enter", "Enter", 13);
     await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')", 30000);
     await p.eval("document.querySelector('.bn-editor').focus()"); await sleep(300);
@@ -98,12 +99,12 @@ describe("marco y navegación en navegador real", () => {
     }
     await p.waitFor("document.querySelector('aside nav')", 30000);
     // la barra lateral está plegada y se abre superpuesta
-    expect(await p.eval<boolean>("document.querySelector('aside').hidden")).toBe(true);
+    expect(await p.eval<boolean>("(getComputedStyle(document.querySelector('aside')).visibility === 'hidden')")).toBe(true);
     await clickText(p, "Mostrar barra lateral");
-    await p.waitFor("!document.querySelector('aside').hidden");
+    await p.waitFor("getComputedStyle(document.querySelector('aside')).visibility === 'visible'");
     await clickText(p, "Nueva página");
     await p.waitFor("document.querySelector('[aria-label=\"Título de la página\"]')", 30000);
-    expect(await p.eval<boolean>("document.querySelector('aside').hidden")).toBe(true); // elegir una página cierra el panel
+    await p.waitFor("getComputedStyle(document.querySelector('aside')).visibility === 'hidden'", 5000); // elegir una página cierra el panel (tras la transición)
     expect(await p.eval<boolean>("document.documentElement.scrollWidth <= window.innerWidth")).toBe(true);
     expect(await p.eval<boolean>("document.querySelector('main').scrollWidth <= document.querySelector('main').clientWidth + 1")).toBe(true);
     await p.close();

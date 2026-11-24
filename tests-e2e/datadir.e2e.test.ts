@@ -24,7 +24,9 @@ describe("ubicación visible (T-156)", () => {
     await launch(env);
     try {
       await ensureWorkspace();
-      await click(await button("Espacios de trabajo"));
+      await run("document.querySelector('aside button').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerType: 'mouse' })); return 1;"); // el selector de espacio (Radix) se abre con el ratón
+      await sleep(500);
+      await run("[...document.querySelectorAll('[role=menuitem]')].find(e => e.innerText.trim() === 'Gestionar espacios').click(); return 1;");
       await sleep(500);
       const text = await run<string>("return document.body.innerText");
       expect(text).toContain(join(env.VNOTE_DATA_DIR, "workspaces"));

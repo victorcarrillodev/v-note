@@ -1,7 +1,7 @@
 // T-135…T-140, T-143, T-144 (e2e real): paleta de comandos, ajustes de tema/idioma y atajos reasignables.
 import { describe, it, expect } from "vitest";
 import { stopApp, click, type, sleep, run, find, findX, button, byLabel } from "./webdriver";
-import { isolatedEnv, launch, ensureWorkspace, newPage, treeTitles, chooseAny, chooseByLabel } from "./helpers";
+import { isolatedEnv, launch, ensureWorkspace, newPage, treeTitles, chooseAny } from "./helpers";
 
 const ENTER = String.fromCharCode(0xe007);
 const CTRL = String.fromCharCode(0xe009);
@@ -51,7 +51,7 @@ describe("paleta de comandos", () => {
       await type(await palInput(), "receta");
       await sleep(700);
       expect((await options()).length).toBeGreaterThan(0);
-      await chooseAny("board");
+      await click(await findX('//button[starts-with(normalize-space(.),"Tablero")]')); // el filtro de tipo ahora es un chip
       await sleep(700);
       expect((await options()).filter((o) => o.includes("Receta")).length).toBe(0);
     } finally { await stopApp(); }
@@ -63,13 +63,13 @@ describe("paleta de comandos", () => {
       await ensureWorkspace();
       const before = (await treeTitles()).length;
       await openPalette();
-      await click(await findX('//*[@role="option" and normalize-space(.)="Crear página"]'));
+      await click(await findX('//*[@role="option" and starts-with(normalize-space(.),"Crear página")]'));
       await sleep(800);
       expect((await treeTitles()).length).toBe(before + 1);
       const theme = () => run<string>("return document.documentElement.getAttribute('data-theme')");
       const t0 = await theme();
       await openPalette();
-      await click(await findX('//*[@role="option" and normalize-space(.)="Cambiar tema"]'));
+      await click(await findX('//*[@role="option" and starts-with(normalize-space(.),"Cambiar tema")]'));
       await sleep(500);
       expect(await theme()).not.toBe(t0);
     } finally { await stopApp(); }
@@ -81,14 +81,14 @@ describe("ajustes", () => {
     await launch(env);
     try {
       await ensureWorkspace();
-      await click(await button("Ajustes"));
-      const setSelect = (label: string, value: string) => chooseByLabel(label, value);
-      await setSelect("Tema", "dark");
+      await run("[...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Ajustes').click(); return 1;"); // con el tema recién cambiado otro elemento puede tapar el botón: se pulsa por DOM
+      await find("[data-drawer]", 8000); await sleep(1200); // el panel se desliza al abrirse
+      await run("const r = document.querySelector('input[type=radio][name=theme][value=dark]'); r.scrollIntoView({ block: 'center' }); r.click(); return 1;"); // el tema se elige entre muestras (radios ocultos)
       await sleep(300);
       expect(await run<string>("return document.documentElement.getAttribute('data-theme')")).toBe("dark");
-      await setSelect("Idioma", "en");
+      await chooseAny("en");
       await sleep(500);
-      expect(await run<string>("return document.querySelector('h1').innerText")).toBe("Settings");
+      expect(await run<string>("return document.querySelector('[data-drawer] h2')?.innerText ?? ''")).toBe("Settings");
     } finally { await stopApp(); }
     await launch(env);
     try {
@@ -102,12 +102,14 @@ describe("ajustes", () => {
     await launch(env);
     try {
       await ensureWorkspace();
-      await click(await button("Settings"));
-      await click(await byLabel("Change shortcut for New page"));
+      await run("[...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Settings').click(); return 1;"); // otro elemento puede tapar el botón: se pulsa por DOM
+      await find("[data-drawer]", 8000); await sleep(1200); // el panel se desliza al abrirse
+      const change = async (a: string) => { await run(`document.querySelector('[aria-label="Change shortcut for ${a}"]').scrollIntoView({ block: 'center' }); return 1;`); await sleep(300); await click(await byLabel(`Change shortcut for ${a}`)); };
+      await change("New page");
       await type(await find("body"), CTRL + ALT + "j" + ALT + CTRL);
       await sleep(400);
       expect(await run<string>("return document.body.innerText")).toContain("Ctrl+Alt+J");
-      await click(await byLabel("Change shortcut for Toggle theme"));
+      await change("Toggle theme");
       await type(await find("body"), CTRL + ALT + "j" + ALT + CTRL);
       await sleep(400);
       expect(await run<string>("return document.querySelector('[role=alert]')?.innerText ?? ''")).toContain("New page");

@@ -24,7 +24,7 @@ export function DatabaseHeader({ name, showTitle, onNewRow, onNewProperty, tools
         {tools}
         <IconButton icon="create" label={t("databases.newProperty")} onClick={onNewProperty} />
         <span className="ml-1 inline-flex items-center">
-          <Button variant="primary" size="sm" aria-label={t("databases.newRow")} onClick={onNewRow} className="rounded-r-none">{t("databases.newRowShort")}</Button>
+          <Button variant="primary" size="sm" onClick={onNewRow} className="rounded-r-none">{t("databases.newRow")}</Button>
           <span aria-hidden="true" className="h-7 w-px bg-[var(--c-on-accent)] opacity-30" style={{ background: "var(--c-accent)", boxShadow: "inset 1px 0 0 rgb(255 255 255 / 0.3)" }} />
           <Menu label={t("databases.moreNew")} icon="collapse" triggerClassName="h-7 w-7 rounded-l-none bg-[var(--c-accent)] text-[var(--c-on-accent)] hover:bg-[var(--c-accent)] hover:text-[var(--c-on-accent)] hover:brightness-95" items={[
             { label: t("databases.newRow"), icon: "create", onSelect: onNewRow },
