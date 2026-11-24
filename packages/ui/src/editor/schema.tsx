@@ -1,4 +1,4 @@
-import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs } from "@blocknote/core";
+import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs, defaultStyleSpecs } from "@blocknote/core";
 import { createReactBlockSpec, createReactInlineContentSpec } from "@blocknote/react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,6 +14,7 @@ import { MindMapEditor } from "../diagram/MindMapEditor";
 import { useToc } from "./TocContext";
 import { GalleryView } from "./GalleryBlock";
 import { Dropdown } from "../components/ChoiceMenu";
+import { underlineStyle } from "./underlineStyle";
 
 export const CALLOUT_VARIANTS = ["info", "success", "warning", "danger"] as const;
 type Variant = (typeof CALLOUT_VARIANTS)[number];
@@ -207,5 +208,6 @@ export const galleryBlock = createReactBlockSpec(
 
 export const schema = BlockNoteSchema.create({
   inlineContentSpecs: { ...defaultInlineContentSpecs, mention: mentionInline },
+  styleSpecs: { ...defaultStyleSpecs, underlineStyle },
   blockSpecs: { ...defaultBlockSpecs, codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock(), toc: tocBlock(), gallery: galleryBlock() },
 });

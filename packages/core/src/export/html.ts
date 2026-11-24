@@ -1,3 +1,4 @@
+import { parseUnderline, UNDERLINE_STYLE_KEY } from "../blocks/underline";
 import { galleryCarouselRem, galleryFitOf, galleryLayoutOf, galleryMosaicStyleOf, galleryRowRem, parseGallery } from "../blocks/gallery";
 import { inlineToText, type Block, type Inline } from "../blocks/types";
 import { parseAssetUrl } from "../assets/attach";
@@ -67,6 +68,8 @@ function inline(items: Inline[], ctx: RenderContext): string {
     if (st.italic) out = `<em>${out}</em>`;
     if (st.underline) out = `<u>${out}</u>`;
     if (st.strike) out = `<s>${out}</s>`;
+    const ul = parseUnderline(st[UNDERLINE_STYLE_KEY]);
+    if (ul) out = `<span class="ul" data-ul-kind="${ul.kind}" data-ul-color="${ul.color}">${out}</span>`;
     const cls = [typeof st.textColor === "string" && COLORS.has(st.textColor) ? `c-${st.textColor}` : "", typeof st.backgroundColor === "string" && COLORS.has(st.backgroundColor) ? `bg-${st.backgroundColor}` : ""].filter(Boolean);
     return cls.length ? `<span class="${cls.join(" ")}">${out}</span>` : out;
   }).join("");

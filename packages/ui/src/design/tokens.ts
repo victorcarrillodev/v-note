@@ -50,6 +50,26 @@ export const chips: Record<"info" | "success" | "warning" | "error", Record<Them
   error: { light: { fg: "#9E2523", bg: "#FBE3E1" }, dark: { fg: "#F5A19E", bg: "#472624" } },
 };
 
+/**
+ * Colores del subrayado con estilo (línea, difuminado y marcatextos). Más vivos que los de texto: el marcatextos se mezcla con
+ * transparencia y el trazo sigue siendo decorativo (el texto conserva su color), así que no se les exige contraste de texto.
+ * En oscuro bajan de brillo para no deslumbrar. Mismos nombres que `UNDERLINE_COLORS` del núcleo.
+ */
+/** Fuerza del relleno del subrayado (difuminado y marcatextos) por tema: en oscuro más transparente. */
+export const underlineStrength: Record<Theme, number> = { light: 1, dark: 0.55 }; // debe coincidir con `UNDERLINE_DARK_STRENGTH` del núcleo (lo comprueba underlineTokens.test.ts); este archivo lo carga Vite en Node y no puede importar el núcleo
+
+export const underlineColors: Record<string, Record<Theme, string>> = {
+  yellow: { light: "#F5C400", dark: "#E6B422" },
+  orange: { light: "#F58A1F", dark: "#E8893A" },
+  red: { light: "#EE4B4B", dark: "#E55F5F" },
+  pink: { light: "#EB5FA3", dark: "#DD6FA8" },
+  purple: { light: "#9B6BF0", dark: "#A98BE0" },
+  blue: { light: "#3D91F0", dark: "#5B9FD8" },
+  green: { light: "#2FBF7A", dark: "#4BB783" },
+  gray: { light: "#8B8F98", dark: "#9A9DA3" },
+  brown: { light: "#B07A52", dark: "#B58463" },
+};
+
 /** Colores de bloque (texto de color y resaltado). Se guardan por NOMBRE; el tema decide el valor (CL-5). */
 export const blockColors: Record<string, Record<Theme, { text: string; bg: string }>> = {
   gray: { light: { text: "#6B6A66", bg: "#EBEAE6" }, dark: { text: "#A3A29E", bg: "#2F2F2E" } },

@@ -66,7 +66,7 @@ export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceC
   const change = (patch: StylePatch) => {
     void controller.patchPageStyle(page.id, patch).then((r) => { if (r.ok) undoToast(); });
   };
-  const flag = (key: "titleOverCover" | "tag" | "updated" | "iconOverlap" | "rounded", v: boolean) => change({ header: { [key]: v ? true : undefined } });
+  const flag = (key: "titleOverCover" | "tag" | "updated" | "iconOverlap", v: boolean) => change({ header: { [key]: v ? true : undefined } });
   const commitTag = () => {
     const v = tagDraft.trim();
     if (v !== (header.tagText ?? "")) change({ header: { tagText: v === "" ? undefined : v } });
@@ -115,7 +115,6 @@ export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceC
           <Switch label={t("pageOptions.header.updated")} checked={header.updated === true} onChange={(v) => flag("updated", v)} />
           <Switch label={t("pageOptions.header.iconOverlap")} disabled={!hasC} checked={header.iconOverlap === true} onChange={(v) => flag("iconOverlap", v)} />
           <Switch label={t("pageOptions.header.gradient")} disabled={!hasC} checked={header.gradient ?? header.titleOverCover === true} onChange={(v) => change({ header: { gradient: v } })} />
-          <Switch label={t("pageOptions.header.rounded")} checked={header.rounded === true} onChange={(v) => flag("rounded", v)} />
           <div className="flex flex-wrap gap-2 pt-1">
             {!page.locked && <Button size="sm" onClick={() => { handoff.current = true; setOpen(false); usePageUiStore.getState().openPicker(); }}>{t("pageOptions.header.changeCover")}</Button>}
             {hasC && !page.locked && <Button size="sm" onClick={() => { handoff.current = true; setOpen(false); usePageUiStore.getState().openAdjust(); }}>{t("pageOptions.header.adjustCover")}</Button>}

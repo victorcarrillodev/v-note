@@ -1,5 +1,6 @@
 // Spec 006, Fase 4 (T-062 a T-073): hoja de estilos del documento exportado, con y sin paleta.
 import { describe, it, expect } from "vitest";
+import { UNDERLINE_COLORS } from "../blocks/underline";
 import type { Block, Inline } from "../blocks/types";
 import { MemoryAssetStore } from "../assets/memoryAssetStore";
 import { assetUrl } from "../assets/attach";
@@ -13,6 +14,7 @@ const mk = (variant: "light" | "dark", k: string): ExportPalette => ({
   variant, canvas: `#c${k}0001`, text: `#a${k}0002`, textMuted: `#b${k}0003`, border: `#d${k}0004`, borderControl: `#e${k}0005`, raised: `#f${k}0006`, accent: `#1${k}0007`, danger: `#2${k}0008`,
   chips: Object.fromEntries(EXPORT_CHIPS.map((c, i) => [c, { fg: `#3${k}00${i}1`, bg: `#4${k}00${i}2` }])) as ExportPalette["chips"],
   blocks: Object.fromEntries(EXPORT_BLOCK_COLORS.map((c, i) => [c, { text: `#5${k}0${i}01`, bg: `#6${k}0${i}02` }])) as ExportPalette["blocks"],
+  underlines: Object.fromEntries(UNDERLINE_COLORS.map((c, i) => [c, `#7${k}0${i}03`])) as ExportPalette["underlines"],
 });
 const DARK = mk("dark", "1"), LIGHT = mk("light", "2");
 const rule = (css: string, selector: string) => new RegExp(`(?:^|[}{])${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
@@ -105,5 +107,37 @@ describe("exportHtml con paleta (T-070 a T-073)", () => {
     const a = await run({}, [page([img])], assets), b = await run({ palette: DARK }, [page([img])], assets);
     expect(uri(a)).toBeTruthy();
     expect(uri(b)).toBe(uri(a));
+  });
+});
+
+describe("subrayado con estilo en el documento exportado", () => {
+  const u = (text: string, styles: Record<string, true | string> = {}): Inline => ({ type: "text", text, styles });
+  const doc = (inline: Inline[], palette?: ExportPalette) =>
+    run(palette ? { palette } : {}, [page([{ id: "u", type: "paragraph", props: {}, content: inline, children: [] }])]);
+
+  it("el texto lleva un <span class=\"ul\"> con el tipo y el color, y la hoja trae los tres trazos y los nueve colores", async () => {
+    const html = await doc([u("hola", { underlineStyle: "marker:yellow" })]);
+    expect(html).toContain('<span class="ul" data-ul-kind="marker" data-ul-color="yellow">hola</span>');
+    for (const kind of ["line", "soft", "marker"]) expect(html).toContain(`.ul[data-ul-kind=${kind}]{`);
+    for (const c of UNDERLINE_COLORS) expect(html).toContain(`.ul[data-ul-color=${c}]{--ul:#`);
+  });
+  it("con paleta usa los colores de la paleta", async () => {
+    expect(await doc([u("x", { underlineStyle: "soft:red" })], mk("dark", "a"))).toContain(".ul[data-ul-color=red]{--ul:#7a0203}");
+  });
+  it("sin subrayados con estilo la hoja no cambia (ni con un valor mal formado ni con otros estilos)", async () => {
+    const html = await doc([u("a", { underline: true, bold: true }), u("b", { underlineStyle: "mal:valor" })]);
+    expect(html).not.toContain(".ul[");
+    expect(html).not.toContain('class="ul"');
+  });
+  it("un subrayado simple (Ctrl+U) sigue siendo <u>", async () => {
+    expect(await doc([u("c", { underline: true })])).toContain("<u>c</u>");
+  });
+
+  it("en un documento oscuro el relleno del subrayado es más transparente; en claro no se declara", async () => {
+    const dark = await doc([u("x", { underlineStyle: "marker:yellow" })], DARK);
+    const light = await doc([u("x", { underlineStyle: "marker:yellow" })], LIGHT);
+    expect(dark).toContain(":root{--underline-strength:0.55}");
+    expect(light).not.toContain("--underline-strength:");
+    expect(dark).toContain("var(--underline-strength,1)");
   });
 });

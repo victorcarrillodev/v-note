@@ -1,0 +1,56 @@
+/* Subrayado con estilo (`underlineStyle`): tres trazos que comparten el color `--ul`. Las mismas reglas viajan en el documento exportado
+   (`UNDERLINE_EFFECTS_CSS` del núcleo); una prueba comprueba que no divergen. Solo `var()`: ningún color suelto. */
+.ul { --ul: currentColor; }
+
+/* Liso, como de máquina: línea recta y limpia que respeta los descendentes de las letras. */
+.ul[data-ul-kind=line] {
+  text-decoration: underline;
+  text-decoration-color: var(--ul);
+  text-decoration-thickness: 0.11em;
+  text-underline-offset: 0.2em;
+  text-decoration-skip-ink: auto;
+}
+
+/* Difuminado: franja baja que se desvanece hacia arriba y hacia abajo, pero llena de lado a lado: cubre todo el texto seleccionado. */
+.ul[data-ul-kind=soft] {
+  background-image: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ul) calc(95% * var(--underline-strength, 1)), transparent) 40%, color-mix(in srgb, var(--ul) calc(60% * var(--underline-strength, 1)), transparent) 72%, transparent);
+  background-size: 100% 0.7em;
+  background-position: 0 96%;
+  background-repeat: no-repeat;
+  padding: 0 0.12em;
+  margin: 0 -0.12em;
+  border-radius: 0.35em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Marcatextos rápido: trazo ancho e irregular pasado por la mitad baja de la línea; el color llega hasta los dos extremos del texto. */
+.ul[data-ul-kind=marker] {
+  background-image: linear-gradient(
+    104deg,
+    color-mix(in srgb, var(--ul) calc(92% * var(--underline-strength, 1)), transparent),
+    color-mix(in srgb, var(--ul) calc(62% * var(--underline-strength, 1)), transparent) 50%,
+    color-mix(in srgb, var(--ul) calc(88% * var(--underline-strength, 1)), transparent)
+  );
+  background-size: 100% 0.52em;
+  background-position: 0 90%;
+  background-repeat: no-repeat;
+  padding: 0 0.22em;
+  margin: 0 -0.22em;
+  border-radius: 0.7em 0.2em 0.55em 0.25em / 0.35em 0.5em 0.3em 0.45em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* En oscuro `--underline-strength` baja (tokens): los dos trazos con relleno se vuelven más transparentes y la letra se lee mejor. */
+
+/* Colores: los de los tokens (claro y oscuro). */
+.ul[data-ul-color=yellow] { --ul: var(--underline-yellow); }
+.ul[data-ul-color=orange] { --ul: var(--underline-orange); }
+.ul[data-ul-color=red] { --ul: var(--underline-red); }
+.ul[data-ul-color=pink] { --ul: var(--underline-pink); }
+.ul[data-ul-color=purple] { --ul: var(--underline-purple); }
+.ul[data-ul-color=blue] { --ul: var(--underline-blue); }
+.ul[data-ul-color=green] { --ul: var(--underline-green); }
+.ul[data-ul-color=gray] { --ul: var(--underline-gray); }
+.ul[data-ul-color=brown] { --ul: var(--underline-brown); }

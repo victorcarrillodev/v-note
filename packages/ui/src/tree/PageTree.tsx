@@ -7,7 +7,6 @@ import { flattenTree, type TreeRow } from "./flatten";
 import { dropTarget, zoneAt, type DropTarget, type Zone } from "./dropTarget";
 import { Icon } from "../design/Icon";
 import { treeIndent } from "../layout/treeIndent";
-import type { IconName } from "../design/iconMap";
 
 export type PageTreeProps = {
   nodes: readonly PageNode[];
@@ -129,7 +128,6 @@ export function PageTree({ nodes, expanded, selectedId, onSelect, onToggle, onMo
   );
 }
 
-const KIND_ICON: Record<string, IconName> = { note: "note", database: "database", board: "board" };
 
 function Row({ row: r, label, selected, rowHeight, top, draggable, hintZone, onSelect, onToggle, toggleLabel, onCreateChild, createLabel }: {
   row: TreeRow; label: string; selected: boolean; rowHeight: number; top: number; draggable: boolean; hintZone: Zone | null;
@@ -162,7 +160,6 @@ function Row({ row: r, label, selected, rowHeight, top, draggable, hintZone, onS
       ) : (
         <span className="w-5 shrink-0" aria-hidden="true" />
       )}
-      {r.node.page.icon ? <span aria-hidden="true">{r.node.page.icon}</span> : <span className="text-[var(--c-text-muted)]"><Icon name={KIND_ICON[r.node.page.kind] ?? "note"} /></span>}
       <span data-row-title className="truncate" title={label} aria-hidden="true">{label}</span>
       {onCreateChild && (
         <span className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-100 focus-within:opacity-100 group-hover:opacity-100">

@@ -124,13 +124,15 @@ describe("filas del estándar (RF-4.2, RF-4.3, CL-1, CL-7)", () => {
     expect(sel.className).toContain("bg-[var(--c-raised)]");
     expect(screen.getByRole("treeitem", { name: "A" }).className).not.toContain("border-[var(--c-accent)]");
   });
-  it("muestra un ícono de tipo (nota, base de datos, tablero) y respeta el emoji de la página", async () => {
+  it("la fila muestra solo el título: ni ícono de tipo ni el emoji o imagen de la página", async () => {
     const db = { ...node("d", "Base"), page: { ...page("d", "Base"), kind: "database" as const } };
     const withIcon = { ...node("e", "Con ícono"), page: { ...page("e", "Con ícono"), icon: "📁" } };
     await renderWithI18n(<PageTree nodes={[node("a", "Nota"), db, withIcon]} expanded={new Set()} selectedId={null} onSelect={() => {}} onToggle={() => {}} />);
-    expect(screen.getByRole("treeitem", { name: "Nota" }).querySelector("svg")).not.toBeNull();
-    expect(screen.getByRole("treeitem", { name: "Base" }).querySelector("svg")).not.toBeNull();
-    expect(screen.getByRole("treeitem", { name: "Con ícono" })).toHaveTextContent("📁");
+    for (const name of ["Nota", "Base", "Con ícono"]) {
+      const row = screen.getByRole("treeitem", { name });
+      expect(row.querySelector("svg"), name).toBeNull();
+      expect(row.textContent, name).toBe(name);
+    }
   });
   it("sangría de 16 px por nivel con tope a 6 niveles (10 niveles sangran como 6)", async () => {
     await renderWithI18n(<PageTree nodes={[deep(10)]} expanded={open(Array.from({ length: 11 }, (_, i) => `n${i}`))} selectedId={null} onSelect={() => {}} onToggle={() => {}} height={900} />);

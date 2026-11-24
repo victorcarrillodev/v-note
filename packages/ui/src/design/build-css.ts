@@ -2,7 +2,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { THEMES } from "./themes";
-import { colors, chips, blockColors, typography, spacing, radii, elevation, motion, layers, coverGradients, sizes, pageStyle, pageFonts } from "./tokens";
+import { colors, chips, blockColors, underlineColors, underlineStrength, typography, spacing, radii, elevation, motion, layers, coverGradients, sizes, pageStyle, pageFonts } from "./tokens";
 
 const kebab = (s: string) => s.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
 const lines = (...l: string[]) => l.map((x) => "  " + x).join("\n");
@@ -11,6 +11,8 @@ const colorVars = (t: "light" | "dark") => [
   ...Object.entries(colors).map(([k, v]) => `--c-${kebab(k)}: ${v[t]};`),
   ...Object.entries(chips).flatMap(([k, v]) => [`--chip-${k}-fg: ${v[t].fg};`, `--chip-${k}-bg: ${v[t].bg};`]),
   ...Object.entries(blockColors).flatMap(([k, v]) => [`--block-${k}-text: ${v[t].text};`, `--block-${k}-bg: ${v[t].bg};`]),
+  ...Object.entries(underlineColors).map(([k, v]) => `--underline-${k}: ${v[t]};`),
+  `--underline-strength: ${underlineStrength[t]};`,
   ...Object.entries(coverGradients).map(([k, v]) => `--cover-${k}: linear-gradient(135deg, ${v[t][0]}, ${v[t][1]});`),
   ...([1, 2, 3, 4] as const).map((l) => `--elevation-${l}: ${(t === "light" ? elevation.light : elevation.dark)[l].shadow};`),
 ];

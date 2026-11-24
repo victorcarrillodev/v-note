@@ -90,3 +90,13 @@ describe("corpus de entradas maliciosas (T-130)", () => {
     }
   });
 });
+
+describe("estilos propios del editor al pegar", () => {
+  it("conserva `data-style-type` y `data-value` (subrayado con estilo) y sigue quitando el resto de atributos data-*", () => {
+    const out = sanitizeHtml('<span data-style-type="underlineStyle" data-value="marker:pink" data-x="1" onclick="y()">hola</span>');
+    expect(out).toContain('data-style-type="underlineStyle"');
+    expect(out).toContain('data-value="marker:pink"');
+    expect(out).not.toContain("data-x");
+    expect(out).not.toContain("onclick");
+  });
+});

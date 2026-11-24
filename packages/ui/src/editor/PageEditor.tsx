@@ -8,7 +8,9 @@ import { buildSlashItems } from "./slashItems";
 import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
 import { useWorkspace } from "../workspace/useController";
-import { SuggestionMenuController, useCreateBlockNote } from "@blocknote/react";
+import { FormattingToolbar, FormattingToolbarController, SuggestionMenuController, getFormattingToolbarItems, useCreateBlockNote } from "@blocknote/react";
+import { UnderlineButton } from "./UnderlineButton";
+import { UnderlineShortcut } from "./UnderlineShortcut";
 import { schema } from "./schema";
 import { DatabaseEmbedProvider } from "../databases/EmbeddedDatabase";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -31,6 +33,7 @@ import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import { codeExtension } from "./code/codeExtension";
 import "./editor.css";
+import "./underline.css";
 
 function findPage(tree: readonly PageNode[], id: string): Page | null {
   const stack = [...tree];
@@ -189,11 +192,15 @@ function Editor({ session, locked, handlers, findPages }: { session: DocSession;
     }));
   };
   const items = async (query: string) => buildSlashItems(editor, t, query);
+  // Barra de formato: la de siempre, con «Subrayado con estilo» en el lugar del subrayado simple (Ctrl+U sigue funcionando).
+  const formattingItems = useMemo(() => [...getFormattingToolbarItems().filter((i) => i.key !== "underlineStyleButton"), <UnderlineButton key="styledUnderlineButton" />], []);
   // Páginas largas (spec 006, DP-14): marca el editor para que `editor.css` omita el trabajo de los bloques de texto fuera de pantalla.
   const [long, setLong] = useState(() => isLongPage(editor));
   useEffect(() => { setLong(isLongPage(editor)); }, [editor]);
   return (
-    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false} editable={!locked} onChange={() => setLong(isLongPage(editor))} {...(long ? { "data-long-page": "" } : {})}>
+    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false} formattingToolbar={false} editable={!locked} onChange={() => setLong(isLongPage(editor))} {...(long ? { "data-long-page": "" } : {})}>
+      {!locked && <UnderlineShortcut />}
+      {!locked && <FormattingToolbarController formattingToolbar={() => <FormattingToolbar>{formattingItems}</FormattingToolbar>} />}
       {!locked && <SuggestionMenuController triggerCharacter="/" getItems={items} />}
       {!locked && <SuggestionMenuController triggerCharacter="@" getItems={mentionItems} />}
       {!locked && <SuggestionMenuController triggerCharacter="[[" getItems={mentionItems} />}

@@ -110,9 +110,6 @@ describe("sección «Cabecera y portada» (E-110)", () => {
     // Título sobre la portada
     await user.click(screen.getByRole("switch", { name: "Título sobre la portada" }));
     expect(screen.getByTestId("page-header")).toHaveAttribute("data-mode", "card");
-    // Esquinas redondeadas
-    await user.click(screen.getByRole("switch", { name: "Esquinas redondeadas" }));
-    expect(screen.getByTestId("cover").style.borderRadius).toBe("16px");
     // Degradado (en modo tarjeta, de serie encendido)
     expect(screen.getByRole("switch", { name: "Degradado bajo el texto" })).toBeChecked();
     await user.click(screen.getByRole("switch", { name: "Degradado bajo el texto" }));
@@ -180,7 +177,7 @@ describe("historial y «Deshacer» (E-111)", () => {
     await user.click(trigger());
     await menu();
     await user.click(screen.getByRole("switch", { name: "Fecha de actualización" }));
-    await user.click(screen.getByRole("switch", { name: "Esquinas redondeadas" }));
+    await user.click(screen.getByRole("switch", { name: "Etiqueta" }));
     await controller.undoPageProps(id);
     expect(page().style.header).toEqual({ updated: true });
     await controller.undoPageProps(id);

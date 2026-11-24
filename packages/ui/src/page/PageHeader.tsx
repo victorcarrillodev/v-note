@@ -18,6 +18,9 @@ import { CoverAdjust, type CoverPreview } from "./cover/CoverAdjust";
 import { useCoverImport } from "./cover/useCoverImport";
 import { dragPosition, keyPosition, type Pos } from "./cover/reposition";
 import type { CoverImportDeps } from "./cover/importCoverImage";
+import { IconPicker } from "./icon/IconPicker";
+import { PageIcon } from "./icon/PageIcon";
+import { importIconImage, type IconImportDeps, type IconImportError } from "./icon/importIconImage";
 import { usePageUiStore } from "./pageUiStore";
 import { usePagePropsUndo } from "./usePagePropsUndo";
 import { relativeParts } from "../layout/relativeTime";
@@ -62,10 +65,10 @@ function UpdatedLabel({ at, now, onCover }: { at: number; now: number; onCover: 
   );
 }
 
-export function PageHeader({ controller, pageId, onExport, assets, workspaceName = "", now, optimize }: {
+export function PageHeader({ controller, pageId, onExport, assets, workspaceName = "", now, optimize, iconEncode }: {
   controller: WorkspaceController; pageId: string; onNavigate?: (id: string) => void; onExport?: (id: string) => void;
   /** Almacén de archivos del espacio: sin él no se pueden subir imágenes como portada. */
-  assets?: AssetStore | undefined; workspaceName?: string; now?: number; optimize?: CoverImportDeps["optimize"];
+  assets?: AssetStore | undefined; workspaceName?: string; now?: number; optimize?: CoverImportDeps["optimize"]; iconEncode?: IconImportDeps["encode"];
 }) {
   const { t } = useTranslation();
   const snap = useWorkspace(controller);
@@ -78,7 +81,9 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   const [draft, setDraft] = useState(title);
   const [descDraft, setDescDraft] = useState(description);
   const [editingDesc, setEditingDesc] = useState(false);
-  const [editingIcon, setEditingIcon] = useState(false);
+  const [iconOpen, setIconOpen] = useState(false);
+  const [iconBusy, setIconBusy] = useState(false);
+  const [iconError, setIconError] = useState<IconImportError | null>(null);
   const [dupOpen, setDupOpen] = useState(false);
   const [warn, setWarn] = useState<{ id: string; name: string }[] | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -147,7 +152,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   const setStyle = (patch: StylePatch) => void controller.patchPageStyle(page.id, patch);
   const applyCover = (p: CoverApply) => void controller.setPageProps(page.id, p);
 
-  // Radio efectivo: el ajuste de esquinas manda; si no hay, «Esquinas redondeadas» pone un radio de serie (RF-1.3).
+  // Radio efectivo: el ajuste de esquinas manda; si no hay, un ajuste antiguo de «esquinas redondeadas» (ya sin opción propia) pone un radio de serie (RF-1.3).
   const radius: CornerRadius | undefined = preview?.radius ?? (coverStyle.radius !== undefined ? coverStyle.radius : header.rounded ? DEFAULT_ROUNDED_RADIUS : undefined);
   // Con esquinas redondeadas la portada se separa de los lados y de arriba, más cuanto mayor es el radio, para que se vea la curva.
   const maxRadius = radius === undefined ? 0 : Array.isArray(radius) ? Math.max(...radius) : radius;
@@ -191,6 +196,19 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
 
   const changeBtn = (
     <button type="button" className={COVER_BTN}><Icon name="image" size={14} />{t("cover.change")}</button>
+  );
+  const uploadIcon = (file: File) => {
+    if (!assets) return;
+    setIconBusy(true); setIconError(null);
+    void importIconImage(file, { assets, setIcon: (icon) => controller.setIcon(pageId, icon), ...(iconEncode ? { encode: iconEncode } : {}) }).then((r) => {
+      setIconBusy(false);
+      if (r.ok) setIconOpen(false); else setIconError(r.error);
+    });
+  };
+  const iconPicker = (trigger: ReactNode) => (
+    <IconPicker trigger={trigger} open={iconOpen} onOpenChange={(o) => { setIconOpen(o); if (!o) setIconError(null); }} hasIcon={page.icon !== null}
+      canUpload={assets !== undefined} uploading={iconBusy} error={iconError}
+      onEmoji={(emoji) => void controller.setIcon(pageId, emoji)} onFile={uploadIcon} onRemove={() => void controller.setIcon(pageId, null)} />
   );
   const picker = (trigger: ReactNode) => (
     <CoverPicker trigger={trigger} open={pickerOpen} onOpenChange={(o) => { setPickerOpen(o); if (!o) imp.clear(); }} hasCover={hasC}
@@ -238,8 +256,11 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
     </div>
   ) : null;
 
+  const iconNode = <PageIcon icon={page.icon} assets={assets} size={iconOverlap ? 36 : 32} />;
   const iconBox = page.icon && (
-    <span aria-hidden="true" data-testid="page-icon" className={cx("shrink-0 text-3xl", iconOverlap && "absolute -bottom-7 left-6 z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--c-card)] shadow-[var(--elevation-2)]")}>{page.icon}</span>
+    <span data-testid="page-icon" className={cx("shrink-0", iconOverlap && "absolute -bottom-7 left-6 z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--c-card)] shadow-[var(--elevation-2)]")}>
+      {locked ? iconNode : iconPicker(<button type="button" aria-label={t("page.changeIcon")} className="inline-flex items-center justify-center rounded-[var(--radius-md)] hover:bg-[var(--c-raised)]">{iconNode}</button>)}
+    </span>
   );
 
   const coverControls = !locked && (
@@ -275,8 +296,12 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
           <Icon name="loading" size={14} className="animate-spin motion-reduce:animate-none" />{imp.stage === "download" ? t("unsplash.downloading") : t("cover.processing")}
         </div>
       )}
-      {imp.lowRes && <InlineAlert tone="warning" onDismiss={imp.clear} dismissLabel={t("toast.close")}>{t("cover.lowRes")}</InlineAlert>}
-      {imp.error && !pickerOpen && <InlineAlert tone="error" onDismiss={imp.clear} dismissLabel={t("toast.close")}>{t(({ empty: "cover.errEmpty", tooLarge: "cover.errTooLarge", unsupported: "cover.errUnsupported", corrupt: "cover.errCorrupt", save: "cover.errSave" } as const)[imp.error])}</InlineAlert>}
+      {(imp.lowRes || (imp.error && !pickerOpen)) && (
+        <div data-testid="cover-alerts" className="relative z-30 flex flex-col gap-2 shadow-[var(--shadow-md,0_4px_12px_rgb(0_0_0/0.35))]">
+        {imp.lowRes && <InlineAlert tone="warning" onDismiss={imp.clear} dismissLabel={t("toast.close")}>{t("cover.lowRes")}</InlineAlert>}
+        {imp.error && !pickerOpen && <InlineAlert tone="error" onDismiss={imp.clear} dismissLabel={t("toast.close")}>{t(({ empty: "cover.errEmpty", tooLarge: "cover.errTooLarge", unsupported: "cover.errUnsupported", corrupt: "cover.errCorrupt", save: "cover.errSave" } as const)[imp.error])}</InlineAlert>}
+        </div>
+      )}
 
       {locked && (
         <button type="button" data-testid="lock-indicator" onClick={() => void controller.setPageProps(page.id, { locked: false })} aria-label={t("pageHeader.unlock")} title={t("pageHeader.unlock")}
@@ -338,19 +363,8 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
       <div className="-ml-2 flex flex-wrap items-center gap-0.5 text-sm">
         {page.icon ? (
           <button type="button" className={ACTION} onClick={() => void controller.setIcon(page.id, null)}><Icon name="emoji" size={14} />{t("page.removeIcon")}</button>
-        ) : editingIcon ? (
-          <input
-            aria-label={t("page.iconLabel")}
-            autoFocus
-            maxLength={8}
-            className="ml-2 h-8 w-16 rounded-[var(--radius-md)] border border-[var(--c-border-control)] bg-[var(--c-card)] px-1.5 text-[length:var(--text-ui-small-size)]"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && e.currentTarget.value.trim()) { void controller.setIcon(page.id, e.currentTarget.value.trim()); setEditingIcon(false); }
-              if (e.key === "Escape") setEditingIcon(false);
-            }}
-          />
         ) : (
-          <button type="button" className={ACTION} onClick={() => setEditingIcon(true)}><Icon name="emoji" size={14} />{t("page.addIcon")}</button>
+          iconPicker(<button type="button" className={ACTION}><Icon name="emoji" size={14} />{t("page.addIcon")}</button>)
         )}
 
         {!hasC && !locked && picker(<button type="button" className={ACTION}><Icon name="image" size={14} />{t("page.addCover")}</button>)}

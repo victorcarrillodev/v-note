@@ -112,6 +112,6 @@ export async function exportHtml(input: ExportInput, deps: ExportDeps, opts: Exp
   const docTitle = input.pages[0]?.title.trim() || "Sin título";
   const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`
     + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'">`
-    + `<title>${escapeXml(docTitle)}</title><style>${buildExportCss(opts.palette)}</style></head><body>${input.pages.length > 1 ? toc(input.pages) : ""}${sections.join("")}</body></html>`;
+    + `<title>${escapeXml(docTitle)}</title><style>${buildExportCss(opts.palette, sections.some((x) => x.includes('class="ul"')))}</style></head><body>${input.pages.length > 1 ? toc(input.pages) : ""}${sections.join("")}</body></html>`;
   return { status: "done", html, report };
 }

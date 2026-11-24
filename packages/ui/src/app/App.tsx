@@ -33,6 +33,7 @@ import { SettingsPanel } from "../settings/SettingsView";
 import { loadBindings } from "../settings/bindingsStore";
 import { comboFromEvent, gcAssets } from "@vnote/core";
 import { Sidebar } from "../sidebar/Sidebar";
+import { WorkspaceAssetsContext } from "../shared/workspaceAssets";
 import { PageHeader } from "../page/PageHeader";
 import { ExportDialog } from "../page/ExportDialog";
 import { TrashView } from "../trash/TrashView";
@@ -236,7 +237,9 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
             <WorkspaceSwitcher manager={workspaces} active={{ id: opened.workspace.id, name: opened.workspace.name }} onOpen={(id) => void openWorkspace(id)} onManage={() => setView("workspaces")} />
           </div>
           <div className="min-h-0 flex-1">
+            <WorkspaceAssetsContext.Provider value={backup?.assetsFor(opened.workspace.location)}>
             <Sidebar controller={opened.controller} onOpenTrash={() => setView("trash")} onPageOpened={() => setView("page")} onSearch={() => setPaletteOpen(true)} searchCombo={searchCombo} rowHeight={rowHeightFor(density)} />
+            </WorkspaceAssetsContext.Provider>
           </div>
           <SidebarLinks
             groups={[

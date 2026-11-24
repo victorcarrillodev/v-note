@@ -86,12 +86,20 @@ describe("foco (T-115)", () => {
 });
 
 describe("ícono y portada (T-115)", () => {
-  it("añade y quita el ícono", async () => {
+  it("añade un emoji desde el selector y lo quita desde el mismo selector", async () => {
     const { controller, id, user } = await setup();
     await user.click(screen.getByRole("button", { name: "Añadir ícono" }));
-    await user.type(screen.getByRole("textbox", { name: "Ícono" }), "📓{Enter}");
+    await user.type(screen.getByRole("searchbox", { name: "Buscar un emoji…" }), "cuaderno");
+    await user.click(screen.getByRole("button", { name: "📓 cuaderno" }));
     expect(current(controller, id).icon).toBe("📓");
-    await user.click(screen.getByRole("button", { name: "Quitar ícono" }));
+    await user.click(screen.getByRole("button", { name: "Cambiar ícono" })); // el ícono mismo abre el selector
+    await user.click(screen.getByRole("button", { name: "Quitar" }));
+    expect(current(controller, id).icon).toBeNull();
+  });
+  it("«Quitar ícono» junto a las acciones también lo quita", async () => {
+    const { controller, id, user } = await setup();
+    await controller.setIcon(id, "📓");
+    await user.click(await screen.findByRole("button", { name: "Quitar ícono" }));
     expect(current(controller, id).icon).toBeNull();
   });
   it("«Añadir portada» abre el selector (E-087); se elige un degradado y se quita desde «Cambiar portada»", async () => {

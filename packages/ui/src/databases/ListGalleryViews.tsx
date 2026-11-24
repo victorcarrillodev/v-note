@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TAG_COLORS, type Property, type QueryRow } from "@vnote/core";
+import { TAG_COLORS, parseIcon, type Property, type QueryRow } from "@vnote/core";
+import { PageIcon } from "../page/icon/PageIcon";
 import { EmptyState } from "../empty/EmptyState";
 import { IconButton } from "../components/IconButton";
 import { Icon } from "../design/Icon";
@@ -55,8 +56,10 @@ function ValueChips({ row, props, className }: { row: QueryRow; props: Property[
   );
 }
 
-const PageGlyph = ({ icon, size }: { icon: string | null | undefined; size: number }) =>
-  icon ? <span aria-hidden="true" style={{ fontSize: size }} className="shrink-0 leading-none">{icon}</span> : <span aria-hidden="true" className="shrink-0 text-[var(--c-text-muted)]"><Icon name="note" size={size > 16 ? 20 : 16} /></span>;
+const PageGlyph = ({ icon, size }: { icon: string | null | undefined; size: number }) => {
+  const assets = useDatabaseAssets();
+  return parseIcon(icon) ? <PageIcon icon={icon} assets={assets} size={size} /> : <span aria-hidden="true" className="shrink-0 text-[var(--c-text-muted)]"><Icon name="note" size={size > 16 ? 20 : 16} /></span>;
+};
 
 /** Vista lista (T-271): una fila por página, con su ícono, su título y sus valores como píldoras. */
 export function ListView({ controller, onOpenRow }: Props) {
