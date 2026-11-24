@@ -1,0 +1,21 @@
+{
+  "candidate_id": "f5adeea2eb1395a5e385016386ce77dd488eea396819a14c44d73ce8d866044e",
+  "created": "2026-11-24T05:27:21Z",
+  "result": "fail",
+  "checks": [
+    {
+      "cmd": "npm test --silent",
+      "exit": 127,
+      "output_tail": "sh: línea 1: npm: orden no encontrada\n"
+    }
+  ],
+  "risk": {
+    "tier": "passive",
+    "reasons": [
+      "cambio pequeño y acotado"
+    ],
+    "files": 4,
+    "lines": 41,
+    "review_due": false
+  }
+}

@@ -16,6 +16,19 @@ import type { Workspace, WorkspaceManager } from "../workspaces/workspaceManager
 const TITLE_MAX = 80;
 const KEY = 1;
 
+/** Una línea de la captura → tipo de bloque, propiedades y texto sin el marcador (Markdown ligero). */
+function parseLine(line: string): { type: Block["type"]; props: Block["props"]; text: string } {
+  const task = /^[-*] \[( |x|X)\] (.*)$/.exec(line);
+  if (task) return { type: "checkListItem", props: { ...defaultProps("checkListItem"), checked: task[1] !== " " }, text: task[2]! };
+  const heading = /^(#{1,3}) (.*)$/.exec(line);
+  if (heading) return { type: "heading", props: { ...defaultProps("heading"), level: heading[1]!.length }, text: heading[2]! };
+  const bullet = /^[-*] (.*)$/.exec(line);
+  if (bullet) return { type: "bulletListItem", props: defaultProps("bulletListItem"), text: bullet[1]! };
+  const numbered = /^\d+\. (.*)$/.exec(line);
+  if (numbered) return { type: "numberedListItem", props: defaultProps("numberedListItem"), text: numbered[1]! };
+  return { type: "paragraph", props: defaultProps("paragraph"), text: line };
+}
+
 /** Captura rápida de un espacio (RF-13): borrador continuo y notas que caen en la Bandeja de entrada. */
 export class QuickCapture {
   private pages: PagesRepo;
@@ -40,9 +53,10 @@ export class QuickCapture {
     const inbox = await ensureInbox(this.db, this.clock, this.inboxTitle);
     if (!inbox.ok) return inbox;
     const svc = new PageService(this.db, this.clock);
-    const created = await svc.create({ parentId: inbox.value.id, title: lines[0]!.trim().slice(0, TITLE_MAX) });
+    const parsed = lines.map(parseLine);
+    const created = await svc.create({ parentId: inbox.value.id, title: parsed[0]!.text.trim().slice(0, TITLE_MAX) });
     if (!created.ok) return created;
-    const blocks: Block[] = lines.map((l) => ({ id: newId(), type: "paragraph", props: defaultProps("paragraph"), content: l === "" ? [] : [{ type: "text", text: l, styles: {} }], children: [] }));
+    const blocks: Block[] = parsed.map((l) => ({ id: newId(), type: l.type, props: l.props, content: l.text === "" ? [] : [{ type: "text", text: l.text, styles: {} }], children: [] }));
     const doc = new Y.Doc();
     toYjs(blocks, doc.getXmlFragment("doc"));
     const saved = await svc.saveUpdate(created.value.id, Y.encodeStateAsUpdate(doc));

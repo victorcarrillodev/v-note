@@ -86,6 +86,27 @@ describe("confirmar guarda en la bandeja (T-375, CL-16)", () => {
   });
 });
 
+describe("Markdown ligero en la captura (captura-markdown)", () => {
+  it("convierte marcadores de línea en bloques y quita el marcador del título", async () => {
+    const note = must(await cap.confirm("# Plan\n- uno\n* dos\n1. tres\n- [ ] pendiente\n- [x] hecho\ntexto"));
+    expect(note.title).toBe("Plan");
+    const doc = must(await new DocStore(db, clock).load(note.id));
+    const blocks = fromYjs(doc.getXmlFragment("doc"));
+    const text = (b: { content: unknown }) => (b.content as { text: string }[]).map((t) => t.text).join("");
+    expect(blocks.map((b) => [b.type, text(b)])).toEqual([
+      ["heading", "Plan"], ["bulletListItem", "uno"], ["bulletListItem", "dos"], ["numberedListItem", "tres"],
+      ["checkListItem", "pendiente"], ["checkListItem", "hecho"], ["paragraph", "texto"],
+    ]);
+    expect(blocks[0]!.props).toMatchObject({ level: 1 });
+    expect(blocks[4]!.props).toMatchObject({ checked: false });
+    expect(blocks[5]!.props).toMatchObject({ checked: true });
+  });
+  it("sin marcadores el comportamiento no cambia", async () => {
+    const note = must(await cap.confirm("Llamar a Ana"));
+    expect(note.title).toBe("Llamar a Ana");
+  });
+});
+
 describe("mover o convertir una nota de la bandeja (T-379)", () => {
   it("moverla a otro lugar del árbol la saca de la bandeja", async () => {
     const dest = must(await repo.create({ title: "Proyectos" }));
