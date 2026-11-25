@@ -246,6 +246,7 @@ export const esMX = {
     cancel: "Cancelar",
   },
   dialog: { discardTitle: "¿Descartar los cambios?", discardBody: "Hay cambios sin guardar que se perderán.", discard: "Descartar cambios", keepEditing: "Seguir editando" },
+  zoom: { label: "Zoom de la página", in: "Acercar", out: "Alejar", reset: "Restablecer zoom" },
   shell: {
     close: "Cerrar",
     sidebar: "Barra lateral",

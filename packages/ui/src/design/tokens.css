@@ -149,9 +149,9 @@
   --page-gap-compact: 0.5em;
   --page-gap-normal: 0.75em;
   --page-gap-relaxed: 1.1em;
-  --cover-height-low: 280px;
-  --cover-height-medium: 360px;
-  --cover-height-high: 460px;
+  --cover-height-low: 180px;
+  --cover-height-medium: 260px;
+  --cover-height-high: 340px;
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

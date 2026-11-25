@@ -1,0 +1,14 @@
+/* Zoom de página: crece el CONTENIDO (texto, títulos, código, tablas, imágenes). Menús, botones, campos y barras conservan su tamaño. */
+[data-page-zoom] .page-scope .bn-editor {
+  font-size: calc(var(--text-reading-size) * var(--page-zoom));
+  line-height: calc(var(--text-reading-line) * var(--page-zoom));
+}
+[data-page-zoom] [data-page-title] { font-size: calc(var(--text-page-title-size) * var(--page-zoom)); }
+[data-page-zoom] .bn-editor .bn-file-block-content-wrapper { zoom: var(--page-zoom); max-width: 100%; }
+/* Bloques que son herramientas, no texto: se quedan al tamaño normal. */
+[data-page-zoom] .page-scope .bn-editor .bn-block-content:is([data-content-type="databaseView"], [data-content-type="linkCard"], [data-content-type="diagram"], [data-content-type="mindmap"], [data-content-type="orgchart"], [data-content-type="timeline"]) {
+  font-size: var(--text-reading-size);
+  line-height: var(--text-reading-line);
+}
+/* La matriz es contenido aunque se escriba en campos: su texto sí crece. */
+[data-page-zoom] .bn-editor [data-content-type="matrix"] table :is(input, textarea) { font-size: calc(var(--text-ui-size) * var(--page-zoom)); }

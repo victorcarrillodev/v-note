@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { Background, ReactFlow, ReactFlowProvider, ViewportPortal, useReactFlow, useStore, type Node, type NodeProps } from "@xyflow/react";
+import { useFlowPageZoom } from "../page/zoom/useFlowPageZoom";
 import { useTranslation } from "react-i18next";
 import {
   GRID, NODE_H, NODE_W, Snapshots, addChild, addSibling, applyStyleToBranch, branchClip, defaultMapHeight, deleteTreeNode, effectiveBase, findNode, newId, newTree, parseTree, pasteBranch,
@@ -111,6 +112,7 @@ const branchIds = (n: TNode): string[] => [n.id, ...(n.collapsed ? [] : n.childr
 function Inner({ value, onChange }: { value: string; onChange: (data: string) => void }) {
   const { t } = useTranslation();
   const rf = useReactFlow();
+  useFlowPageZoom();
   const zoom = useStore((s) => s.transform[2]);
   useStore((s) => s.transform); // la vista cambia al desplazar: reubica el menú y comprueba si el globo sigue a la vista
   const [gridPrefs] = useGridPrefs();

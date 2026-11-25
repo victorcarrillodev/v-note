@@ -11,6 +11,7 @@ import type { BackupService, InstanceLockHandle, RestoreSource, Workspace } from
 import { AppServicesProvider, useServices, type AppServices } from "./services";
 import { UnsplashProvider } from "../unsplash/UnsplashContext";
 import { PageBody } from "../page/PageBody";
+import { PageZoom } from "../page/zoom/PageZoom";
 import { PageStyleScope } from "../page/PageStyleScope";
 import { AppErrorBoundary } from "../feedback/ErrorScreen";
 import { ToastProvider } from "../feedback/ToastContext";
@@ -340,7 +341,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
           </div>
         </div>
       )}
-      {view === "page" && opened && <PageArea controller={opened.controller} workspace={opened.workspace} renderPageBody={renderPageBody} {...(exporter ? { exporter } : {})} />}
+      {view === "page" && opened && <PageZoom preferences={preferences}><PageArea controller={opened.controller} workspace={opened.workspace} renderPageBody={renderPageBody} {...(exporter ? { exporter } : {})} /></PageZoom>}
     </AppShell>
     </GlobalShortcutProvider>
   );

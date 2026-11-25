@@ -111,3 +111,6 @@
 .bn-container .bn-toggle-wrapper .bn-toggle-button svg { transition: transform var(--motion-base) var(--ease-out); }
 .bn-container .bn-block-content[data-show-children="true"] + .bn-block-group,
 .bn-container .bn-toggle-wrapper[data-show-children="true"] ~ .bn-block-group { animation: vn-expand var(--motion-slow) var(--ease-out); transform-origin: top; }
+
+/* El editor ocupa toda la página: su anillo de foco se ve como un marco alrededor del contenido. Aquí el cursor ya indica el foco. */
+.bn-editor:focus-visible { outline: none; box-shadow: none; }

@@ -250,6 +250,7 @@ export const en: Widen<typeof esMX> = {
     cancel: "Cancel",
   },
   dialog: { discardTitle: "Discard changes?", discardBody: "There are unsaved changes that will be lost.", discard: "Discard changes", keepEditing: "Keep editing" },
+  zoom: { label: "Page zoom", in: "Zoom in", out: "Zoom out", reset: "Reset zoom" },
   shell: {
     close: "Close",
     sidebar: "Sidebar",

@@ -1,5 +1,6 @@
 import { ExternalLink } from "../components/ExternalLink";
 import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { usePageZoom } from "./zoom/zoomContext";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
 import { accentSwatch, type AssetStore, type CornerRadius, type Page, type PageNode, type StylePatch } from "@vnote/core";
@@ -92,6 +93,9 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   const [repositioning, setRepositioning] = useState<Pos | null>(null);
   const [dropping, setDropping] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  // Con el zoom de página cambia el tamaño del título: se vuelve a medir su alto.
+  const pageZoom = usePageZoom();
+  useEffect(() => { if (titleRef.current) grow(titleRef.current); }, [pageZoom]);
   const coverRef = useRef<HTMLDivElement>(null);
   const bleed = useBleedBox(coverRef, [pageId, found?.page.cover]);
   const areaRef = useRef<HTMLDivElement>(null);

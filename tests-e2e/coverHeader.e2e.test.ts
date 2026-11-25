@@ -66,7 +66,7 @@ describe("cabecera con portada (navegador real)", () => {
     expect(g.iconTop - g.descBottom).toBeGreaterThanOrEqual(24); // aire arriba del ícono
     expect(g.tagsTop - g.iconBottom).toBeGreaterThanOrEqual(24); // y debajo
     expect(g.tagsTop - g.iconBottom).toBeLessThanOrEqual(28);
-    expect(g.coverH).toBeGreaterThanOrEqual(360);
+    expect(g.coverH).toBeGreaterThanOrEqual(260);
     expect(g.clickable).toBe(true);
   }, 90000);
 });

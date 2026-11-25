@@ -171,5 +171,5 @@ export const pageStyle = {
   leadings: { compact: 1.45, normal: 1.625, relaxed: 1.85 },
   /** Separación entre bloques, en em. */
   gaps: { compact: 0.5, normal: 0.75, relaxed: 1.1 },
-  coverHeights: { low: 280, medium: 360, high: 460 },
+  coverHeights: { low: 180, medium: 260, high: 340 },
 } as const;

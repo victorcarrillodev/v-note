@@ -1,6 +1,7 @@
 import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { Background, ReactFlow, ReactFlowProvider, ViewportPortal, useNodesState, useReactFlow, useStore, type Node } from "@xyflow/react";
+import { useFlowPageZoom } from "../page/zoom/useFlowPageZoom";
 import { useTranslation } from "react-i18next";
 import {
   DiagramHistory, SHAPES, addEdge, addNode, centerOnEdgeEnd, connect, deleteEdge, deleteNode, emptyDiagram, fitToView, inflate, isAttached, magnetRadius, moveNode,
@@ -59,6 +60,7 @@ const MENU_MIN_HEIGHT = 260;
 function Inner({ value, onChange }: { value: string; onChange: (data: string) => void }) {
   const { t, i18n } = useTranslation();
   const rf = useReactFlow();
+  useFlowPageZoom();
   const zoom = useStore((s) => s.transform[2]);
   const transform = useStore((s) => s.transform); // cambia con cada desplazamiento o zoom: reubica el menú de un conector
   const [gridPrefs] = useGridPrefs();
