@@ -9,10 +9,12 @@ import "./pageStyle.css";
  * de la apariencia global del dispositivo.
  */
 export function PageStyleScope({ style, as: Tag = "div", className, children }: { style: PageStyle; as?: "div" | "article"; className?: string; children: ReactNode }) {
+  const vars = cssVarsFor(style);
   const { textSize, leading } = style.spacing ?? {};
   return (
     <Tag
-      data-testid="page-style-scope" className={cx("page-scope", className)} style={cssVarsFor(style) as CSSProperties}
+      data-testid="page-style-scope" className={cx("page-scope", className)} style={vars as CSSProperties}
+      {...(vars["--c-accent-fill"] ? { "data-accent-gradient": "" } : {})}
       {...(leading ? { "data-block-gap": "" } : {})} {...(textSize || leading ? { "data-reading": "" } : {})}
     >
       {children}

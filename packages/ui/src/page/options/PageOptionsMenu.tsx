@@ -1,3 +1,4 @@
+import type { CustomAccent } from "@vnote/core";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { CONTENT_WIDTHS, LEADINGS, LIMITS, TEXT_SIZES, TOC_LEVELS, type Page, type PageNode, type PageStats, type StylePatch } from "@vnote/core";
@@ -114,6 +115,11 @@ export function PageOptionsMenu({ controller, pageId }: { controller: WorkspaceC
           )}
           <Switch label={t("pageOptions.header.updated")} checked={header.updated === true} onChange={(v) => flag("updated", v)} />
           <Switch label={t("pageOptions.header.iconOverlap")} disabled={!hasC} checked={header.iconOverlap === true} onChange={(v) => flag("iconOverlap", v)} />
+          {hasC && header.iconOverlap === true && (
+            <div data-icon-color="">
+              <AccentPicker label={t("pageOptions.header.iconColor")} value={header.iconColor} onChange={(v) => change({ header: { iconColor: v?.startsWith("#") ? (v as CustomAccent) : undefined } })} />
+            </div>
+          )}
           <Switch label={t("pageOptions.header.gradient")} disabled={!hasC} checked={header.gradient ?? header.titleOverCover === true} onChange={(v) => change({ header: { gradient: v } })} />
           <div className="flex flex-wrap gap-2 pt-1">
             {!page.locked && <Button size="sm" onClick={() => { handoff.current = true; setOpen(false); usePageUiStore.getState().openPicker(); }}>{t("pageOptions.header.changeCover")}</Button>}

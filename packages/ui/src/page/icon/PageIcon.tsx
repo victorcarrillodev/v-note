@@ -12,7 +12,7 @@ export function PageIcon({ icon, assets, size, className, ...rest }: { icon: str
   if (!parsed) return null;
   const box = { width: size, height: size };
   if (parsed.kind === "image") {
-    return <span aria-hidden="true" {...rest} style={box} className={cx("inline-flex shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-base)]", className)}>{url && <img src={url} alt="" draggable={false} className="h-full w-full object-cover" />}</span>;
+    return <span aria-hidden="true" {...rest} style={box} className={cx("inline-flex shrink-0 items-center justify-center overflow-hidden rounded-sm", className)}>{url && <img src={url} alt="" draggable={false} className="h-full w-full object-cover" />}</span>;
   }
   return <span aria-hidden="true" {...rest} style={{ fontSize: size, minWidth: size, height: size }} className={cx("inline-flex shrink-0 items-center justify-center whitespace-nowrap leading-none", className)}>{parsed.text}</span>;
 }

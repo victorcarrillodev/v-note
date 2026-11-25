@@ -15,7 +15,7 @@ describe("tokens del estilo de página (E-025)", () => {
       textSizes: { small: 15, normal: 17, large: 19 },
       leadings: { compact: 1.45, normal: 1.625, relaxed: 1.85 },
       gaps: { compact: 0.5, normal: 0.75, relaxed: 1.1 },
-      coverHeights: { low: 160, medium: 240, high: 340 },
+      coverHeights: { low: 280, medium: 360, high: 460 },
     });
   });
   it("la hoja generada declara cada variable que nombra cssVarsFor", () => {

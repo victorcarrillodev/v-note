@@ -84,9 +84,11 @@
   contain-intrinsic-size: auto 1.75rem;
 }
 
-/* Diagramas, mapas, organigramas y demás bloques gráficos: sin el velo azul con que BlockNote marca un bloque seleccionado.
-   Estos bloques ya muestran su propio foco y selección por dentro. */
-:is(.bn-block-content.ProseMirror-selectednode, .ProseMirror-selectednode > .bn-block-content):is([data-content-type="diagram"], [data-content-type="mindmap"], [data-content-type="orgchart"], [data-content-type="timeline"], [data-content-type="matrix"], [data-content-type="gallery"], [data-content-type="databaseView"]) > :after {
+/* Bloque seleccionado: sin el contorno ni el velo azul de BlockNote, en ningún tipo de bloque. */
+.bn-container :is(.bn-block-content.ProseMirror-selectednode, .ProseMirror-selectednode > .bn-block-content) > * {
+  outline: none;
+}
+.bn-container :is(.bn-block-content.ProseMirror-selectednode, .ProseMirror-selectednode > .bn-block-content)::after {
   content: none;
   display: none;
 }

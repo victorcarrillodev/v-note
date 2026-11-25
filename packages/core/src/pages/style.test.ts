@@ -172,3 +172,11 @@ describe("cssVarsFor: sin opciones no declara nada (E-024)", () => {
     expect(cssVarsFor({ header: { titleOverCover: true }, cover: { height: "high" }, toc: { maxLevel: 2 } })).toEqual({});
   });
 });
+
+describe("color del cuadro del ícono", () => {
+  it("acepta sólidos y degradados, y descarta lo demás", () => {
+    expect(parseStyle(JSON.stringify({ header: { iconColor: "#AA0000" } })).header?.iconColor).toBe("#aa0000");
+    expect(parseStyle(JSON.stringify({ header: { iconColor: "#aa0000~#0000bb" } })).header?.iconColor).toBe("#aa0000~#0000bb");
+    expect(parseStyle(JSON.stringify({ header: { iconColor: "rojo" } }))).toEqual({});
+  });
+});

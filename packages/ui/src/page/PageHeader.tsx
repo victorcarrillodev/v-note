@@ -2,7 +2,7 @@ import { ExternalLink } from "../components/ExternalLink";
 import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useTranslation } from "react-i18next";
-import { type AssetStore, type CornerRadius, type Page, type PageNode, type StylePatch } from "@vnote/core";
+import { accentSwatch, type AssetStore, type CornerRadius, type Page, type PageNode, type StylePatch } from "@vnote/core";
 import type { WorkspaceController } from "../workspace/controller";
 import { useUndoToast } from "../feedback/useUndoToast";
 import { PageTags } from "../tags/PageTags";
@@ -228,7 +228,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
 
   const descriptionField = (onCover: boolean) => {
     if (!showDesc) return null;
-    const cls = cx("w-full break-words bg-transparent text-left text-[length:var(--text-ui-size)]", onCover ? ON_COVER : "text-[var(--c-text-muted)]");
+    const cls = cx("w-full break-words bg-transparent text-left text-[length:var(--text-ui-size)]", onCover ? ON_COVER : "text-[var(--c-text-muted)]", iconOverlap ? "mt-4" : "mt-2");
     // Fuera de edición se corta en dos líneas; al editar se ve completa (CL-4).
     return editingDesc && !locked ? (
       <textarea
@@ -248,7 +248,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
   const metaRow = (onCover: boolean) => (header.tag || header.updated) ? (
     <div className="flex flex-wrap items-center gap-2">
       {header.tag && tagText && (
-        <span aria-label={t("pageHeader.tagLabel")} className={cx("inline-flex rounded-sm", onCover && "bg-white/20 backdrop-blur-sm")}>
+        <span aria-label={t("pageHeader.tagLabel")} className={cx("inline-flex rounded-sm mt-4", onCover && "bg-white/20 backdrop-blur-sm")}>
           <Chip tone="neutral">{tagText}</Chip>
         </span>
       )}
@@ -258,7 +258,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
 
   const iconNode = <PageIcon icon={page.icon} assets={assets} size={iconOverlap ? 36 : 32} />;
   const iconBox = page.icon && (
-    <span data-testid="page-icon" className={cx("shrink-0", iconOverlap && "absolute -bottom-7 left-6 z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--c-card)] shadow-[var(--elevation-2)]")}>
+    <span data-testid="page-icon" style={iconOverlap && header.iconColor ? { background: accentSwatch(header.iconColor) } : undefined} className={cx("shrink-0", iconOverlap && "pointer-events-auto absolute -bottom-10 left-6 z-10 flex h-20 w-20 p-4 items-center justify-center rounded-md bg-[var(--c-card)] shadow-[var(--elevation-2)] overflow-hidden")}>
       {locked ? iconNode : iconPicker(<button type="button" aria-label={t("page.changeIcon")} className="inline-flex items-center justify-center rounded-[var(--radius-md)] hover:bg-[var(--c-raised)]">{iconNode}</button>)}
     </span>
   );
@@ -311,7 +311,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
       )}
 
       {hasC && (
-        <div ref={coverRef} data-testid="cover-bleed" className={cx("relative transition-[width,margin] duration-300 ease-out motion-reduce:transition-none", iconOverlap && page.icon && "mb-7")}
+        <div ref={coverRef} data-testid="cover-bleed" className={cx("relative transition-[width,margin] duration-300 ease-out motion-reduce:transition-none", iconOverlap && page.icon && "mb-15")}
           style={bleed
             ? { width: bleed.width - 2 * inset, marginLeft: bleed.left + inset, marginTop: inset - bleed.top }
             : { width: `calc(100cqw - ${2 * inset}px)`, marginLeft: `calc(50% - 50cqw + ${inset}px)`, marginTop: `${inset - 24}px` }}>
@@ -333,7 +333,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
               </p>
             )}
             {card && (
-              <div className="relative mx-auto flex min-h-[inherit] w-full max-w-[var(--size-reading-width)] flex-col justify-end gap-2 px-6 pb-6 pt-16 max-sm:px-4 max-sm:pb-4">
+              <div className={cx("relative mx-auto flex min-h-[inherit] w-full max-w-[var(--size-reading-width)] flex-col justify-end gap-2 px-6 pt-16 max-sm:px-4", iconOverlap && page.icon ? "pb-17" : "pb-6 max-sm:pb-4")}>
                 {metaRow(true)}
                 <div className="flex items-end gap-3">
                   {!iconOverlap && iconBox}

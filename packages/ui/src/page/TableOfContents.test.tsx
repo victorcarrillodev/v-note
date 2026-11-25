@@ -24,8 +24,8 @@ describe("TableOfContents", () => {
     expect(current).toHaveAttribute("aria-current", "location");
     expect(within(nav).getByRole("link", { name: "Cierre" })).not.toHaveAttribute("aria-current");
   });
-  it("a 1 100 px se convierte en un menú «En esta página»", async () => {
-    setWidth(1100);
+  it("a 700 px se convierte en un menú «En esta página»", async () => {
+    setWidth(700);
     const onJump = vi.fn();
     await renderWithI18n(<TableOfContents headings={hs} activeId="a" onJump={onJump} />);
     expect(screen.queryByRole("navigation", { name: "En esta página" })).toBeNull();
@@ -38,14 +38,14 @@ describe("TableOfContents", () => {
     window.matchMedia = ((q: string) => ({ matches: q.includes("reduce"), media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, onchange: null, dispatchEvent: () => false })) as typeof window.matchMedia;
     const onJump = vi.fn();
     await renderWithI18n(<TableOfContents headings={hs} activeId="a" onJump={onJump} />);
-    await userEvent.click(screen.getByRole("link", { name: "Cierre" }));
+    await userEvent.click(within(screen.getByTestId("toc-floating")).getByRole("link", { name: "Cierre" }));
     expect(onJump).toHaveBeenCalledWith("c", "auto");
     window.matchMedia = mm;
   });
   it("reacciona al cambio de tamaño de la ventana", async () => {
     await renderWithI18n(<TableOfContents headings={hs} activeId="a" onJump={() => {}} />);
     expect(screen.getByRole("navigation", { name: "En esta página" })).toBeTruthy();
-    act(() => { setWidth(1000); window.dispatchEvent(new Event("resize")); });
+    act(() => { setWidth(600); window.dispatchEvent(new Event("resize")); });
     expect(screen.getByRole("button", { name: "En esta página" })).toBeTruthy();
   });
 });

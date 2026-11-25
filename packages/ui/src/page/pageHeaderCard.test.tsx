@@ -147,10 +147,11 @@ describe("ícono que sobresale (E-101)", () => {
     await setup({ icon: "📓", style: { header: { iconOverlap: true } } });
     const icon = screen.getByTestId("page-icon");
     expect(icon.className).toContain("absolute");
-    expect(icon.className).toContain("-bottom-7");
-    expect(icon.className).toContain("rounded-2xl");
+    expect(icon.className).toContain("-bottom-10"); // la mitad de su alto: centrado en el borde
+    expect(icon.className).toContain("p-4");
+    expect(icon.className).toContain("rounded-md");
     expect(icon.className).toContain("bg-[var(--c-card)]");
-    expect(icon.className).toContain("h-14"); // 56 px
+    expect(icon.className).toContain("h-20");
     expect(icon.parentElement).not.toBe(screen.getByTestId("cover")); // fuera del recorte de la portada
   });
   it("apagado, el ícono va junto al título", async () => {

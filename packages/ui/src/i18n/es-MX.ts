@@ -151,7 +151,7 @@ export const esMX = {
     sections: { typography: "Tipografía", spacing: "Espaciado", header: "Cabecera y portada", toc: "Índice", page: "Página" },
     header: {
       titleOverCover: "Título sobre la portada", description: "Descripción", tag: "Etiqueta", tagText: "Texto de la etiqueta", tagTextHint: "Vacío = nombre del espacio",
-      updated: "Fecha de actualización", iconOverlap: "Ícono sobre el borde", gradient: "Degradado bajo el texto",
+      updated: "Fecha de actualización", iconOverlap: "Ícono sobre el borde", iconColor: "Color del cuadro del ícono", gradient: "Degradado bajo el texto",
       changeCover: "Cambiar portada…", adjustCover: "Ajustes de la portada…",
     },
     changed: "Opción de la página cambiada", undo: "Deshacer",
@@ -193,7 +193,7 @@ export const esMX = {
     deleteForeverItem: "Eliminar definitivamente {{title}}",
   },
   toast: { region: "Avisos", close: "Cerrar aviso", undo: "Deshacer", trashed: "Página movida a la papelera", duplicated: "Página duplicada", moved: "Página movida", cardMoved: "Tarjeta movida", taskDone: "Tarea marcada como hecha" },
-  toc: { title: "En esta página", block: "Índice de la página", empty: "Agrega encabezados para ver el índice", slash: "Índice", slashHint: "Lista de enlaces a los encabezados de la página" },
+  toc: { leftSide: "izquierda", title: "En esta página", block: "Índice de la página", empty: "Agrega encabezados para ver el índice", slash: "Índice", slashHint: "Lista de enlaces a los encabezados de la página" },
   calendar: { mode: "Vista del calendario", month: "Mes", week: "Semana", grid: "Calendario semanal", allDay: "Todo el día", hour: "Hora", moreSimultaneous: "+{{count}} más", simultaneous: "Eventos simultáneos" },
   schedule: {
     title: "Nueva tarea con horario", titleLabel: "Título", date: "Fecha", start: "Hora de inicio", end: "Hora de fin", duration: "Duración", remind: "Recordatorio", repeat: "Repetir",
@@ -277,6 +277,8 @@ export const esMX = {
     linkUrl: "Dirección del enlace",
     linkAdd: "Añadir",
     callout: "Aviso destacado",
+    codeBlockType: "Bloque de código",
+    turnInto: "Convertir en",
     calloutHint: "Resalta un mensaje importante",
     linkCard: "Enlace web",
     linkCardHint: "Tarjeta con un enlace",

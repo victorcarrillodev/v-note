@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { TableOfContents, type JumpBehavior } from "../page/TableOfContents";
 import { extractHeadings, type Heading } from "@vnote/core";
 import { useActiveHeading } from "../page/useActiveHeading";
-import { contentWidthOf } from "../page/tocLayout";
 import { TocProvider } from "./TocContext";
 import { buildSlashItems } from "./slashItems";
+import { buildBlockTypeItems } from "./blockTypeItems";
+import { BlockSideMenu } from "./BlockDragMenu";
 import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
 import { useWorkspace } from "../workspace/useController";
@@ -55,7 +56,6 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
   const toc = page?.style.toc;
   const maxLevel = toc?.maxLevel ?? 3;
   const floating = toc?.floating !== false;
-  const contentWidth = contentWidthOf(page?.style.spacing?.width);
   // Un intento de editar una página bloqueada muestra un aviso breve (CL-11).
   const [lockedNotice, setLockedNotice] = useState(false);
   useEffect(() => { if (!lockedNotice) return; const id = setTimeout(() => setLockedNotice(false), 4000); return () => clearTimeout(id); }, [lockedNotice]);
@@ -142,7 +142,7 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
 
   return (
     <div className="relative mt-4" onKeyDownCapture={editAttempt} onPasteCapture={editAttempt} onDropCapture={editAttempt}>
-      {floating && <TableOfContents headings={headings} activeId={activeId} onJump={jumpTo} contentWidth={contentWidth} />}
+      {floating && <TableOfContents headings={headings} activeId={activeId} onJump={jumpTo} />}
       {saveError && (
         <InlineAlert tone="error">
           {t("editor.saveFailed", { message: saveError })}
@@ -192,14 +192,15 @@ function Editor({ session, locked, handlers, findPages }: { session: DocSession;
     }));
   };
   const items = async (query: string) => buildSlashItems(editor, t, query);
-  // Barra de formato: la de siempre, con «Subrayado con estilo» en el lugar del subrayado simple (Ctrl+U sigue funcionando).
-  const formattingItems = useMemo(() => [...getFormattingToolbarItems().filter((i) => i.key !== "underlineStyleButton"), <UnderlineButton key="styledUnderlineButton" />], []);
+  // Barra de formato: la de siempre, con «Convertir en» ampliado a los bloques propios y «Subrayado con estilo» en el lugar del subrayado simple (Ctrl+U sigue funcionando).
+  const formattingItems = useMemo(() => [...getFormattingToolbarItems(buildBlockTypeItems(editor, t)).filter((i) => i.key !== "underlineStyleButton"), <UnderlineButton key="styledUnderlineButton" />], [editor, t]);
   // Páginas largas (spec 006, DP-14): marca el editor para que `editor.css` omita el trabajo de los bloques de texto fuera de pantalla.
   const [long, setLong] = useState(() => isLongPage(editor));
   useEffect(() => { setLong(isLongPage(editor)); }, [editor]);
   return (
-    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false} formattingToolbar={false} editable={!locked} onChange={() => setLong(isLongPage(editor))} {...(long ? { "data-long-page": "" } : {})}>
+    <BlockNoteView editor={editor} theme={resolved} data-testid="editor" slashMenu={false} formattingToolbar={false} sideMenu={false} editable={!locked} onChange={() => setLong(isLongPage(editor))} {...(long ? { "data-long-page": "" } : {})}>
       {!locked && <UnderlineShortcut />}
+      {!locked && <BlockSideMenu />}
       {!locked && <FormattingToolbarController formattingToolbar={() => <FormattingToolbar>{formattingItems}</FormattingToolbar>} />}
       {!locked && <SuggestionMenuController triggerCharacter="/" getItems={items} />}
       {!locked && <SuggestionMenuController triggerCharacter="@" getItems={mentionItems} />}

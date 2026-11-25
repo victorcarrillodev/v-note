@@ -41,6 +41,8 @@ export type PageStyle = {
     tagText?: string;
     updated?: boolean;
     iconOverlap?: boolean;
+    /** Color del cuadro del ícono sobre el borde: sólido o degradado. */
+    iconColor?: CustomAccent;
     gradient?: boolean;
     rounded?: boolean;
   };
@@ -88,6 +90,7 @@ function sanitizeHeader(raw: unknown): PageStyle["header"] {
   return nonEmpty(defined({
     titleOverCover: bool(raw.titleOverCover), description: bool(raw.description), tag: bool(raw.tag), tagText: sanitizeTagText(raw.tagText),
     updated: bool(raw.updated), iconOverlap: bool(raw.iconOverlap), gradient: bool(raw.gradient), rounded: bool(raw.rounded),
+    iconColor: parseCustomAccent(raw.iconColor),
   }));
 }
 

@@ -31,9 +31,29 @@ describe("índice flotante: lista con desplazamiento propio (E-140, CL-12)", () 
   });
 });
 
+describe("rayitas en ambos márgenes", () => {
+  it("hay un índice a cada lado, minimizado hasta el hover, y cabe en una ventana de 1280 px", async () => {
+    setWidth(1280);
+    await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h1" onJump={() => {}} />);
+    for (const id of ["toc-floating-left", "toc-floating"]) {
+      const nav = screen.getByTestId(id);
+      expect(nav.querySelectorAll("[data-toc-dash]")).toHaveLength(5);
+      const panel = nav.querySelector("ul")!.parentElement!;
+      expect(panel.className).toContain("opacity-0");
+      fireEvent.pointerEnter(nav);
+      expect(panel.className).toContain("opacity-100");
+      fireEvent.pointerLeave(nav);
+      expect(panel.className).toContain("opacity-100"); // margen antes de cerrar
+      fireEvent.pointerEnter(nav);
+      fireEvent.pointerLeave(nav);
+      await waitFor(() => expect(panel.className).toContain("opacity-0"));
+    }
+  });
+});
+
 describe("modo reducido cuando no cabe (E-141, RF-7.7, CL-17)", () => {
-  it("a 900 px es el menú «En esta página»", async () => {
-    setWidth(900);
+  it("a 700 px es el menú «En esta página»", async () => {
+    setWidth(700);
     await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h0" onJump={() => {}} />);
     expect(screen.queryByTestId("toc-floating")).toBeNull();
     expect(screen.getByRole("button", { name: "En esta página" })).toBeInTheDocument();
@@ -43,25 +63,26 @@ describe("modo reducido cuando no cabe (E-141, RF-7.7, CL-17)", () => {
     await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h0" onJump={() => {}} />);
     expect(screen.getByRole("button", { name: "En esta página" })).toBeInTheDocument();
   });
-  it("en una pantalla ancha cabe y es una columna lateral; con ancho «completo» no cabe nunca", async () => {
+  it("en una pantalla ancha cabe y es una columna lateral; se mantiene aunque la ventana sea justa (ancho «completo»)", async () => {
     setWidth(2000);
     const { unmount } = await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h0" onJump={() => {}} />);
     expect(screen.getByTestId("toc-floating")).toBeInTheDocument();
     unmount();
-    await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h0" onJump={() => {}} contentWidth={Infinity} />);
-    expect(screen.queryByTestId("toc-floating")).toBeNull();
+    setWidth(1100);
+    await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h0" onJump={() => {}} />);
+    expect(screen.getByTestId("toc-floating")).toBeInTheDocument();
   });
   it("al estrechar la ventana pasa de columna a menú", async () => {
     setWidth(2000);
     await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h0" onJump={() => {}} />);
     expect(screen.getByTestId("toc-floating")).toBeInTheDocument();
-    act(() => { setWidth(800); window.dispatchEvent(new Event("resize")); });
+    act(() => { setWidth(600); window.dispatchEvent(new Event("resize")); });
     expect(screen.getByRole("button", { name: "En esta página" })).toBeInTheDocument();
   });
   it("la sección visible se marca con el color de acento de la página", async () => {
     setWidth(2000);
     await renderWithI18n(<TableOfContents headings={hs(5)} activeId="h1" onJump={() => {}} />);
-    expect(screen.getByRole("link", { name: "Título 1" }).className).toContain("text-[var(--c-accent)]");
+    expect(within(screen.getByTestId("toc-floating")).getByRole("link", { name: "Título 1" }).className).toContain("text-[var(--c-accent)]");
   });
 });
 

@@ -155,7 +155,7 @@ export const en: Widen<typeof esMX> = {
     sections: { typography: "Typography", spacing: "Spacing", header: "Header and cover", toc: "Table of contents", page: "Page" },
     header: {
       titleOverCover: "Title over the cover", description: "Description", tag: "Tag", tagText: "Tag text", tagTextHint: "Empty = workspace name",
-      updated: "Update date", iconOverlap: "Icon over the edge", gradient: "Gradient under the text",
+      updated: "Update date", iconOverlap: "Icon over the edge", iconColor: "Icon box color", gradient: "Gradient under the text",
       changeCover: "Change cover…", adjustCover: "Cover settings…",
     },
     changed: "Page option changed", undo: "Undo",
@@ -197,7 +197,7 @@ export const en: Widen<typeof esMX> = {
     deleteForeverItem: "Delete {{title}} permanently",
   },
   toast: { region: "Notices", close: "Close notice", undo: "Undo", trashed: "Page moved to trash", duplicated: "Page duplicated", moved: "Page moved", cardMoved: "Card moved", taskDone: "Task marked as done" },
-  toc: { title: "On this page", block: "Page table of contents", empty: "Add headings to see the table of contents", slash: "Table of contents", slashHint: "A list of links to the page headings" },
+  toc: { leftSide: "left", title: "On this page", block: "Page table of contents", empty: "Add headings to see the table of contents", slash: "Table of contents", slashHint: "A list of links to the page headings" },
   calendar: { mode: "Calendar view", month: "Month", week: "Week", grid: "Weekly calendar", allDay: "All day", hour: "Hour", moreSimultaneous: "+{{count}} more", simultaneous: "Simultaneous events" },
   schedule: {
     title: "New scheduled task", titleLabel: "Title", date: "Date", start: "Start time", end: "End time", duration: "Duration", remind: "Reminder", repeat: "Repeat",
@@ -281,6 +281,8 @@ export const en: Widen<typeof esMX> = {
     linkUrl: "Link address",
     linkAdd: "Add",
     callout: "Callout",
+    codeBlockType: "Code block",
+    turnInto: "Turn into",
     calloutHint: "Highlight an important message",
     linkCard: "Web link",
     linkCardHint: "Card with a link",

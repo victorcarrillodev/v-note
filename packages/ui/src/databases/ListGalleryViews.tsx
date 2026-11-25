@@ -102,7 +102,7 @@ function CardCover({ cover, icon, fit, height, children }: { cover: string | nul
 }
 
 const CARD_MIN = { small: "11rem", medium: "15rem", large: "21rem" } as const;
-const CARD_COVER_H = { small: "h-24", medium: "h-36", large: "h-52" } as const;
+const CARD_COVER_H = { small: "h-32", medium: "h-48", large: "h-64" } as const;
 
 /** Vista galería (T-272): tarjetas como en Notion, con la portada arriba, el título con su ícono y los valores como píldoras. */
 export function GalleryView({ controller, onOpenRow }: Props) {

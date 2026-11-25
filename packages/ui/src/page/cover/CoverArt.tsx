@@ -10,7 +10,7 @@ export const radiusCss = (r: CornerRadius | undefined): string => (r === undefin
 export const overlayCss = (overlay: number): string => {
   const a = Math.min(100, Math.max(0, overlay)) / 100;
   const stops = Array.from({ length: 11 }, (_, i) => {
-    const t = 1 - Math.min(1, i / 10 / 0.85); // máximo en el borde inferior y nada al 85 % de la altura
+    const t = 1 - Math.min(1, Math.max(0, i / 10 - 0.4) / 0.6); // máximo en el 40 % inferior y nada al 100 % de la altura
     const eased = t * t * (3 - 2 * t); // smoothstep: arranque y final sin quiebres
     return `rgba(0,0,0,${+(a * eased).toFixed(3)}) ${i * 10}%`;
   });

@@ -27,9 +27,9 @@ describe("colores de acento", () => {
 
 describe("el acento se aplica al contenido de la página (E-124)", () => {
   const css = readFileSync(resolve(__dirname, "../page/pageStyle.css"), "utf8");
-  it("enlaces, casillas y selección siguen a --c-accent dentro del contenedor", () => {
+  it("casillas y selección siguen a --c-accent; los enlaces son siempre azules", () => {
     expect(css).toMatch(/\.page-scope\s*\{[^}]*accent-color:\s*var\(--c-accent\)/);
-    expect(css).toMatch(/\.page-scope \.bn-editor a\s*\{[^}]*color:\s*var\(--c-accent-text,\s*var\(--c-accent\)\)/);
+    expect(css).toMatch(/\.page-scope \.bn-editor a\s*\{[^}]*color:\s*var\(--block-blue-text\)/);
     expect(css).toMatch(/checkListItem[^{]*checkbox[^{]*\{[^}]*accent-color:\s*var\(--c-accent\)/);
   });
   it("el resaltado de selección y el borde de foco ya usan --c-accent, que el contenedor redeclara", () => {

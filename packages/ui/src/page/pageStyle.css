@@ -19,7 +19,11 @@
 /* Separación entre bloques (RF-6.4). */
 .page-scope[data-block-gap] .bn-block-outer:not(:first-child) { margin-top: var(--block-gap); }
 
-/* Color de acento de la página (RF-8.2): enlaces, casillas, resaltado de selección e índice siguen a --c-accent, que el contenedor redeclara. */
+/* Color de acento de la página (RF-8.2): casillas, resaltado de selección e índice siguen a --c-accent, que el contenedor redeclara. */
 .page-scope { accent-color: var(--c-accent); }
-.page-scope .bn-editor a { color: var(--c-accent-text, var(--c-accent)); }
+/* Los enlaces no siguen al acento: siempre azules, para que se reconozcan como enlaces. */
+.page-scope .bn-editor a { color: var(--block-blue-text); }
 .page-scope [data-content-type="checkListItem"] input[type="checkbox"] { accent-color: var(--c-accent); }
+
+/* Acento degradado: `color` solo admite un tono, así que los separadores pintan el degradado completo. */
+.page-scope[data-accent-gradient] .bn-editor hr { height: 2px; border: 0; background: var(--c-accent-fill); }
