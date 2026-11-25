@@ -1,0 +1,5 @@
+# Windows: evita que git convierta a CRLF (las pruebas leen bytes y CSS con \n).
+* text=auto eol=lf
+*.ico binary
+*.icns binary
+*.png binary

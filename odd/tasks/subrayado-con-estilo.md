@@ -19,13 +19,13 @@ test-runner: bun run typecheck && bun run test (e2e: bunx vitest run -c vitest.e
 - A5: el Markdown exportado no puede representar el subrayado: queda el texto plano (igual que el subrayado simple de hoy).
 
 ## Tareas
-- [x] T-1 (S1) route=inline commit=- Núcleo: gramática `underlineStyle` (`blocks/underline.ts`) + pruebas
-- [x] T-2 (S1) route=inline commit=- Tokens de color del subrayado (claro/oscuro) + `tokens.css` + guía de estilo + pruebas de contraste/paridad
-- [x] T-3 (S1) route=inline commit=- Estilo del editor (`createReactStyleSpec`) y CSS de los tres tipos
-- [x] T-4 (S1) route=inline commit=- Botón y ventana en la barra de formato (teclado, etiquetas es/en, quitar)
-- [x] T-5 (S1) route=inline commit=- Exportación HTML/PDF: `<span class="ul" data-ul-*>` + CSS + paleta; Markdown en texto plano
-- [x] T-6 (S1) route=inline commit=- Pegado/sanidad, deshacer/rehacer y respaldo (viaje de ida y vuelta Yjs)
-- [x] T-7 (S1) route=inline commit=- e2e en Chrome con captura visual de los tres tipos y varios colores en claro y oscuro
+- [x] T-1 (S1) route=inline commit=- Núcleo: gramática `underlineStyle` (`blocks/underline.ts`) + pruebas. Risk: none
+- [x] T-2 (S1) route=inline commit=- Tokens de color del subrayado (claro/oscuro) + `tokens.css` + guía de estilo + pruebas de contraste/paridad. Risk: none
+- [x] T-3 (S1) route=inline commit=- Estilo del editor (`createReactStyleSpec`) y CSS de los tres tipos. Risk: none
+- [x] T-4 (S1) route=inline commit=- Botón y ventana en la barra de formato (teclado, etiquetas es/en, quitar). Risk: none
+- [x] T-5 (S1) route=inline commit=- Exportación HTML/PDF: `<span class="ul" data-ul-*>` + CSS + paleta; Markdown en texto plano. Risk: none
+- [x] T-6 (S1) route=inline commit=- Pegado/sanidad, deshacer/rehacer y respaldo (viaje de ida y vuelta Yjs). Risk: none
+- [x] T-7 (S1) route=inline commit=- e2e en Chrome con captura visual de los tres tipos y varios colores en claro y oscuro. Risk: none
 
 ## Evidencia
 | Tarea | Comando / comprobación | Resultado observado | Fecha |

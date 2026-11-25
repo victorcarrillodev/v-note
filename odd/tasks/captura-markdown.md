@@ -17,8 +17,8 @@ test-runner: bun run typecheck && bun run test
 - A4: sin dependencias nuevas.
 
 ## Tareas
-- [x] T-1 (S1) route=inline commit=- Prueba que falla y análisis de líneas a bloques en `quickCapture.ts`
-- [x] T-2 (S1) route=inline commit=- Título sin marcador y `typecheck` + `test` completos
+- [x] T-1 (S1) route=inline commit=- Prueba que falla y análisis de líneas a bloques en `quickCapture.ts`. Risk: none
+- [x] T-2 (S1) route=inline commit=- Título sin marcador y `typecheck` + `test` completos. Risk: none
 
 ## Evidencia
 | Tarea | Comando / comprobación | Resultado observado | Fecha |
