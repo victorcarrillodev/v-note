@@ -52,6 +52,12 @@ function locate(tree: readonly PageNode[], id: string): { page: Page; ancestors:
 
 const grow = (el: HTMLTextAreaElement) => { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; };
 
+/**
+ * Aire sobre el contenido cuando el título va encima de la portada. Si etiquetas, título y descripción ya superan el alto mínimo,
+ * esto mantiene distintas las opciones bajo, medio y alto.
+ */
+const CARD_TOP_SPACE = { low: "pt-4", medium: "pt-20", high: "pt-40" } as const;
+
 /** Fecha de actualización relativa («hoy», «ayer», «hace 3 días») con la fecha exacta al pasar el puntero o enfocarla (RF-1.5). */
 function UpdatedLabel({ at, now, onCover }: { at: number; now: number; onCover: boolean }) {
   const { t, i18n } = useTranslation();
@@ -337,7 +343,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
               </p>
             )}
             {card && (
-              <div className={cx("relative mx-auto flex min-h-[inherit] w-full max-w-[var(--size-reading-width)] flex-col justify-end gap-2 px-6 pt-16 max-sm:px-4", iconOverlap && page.icon ? "pb-17" : "pb-6 max-sm:pb-4")}>
+              <div className={cx("relative mx-auto flex min-h-[inherit] w-full max-w-[var(--size-reading-width)] flex-col justify-end gap-2 px-6 max-sm:px-4", CARD_TOP_SPACE[coverStyle.height ?? "medium"], iconOverlap && page.icon ? "pb-17" : "pb-6 max-sm:pb-4")}>
                 {metaRow(true)}
                 <div className="flex items-end gap-3">
                   {!iconOverlap && iconBox}

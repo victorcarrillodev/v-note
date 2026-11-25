@@ -9,6 +9,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ### Cambiado
 - Portadas más bajas: 180, 260 y 340 px.
+- Con el título sobre la portada, las opciones baja, media y alta vuelven a distinguirse.
 - Conversión de bloques, cabecera con portada e índice en los márgenes.
 
 ### Corregido

@@ -68,5 +68,16 @@ describe("cabecera con portada (navegador real)", () => {
     expect(g.tagsTop - g.iconBottom).toBeLessThanOrEqual(28);
     expect(g.coverH).toBeGreaterThanOrEqual(260);
     expect(g.clickable).toBe(true);
+
+    // Las tres opciones de alto se distinguen aunque el contenido sobre la portada sea alto.
+    const heights: number[] = [];
+    for (const name of ["Baja", "Media", "Alta"]) {
+      if (!(await p.eval<boolean>(`!!(${find(name)})`))) await press(p, "Ajustes de la portada");
+      await press(p, name); await sleep(500);
+      heights.push(await p.eval<number>("document.querySelector('[data-testid=cover]').getBoundingClientRect().height"));
+    }
+    console.log("ALTOS", heights.join(" / "));
+    expect(heights[1]! - heights[0]!).toBeGreaterThanOrEqual(50);
+    expect(heights[2]! - heights[1]!).toBeGreaterThanOrEqual(50);
   }, 90000);
 });
