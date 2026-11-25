@@ -42,7 +42,7 @@ describe("BackupDestination implementations", () => {
     const fetchMock = async (url: string, init?: { method?: string; body?: string }) => {
       const method = init?.method ?? "GET";
       calls.push(`${method} ${url.split("?")[0]}`);
-      if (url.includes("/drive/v3/files?")) {
+      if (method === "GET" && url.includes("/drive/v3/files?")) {
         const m = [...files.values()].find((f) => f.name === "backup-manifest.json");
         return { ok: true, status: 200, text: async () => "", json: async () => ({ files: m ? [{ id: m.id }] : [] }) };
       }

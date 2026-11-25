@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { Workspace, WorkspaceManager } from "@vnote/core";
 import { Icon } from "../design/Icon";
 import { WorkspaceAvatar } from "../shared/WorkspaceAvatar";
-import { assignWorkspaceColors } from "../shared/workspaceAvatar";
+import { assignWorkspaceColors } from "../shared/workspaceColors";
 
 /** Selector del espacio activo: inicial con color único, nombre y menú con los espacios, y «Gestionar espacios» (plan 10.2). */
 export function WorkspaceSwitcher({ manager, active, onOpen, onManage, refreshKey }: { manager: WorkspaceManager; active: { id: string; name: string }; onOpen: (id: string) => void; onManage: () => void; refreshKey?: number }) {

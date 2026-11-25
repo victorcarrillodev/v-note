@@ -4688,7 +4688,7 @@ dependencies = [
 
 [[package]]
 name = "vnote-desktop"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "keyring",
  "percent-encoding",

@@ -7,14 +7,14 @@ import type { PreferenceStore } from "../theme/theme";
 export function BackupPanel({ preferences }: { preferences: PreferenceStore }) {
   const { t } = useTranslation();
 
-  const kind = preferences.get("backup_destination_kind") as string | undefined;
-  const auto = preferences.get("backup_auto_idle") as boolean | undefined;
+  const kind = preferences.get("backup_destination_kind");
+  const auto = preferences.get("backup_auto_idle") === "true";
 
-  const handleKind = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleKind = (e: { target: { value: string } }) => {
     preferences.set("backup_destination_kind", e.target.value);
   };
-  const handleAuto = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    preferences.set("backup_auto_idle", e.target.value === "true");
+  const handleAuto = (e: { target: { value: string } }) => {
+    preferences.set("backup_auto_idle", e.target.value);
   };
 
   return (

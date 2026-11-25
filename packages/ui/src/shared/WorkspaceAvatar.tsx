@@ -1,5 +1,5 @@
 import { monogram } from "../layout/monogram";
-import { workspaceColorForName, type WorkspaceAvatarColor } from "./workspaceAvatar";
+import { workspaceColorForName, type WorkspaceAvatarColor } from "./workspaceColors";
 
 /** Inicial del título del espacio con color vibrante generado algorítmicamente. */
 export function WorkspaceAvatar({ name, color, size = 20 }: { name: string; color?: WorkspaceAvatarColor; size?: number }) {

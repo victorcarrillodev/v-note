@@ -9,7 +9,7 @@ import { Popover } from "../components/Popover";
 import { INPUT, MUTED } from "../components/formStyles";
 import { AccentPicker } from "../page/options/AccentPicker";
 import { WorkspaceAvatar } from "../shared/WorkspaceAvatar";
-import { assignWorkspaceColors } from "../shared/workspaceAvatar";
+import { assignWorkspaceColors } from "../shared/workspaceColors";
 import { useTranslation } from "react-i18next";
 import { parseCustomAccent, type Workspace, type WorkspaceManager } from "@vnote/core";
 

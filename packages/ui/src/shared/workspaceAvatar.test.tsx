@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { assignWorkspaceColors, hashText, workspaceColorForName } from "./workspaceAvatar";
+import { assignWorkspaceColors, hashText, workspaceColorForName } from "./workspaceColors";
 import { WorkspaceAvatar } from "./WorkspaceAvatar";
 
 function parseHsl(value: string): [number, number, number] {
