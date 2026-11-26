@@ -1,0 +1,12 @@
+/* Bloques de estudio: una tarjeta común (cabecera con ícono y acciones, cuerpo). */
+.vn-study { width: 100%; border: 1px solid var(--c-border); border-radius: var(--radius-lg); background: var(--c-card); overflow: hidden; }
+.vn-study-head { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--c-border); font-size: var(--text-ui-small-size); line-height: 1.4; color: var(--c-text-muted); }
+.vn-study-head > strong { margin-right: auto; font-weight: 600; }
+.vn-study-body { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); }
+.vn-study-source { width: 100%; resize: none; border: 1px solid var(--c-border-control); border-radius: var(--radius-md); background: var(--c-card); color: var(--c-text); padding: var(--space-2) var(--space-3); font-size: var(--text-ui-size); line-height: 1.5; }
+.vn-study-mono { font-family: var(--font-mono); background: var(--c-raised); }
+.vn-study-chip { border-radius: var(--radius-full); background: var(--c-raised); padding: 2px var(--space-2); font-size: var(--text-note-size); line-height: 1.4; color: var(--c-text); }
+.vn-study-chip:is(button):hover { background: var(--c-border); }
+/* Con zoom de página: la ecuación crece con la letra; el dibujo Mermaid y el texto de las tarjetas, con el factor. */
+[data-page-zoom] .bn-editor .vn-mermaid { zoom: var(--page-zoom); }
+[data-page-zoom] .bn-editor .vn-flashcard .vn-study-source { font-size: calc(var(--text-ui-size) * var(--page-zoom)); }

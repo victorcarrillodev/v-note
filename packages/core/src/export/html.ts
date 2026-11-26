@@ -8,6 +8,7 @@ import { parseTimeline } from "../diagrams/timeline";
 import { parseTree } from "../diagrams/tree";
 import type { Property } from "../databases/databaseService";
 import type { QueryRow } from "../databases/query";
+import katex from "katex";
 import { diagramToSvg, escapeXml, matrixToSvg, timelineToSvg, treeToSvg } from "./svg";
 import { hasTocBlock, tocEntries, type TocEntry } from "../pages/toc";
 
@@ -201,6 +202,10 @@ function renderOne(b: Block, ctx: RenderContext): string {
     case "mindmap": case "orgchart": return organizer(b, ctx, b.type === "mindmap" ? "Mapa mental" : "Organigrama", (d) => { const r = parseTree(d); return r.ok ? treeToSvg(r.value, b.type as "mindmap" | "orgchart") : null; });
     case "timeline": return organizer(b, ctx, "Línea de tiempo", (d) => { const r = parseTimeline(d); return r.ok ? timelineToSvg(r.value) : null; });
     case "matrix": return organizer(b, ctx, "Matriz", (d) => { const r = parseMatrix(d); return r.ok ? matrixToSvg(r.value) : null; });
+    case "equation": return `<div class="equation">${katex.renderToString(str(b.props.formula), { displayMode: true, output: "mathml", throwOnError: false })}</div>${kids}`;
+    // Dibujar Mermaid necesita un navegador: el documento exportado conserva su texto.
+    case "mermaid": return `<pre><code class="language-mermaid">${esc(str(b.props.code))}</code></pre>${kids}`;
+    case "flashcard": return `<details class="flashcard"><summary>${esc(str(b.props.front))}</summary><p>${esc(str(b.props.back))}</p></details>${kids}`;
     case "databaseView": return database(b, ctx);
     default: return `<p>${inner}</p>${kids}`;
   }

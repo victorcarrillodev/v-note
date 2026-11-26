@@ -1,3 +1,4 @@
+import { flushSync } from "react-dom";
 import { useLayoutEffect, useState, type RefObject } from "react";
 
 /** Medidas (px) para que un bloque salga de la columna de la página y ocupe todo el ancho del área desplazable. */
@@ -22,7 +23,8 @@ export function useBleedBox(ref: RefObject<HTMLElement | null>, deps: unknown[])
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(measure);
+    // En el mismo fotograma que el cambio de tamaño: así la portada acompaña a la barra lateral mientras se anima.
+    const ro = new ResizeObserver(() => flushSync(measure));
     ro.observe(scroller); ro.observe(parent);
     return () => ro.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps

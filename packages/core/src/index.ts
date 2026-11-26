@@ -114,3 +114,5 @@ export * from "./export/exportCss";
 export * from "./export/exportDocument";
 export * from "./export/collect";
 export * from "./undo/undo";
+export * from "./flashcards/schedule";
+export * from "./flashcards/cards";

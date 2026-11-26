@@ -7,6 +7,9 @@ import type { IconName } from "../design/iconMap";
 import { TaskBlockView, type TaskProps } from "./TaskBlock";
 import { codeBlock } from "./CodeBlock";
 import { DatabasePicker, EmbeddedDatabaseView } from "../databases/EmbeddedDatabase";
+import { EquationView } from "../study/EquationBlock";
+import { MermaidView } from "../study/MermaidBlock";
+import { FlashcardBlockView } from "../study/FlashcardBlock";
 import { DiagramEditor } from "../diagram/DiagramEditor";
 import { MentionView } from "./MentionView";
 import { MatrixEditor, TimelineEditor, TreeEditor } from "../diagram/Organizers";
@@ -206,8 +209,22 @@ export const galleryBlock = createReactBlockSpec(
   },
 );
 
+/** Bloques de estudio: ecuación, diagrama por texto y tarjeta de repaso. */
+export const equationBlock = createReactBlockSpec(
+  { type: "equation", propSchema: { formula: { default: "" } }, content: "none" },
+  { render: ({ block, editor }) => <EquationView formula={block.props.formula} editable={editor.isEditable} onChange={(formula) => editor.updateBlock(block, { props: { formula } })} /> },
+);
+export const mermaidBlock = createReactBlockSpec(
+  { type: "mermaid", propSchema: { code: { default: "" } }, content: "none" },
+  { render: ({ block, editor }) => <MermaidView code={block.props.code} editable={editor.isEditable} onChange={(code) => editor.updateBlock(block, { props: { code } })} /> },
+);
+export const flashcardBlock = createReactBlockSpec(
+  { type: "flashcard", propSchema: { front: { default: "" }, back: { default: "" }, due: { default: "" }, interval: { default: 0 }, ease: { default: 2.5 }, reps: { default: 0 } }, content: "none" },
+  { render: ({ block, editor }) => <FlashcardBlockView front={block.props.front} back={block.props.back} due={block.props.due} editable={editor.isEditable} onChange={(patch) => editor.updateBlock(block, { props: patch })} /> },
+);
+
 export const schema = BlockNoteSchema.create({
   inlineContentSpecs: { ...defaultInlineContentSpecs, mention: mentionInline },
   styleSpecs: { ...defaultStyleSpecs, underlineStyle },
-  blockSpecs: { ...defaultBlockSpecs, codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock(), toc: tocBlock(), gallery: galleryBlock() },
+  blockSpecs: { ...defaultBlockSpecs, equation: equationBlock(), mermaid: mermaidBlock(), flashcard: flashcardBlock(), codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock(), toc: tocBlock(), gallery: galleryBlock() },
 });

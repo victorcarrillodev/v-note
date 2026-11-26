@@ -5,6 +5,8 @@ import type { ReactElement } from "react";
 import { Icon } from "../design/Icon";
 import type { IconName } from "../design/iconMap";
 
+import { TEMPLATE_IDS, templateBlocks, type TemplateId } from "../study/templates";
+
 type T = (key: string) => string;
 type Item = DefaultReactSuggestionItem & { badge?: string };
 
@@ -15,7 +17,18 @@ function customItems(editor: BlockNoteEditor<any, any, any>, t: T): Item[] {
   const group = t("editor.customGroup");
   const at = (type: string, props?: Record<string, unknown>) => () => insertOrUpdateBlockForSlashMenu(editor as never, { type, ...(props ? { props } : {}) } as never);
   const mk = (title: string, subtext: string, aliases: string[], icon: IconName, onItemClick: () => void): Item => ({ title, subtext, aliases, group, icon: ico(icon), onItemClick });
+  const template = (id: TemplateId): Item => ({
+    title: t(`study.templates.${id}.title`), subtext: t(`study.templates.${id}.hint`), aliases: ["plantilla", "template"], group: t("study.templates.group"), icon: ico("note"),
+    onItemClick: () => {
+      const [first, ...rest] = templateBlocks(id, t) as never[];
+      const inserted = insertOrUpdateBlockForSlashMenu(editor as never, first!);
+      editor.insertBlocks(rest as never, inserted as never, "after");
+    },
+  });
   return [
+    mk(t("study.equation.slash"), t("study.equation.hint"), ["ecuacion", "ecuación", "formula", "fórmula", "latex", "katex", "math"], "equation", at("equation")),
+    mk(t("study.mermaid.slash"), t("study.mermaid.hint"), ["mermaid", "diagrama de texto", "secuencia", "uml"], "graph", at("mermaid")),
+    mk(t("study.card.slash"), t("study.card.hint"), ["flashcard", "tarjeta", "repaso", "anki"], "flashcard", at("flashcard")),
     mk(t("editor.callout"), t("editor.calloutHint"), ["aviso", "callout", "nota"], "tip", at("callout")),
     mk(t("task.slash"), t("task.slashHint"), ["tarea", "task", "pendiente", "recordatorio", "todo"], "task", at("task")),
     mk(t("embed.slash"), t("embed.slashHint"), ["base", "database", "tabla", "vista", "tablero"], "database", at("databaseView")),
@@ -27,6 +40,7 @@ function customItems(editor: BlockNoteEditor<any, any, any>, t: T): Item[] {
     mk(t("toc.slash"), t("toc.slashHint"), ["indice", "índice", "toc", "contenido", "tabla de contenidos"], "toc", at("toc")),
     mk(t("gallery.slash"), t("gallery.slashHint"), ["galeria", "galería", "gallery", "imagenes", "imágenes", "fotos", "carrusel", "mosaico"], "image", at("gallery")),
     mk(t("editor.linkCard"), t("editor.linkCardHint"), ["enlace", "link", "url", "tarjeta"], "link", at("linkCard")),
+    ...TEMPLATE_IDS.map(template),
   ];
 }
 

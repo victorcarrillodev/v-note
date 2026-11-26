@@ -23,7 +23,7 @@ test-runner: bun run typecheck && bun run test
 - [x] T-6 (S3) Zoom de página con Ctrl + rueda e indicador
 - [x] T-7 (S4) Quitar el marco azul del editor
 - [ ] T-8 (S5) Donaciones: pospuesto
-- [ ] T-9 (S5) Quitar los correos antes de publicar el repositorio
+- [x] T-9 (S5) Quitar los correos antes de publicar el repositorio
 - [x] T-10 (S7) Portadas más bajas (180/260/340 px)
 
 ## Evidencia

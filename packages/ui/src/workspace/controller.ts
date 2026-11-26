@@ -1,8 +1,10 @@
 import {
-  BoardService, DatabaseService, PagePropsHistory, type PageProps, pageStats, applyStylePatch, type StylePatch, fromYjs, savePageDefaultStyle, loadPageDefaultStyle, type PageStats, collectExportPages, databaseViewProvider, exportHtml, GraphService, LinkService, QuickCapture, ViewService, DocSession, DocStore, PagesRepo, PageService, SearchIndex, appError, err, ok,
+  BoardService, DatabaseService, PagePropsHistory, type PageProps, pageStats, applyStylePatch, type StylePatch, fromYjs, flashcardsFromBlocks, type Flashcard, type CardState, savePageDefaultStyle, loadPageDefaultStyle, type PageStats, collectExportPages, databaseViewProvider, exportHtml, GraphService, LinkService, QuickCapture, ViewService, DocSession, DocStore, PagesRepo, PageService, SearchIndex, appError, err, ok,
   type AssetStore, type Backlink, type DocSessionOptions, type Clock, type ExportOutcome, type ExportPalette, type GraphData, type GraphOptions, type LinkTarget, type Page, type PageKind, type PageStyle, type RecentPage, type SearchHit, type PageNode, type Result, type SqlStore, type TrashEntry, trashWithUndo, TagService, duplicateWithUndo, moveWithUndo } from "@vnote/core";
 
 import { DatabaseController } from "../databases/databaseController";
+
+export type StudyCard = Flashcard & { pageId: string; pageTitle: string };
 
 export type WorkspaceSnapshot = {
   tree: PageNode[];
@@ -242,6 +244,23 @@ export class WorkspaceController {
   async pageStats(id: string): Promise<PageStats | null> {
     const doc = await this.docs.load(id);
     return doc.ok ? pageStats(fromYjs(doc.value.getXmlFragment("doc"))) : null;
+  }
+  /** Todas las tarjetas de estudio de las páginas del espacio (la papelera no cuenta). */
+  async listFlashcards(): Promise<StudyCard[]> {
+    const cards: StudyCard[] = [];
+    const visit = async (nodes: PageNode[]): Promise<void> => {
+      for (const { page, children } of nodes) {
+        const doc = await this.docs.load(page.id);
+        if (doc.ok) cards.push(...flashcardsFromBlocks(fromYjs(doc.value.getXmlFragment("doc"))).map((c) => ({ ...c, pageId: page.id, pageTitle: page.title })));
+        await visit(children);
+      }
+    };
+    await visit(await this.pages.tree());
+    return cards;
+  }
+  /** Guarda el resultado de un repaso en el bloque de la tarjeta. */
+  async saveFlashcard(pageId: string, blockId: string, state: CardState): Promise<boolean> {
+    return (await this.svc.updateBlockProps(pageId, blockId, state)).ok;
   }
   /** Guarda el estilo de la página como el de las páginas nuevas del espacio (RF-8.5). Las existentes no cambian. */
   async setDefaultStyle(style: PageStyle): Promise<void> { await savePageDefaultStyle(this.store, style); }

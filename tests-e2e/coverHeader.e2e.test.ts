@@ -69,6 +69,21 @@ describe("cabecera con portada (navegador real)", () => {
     expect(g.coverH).toBeGreaterThanOrEqual(260);
     expect(g.clickable).toBe(true);
 
+    // Al abrir y cerrar la barra lateral la portada acompaña al área en cada fotograma, sin retraso.
+    for (let i = 0; i < 2; i++) {
+      const lag = await p.eval<number>(`new Promise((done) => {
+        let worst = 0; const t0 = performance.now();
+        const frame = () => setTimeout(() => {
+          const m = document.querySelector('main'), c = document.querySelector('[data-testid=cover-bleed]').getBoundingClientRect();
+          worst = Math.max(worst, Math.abs(c.left - m.getBoundingClientRect().left), Math.abs(c.width - m.clientWidth));
+          performance.now() - t0 < 450 ? requestAnimationFrame(frame) : done(worst);
+        });
+        document.querySelector('[aria-controls=barra-lateral]').click(); requestAnimationFrame(frame);
+      })`);
+      console.log("DESFASE", lag);
+      expect(lag).toBeLessThanOrEqual(2);
+    }
+
     // Las tres opciones de alto se distinguen aunque el contenido sobre la portada sea alto.
     const heights: number[] = [];
     for (const name of ["Baja", "Media", "Alta"]) {

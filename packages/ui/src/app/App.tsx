@@ -10,6 +10,7 @@ import type { PageNode } from "@vnote/core";
 import type { BackupService, InstanceLockHandle, RestoreSource, Workspace } from "@vnote/core";
 import { AppServicesProvider, useServices, type AppServices } from "./services";
 import { UnsplashProvider } from "../unsplash/UnsplashContext";
+import { ReviewView } from "../study/ReviewView";
 import { PageBody } from "../page/PageBody";
 import { PageZoom } from "../page/zoom/PageZoom";
 import { PageStyleScope } from "../page/PageStyleScope";
@@ -47,7 +48,7 @@ import { RestoreWizard } from "../restore/RestoreWizard";
 import { useWorkspace } from "../workspace/useController";
 import { hideSplash } from "./splash";
 
-type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "locked" | "reminders" | "graph" | "import" | "tags";
+type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "locked" | "reminders" | "graph" | "import" | "tags" | "review";
 type Opened = { workspace: Workspace; controller: WorkspaceController };
 
 export type AppProps = {
@@ -248,6 +249,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
               [
                 { id: "capture", label: t("capture.open"), icon: "inbox", onClick: () => setCaptureOpen(true) },
                 { id: "graph", label: t("graph.title"), icon: "graph", onClick: () => setView("graph") },
+                { id: "review", label: t("study.review.title"), icon: "flashcard", onClick: () => setView("review") },
                 { id: "tags", label: t("tags.title"), icon: "tag", onClick: () => setView("tags") },
                 ...(backup ? [{ id: "import", label: t("import.title"), icon: "import" as const, onClick: () => setView("import") }] : []),
                 ...(center ? [{ id: "reminders", label: t("reminders.title"), icon: "reminder" as const, onClick: () => setView("reminders") }] : []),
@@ -299,6 +301,9 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
           await c.select(pageId);
           setView("page");
         })()} />
+      )}
+      {view === "review" && opened && (
+        <ReviewView controller={opened.controller} now={clock.now.bind(clock)} onOpenPage={(id) => void opened.controller.select(id).then(() => setView("page"))} />
       )}
       {view === "import" && opened && backup && (
         <ImportView store={opened.controller.store} assets={backup.assetsFor(opened.workspace.location)} clock={clock}

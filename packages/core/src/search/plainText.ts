@@ -20,6 +20,9 @@ function blockText(b: Block): string[] {
     if (parts.length) lines.push(parts.join(" "));
   }
   if (b.type === "gallery") for (const g of parseGallery(b.props.images)) { const t = [g.name, g.caption].filter((v) => v !== "").join(" "); if (t !== "") lines.push(t); }
+  // Bloques de estudio: su texto vive en las propiedades.
+  const studyText = b.type === "equation" ? [b.props.formula] : b.type === "mermaid" ? [b.props.code] : b.type === "flashcard" ? [b.props.front, b.props.back] : [];
+  for (const v of studyText) if (typeof v === "string" && v !== "") lines.push(v);
   if (isGraphicBlock(b)) { const t = graphicBlockText(b); if (t !== "") lines.push(t); }
   for (const child of b.children) lines.push(...blockText(child));
   return lines;

@@ -321,7 +321,7 @@ export function PageHeader({ controller, pageId, onExport, assets, workspaceName
       )}
 
       {hasC && (
-        <div ref={coverRef} data-testid="cover-bleed" className={cx("relative transition-[width,margin] duration-300 ease-out motion-reduce:transition-none", iconOverlap && page.icon && "mb-15")}
+        <div ref={coverRef} data-testid="cover-bleed" className={cx("relative", iconOverlap && page.icon && "mb-15")}
           style={bleed
             ? { width: bleed.width - 2 * inset, marginLeft: bleed.left + inset, marginTop: inset - bleed.top }
             : { width: `calc(100cqw - ${2 * inset}px)`, marginLeft: `calc(50% - 50cqw + ${inset}px)`, marginTop: `${inset - 24}px` }}>

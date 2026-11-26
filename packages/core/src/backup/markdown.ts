@@ -106,6 +106,9 @@ function render(blocks: Block[], indent: string, toc: readonly TocEntry[]): stri
         }
         break;
       }
+      case "equation": lines.push("$$", ...String(b.props.formula ?? "").split("\n"), "$$"); break;
+      case "mermaid": lines.push("```mermaid", ...String(b.props.code ?? "").split("\n"), "```"); break;
+      case "flashcard": lines.push(`> **P:** ${String(b.props.front ?? "").replace(/\n/g, " ")}`, `> **R:** ${String(b.props.back ?? "").replace(/\n/g, " ")}`); break;
       case "databaseView": lines.push(`> Vista de base de datos (${String(b.props.databaseId ?? "")})`); break;
       case "callout": lines.push(`> **${String(b.props.variant ?? "info")}:** ${text(b)}`); break;
       case "linkCard": {
