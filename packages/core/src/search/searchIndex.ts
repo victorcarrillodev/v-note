@@ -2,7 +2,7 @@ import type { Clock } from "../clock";
 import type { SqlExecutor, SqlStore } from "../ports/sqlStore";
 import type { PageKind } from "../pages/pagesRepo";
 import { fromYjs } from "../blocks/fromYjs";
-import { blocksToPlainText } from "./plainText";
+import { searchBodyIn } from "../assets/assetText";
 import { DocStore } from "../docs/docStore";
 
 const MARK_OPEN = "";
@@ -86,7 +86,7 @@ export class SearchIndex {
       const pages = await tx.query<{ id: string; title: string }>("SELECT id, title FROM pages");
       for (const p of pages) {
         const doc = await docs.loadIn(tx, p.id);
-        await this.upsertIn(tx, p.id, p.title, blocksToPlainText(fromYjs(doc.getXmlFragment("doc"))));
+        await this.upsertIn(tx, p.id, p.title, await searchBodyIn(tx, fromYjs(doc.getXmlFragment("doc"))));
       }
     });
   }

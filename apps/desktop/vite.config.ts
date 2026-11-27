@@ -20,7 +20,7 @@ const noDomEntities = (): Plugin => ({
 export default defineConfig({
   plugins: [themeBootPlugin(), brandPlugin(), pyodideAssets(), tailwindcss()],
   clearScreen: false,
-  worker: { plugins: () => [noDomEntities()] },
+  worker: { format: "es", plugins: () => [noDomEntities()] },
   server: { port: 1430, strictPort: true },
   resolve: {
     // La suite de contrato de @vnote/core usa la API de Vitest; en la app se sustituye por un mini-ejecutor.

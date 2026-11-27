@@ -15,17 +15,18 @@ Lista de pendientes por hacer, ordenada por impacto. Origen: recomendaciones del
 - [x] B-8 Diagramas: plantillas de flujo, ER y UML; enlazar nodos del lienzo con páginas → ficha `study-features-2` T-6 y T-7 (sin retroenlaces: ver B-9).
 
 ## Para el uso diario
-- [ ] B-9 Búsqueda y navegación: filtros por etiqueta y fecha, búsqueda dentro de adjuntos PDF, retroenlaces visibles en cada página (incluidos los de formas del lienzo enlazadas).
-- [ ] B-10 Recortador web: guardar una página o fragmento desde el navegador a la captura rápida.
-- [ ] B-11 Adjuntos: previsualizar PDF e imágenes con anotaciones.
+- [x] B-9 Búsqueda y navegación: filtros por etiqueta y fecha, búsqueda dentro de adjuntos PDF, retroenlaces visibles en cada página (incluidos los de formas del lienzo enlazadas). → ficha `backlog-b7-b11` T-2 a T-4.
+- [x] B-10 Recortador web: guardar una página o fragmento desde el navegador a la captura rápida. → ficha `backlog-b7-b11` T-5 (marcador + pegar).
+- [x] B-11 Adjuntos: previsualizar PDF e imágenes con anotaciones. → ficha `backlog-b7-b11` T-6.
 
 ## Calidad y mantenimiento
 - [ ] B-12 Accesibilidad: revisión con teclado y lector de pantalla.
 - [ ] B-13 Rendimiento con espacios grandes: medir con miles de páginas.
-- [ ] B-14 Pruebas e2e de escritorio en WebKitGTK (las actuales corren en Chrome); incluye comprobar el bloque de código ejecutable.
+- [ ] B-14 Pruebas e2e de escritorio en WebKitGTK (las actuales corren en Chrome); el bloque de código ejecutable, los bloques de estudio, el zoom y los PDF ya están en `study.native`; falta el resto (el arnés usa el binario debug).
 - [x] B-16 `PageEditor`: tipar el límite de `cardsToInsert`/`insertBlocks` (sin `as never`; `typecheck` limpio).
 - [ ] B-15 Orden de código: mensajes en español dentro de `core` sin i18n; cancelación de `oauth_wait`; posible falso verde en `AppUnifiedBackup.test.tsx:61`.
 
 ## Pendientes de fichas abiertas
-- [ ] `release-readiness` T-1: comprobar la CSP a mano con la app abierta.
+- [x] `release-readiness` T-1: CSP comprobada en la app de escritorio.
+- [ ] `study-features-2`: nueva revisión independiente del aislamiento de Python (L6).
 - [ ] `release-readiness` T-4 y T-8: instaladores y donaciones (pospuestos por el usuario).

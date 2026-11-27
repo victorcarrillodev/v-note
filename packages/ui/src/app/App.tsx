@@ -2,6 +2,7 @@ import { UpdateNotice } from "./UpdateNotice";
 import { InlineAlert } from "../components/InlineAlert";
 import { ImportView } from "../import/ImportView";
 import { GlobalShortcutProvider, useGlobalShortcut } from "../capture/globalShortcut";
+import { indexPendingPdfs } from "../attachments/indexPdfs";
 import { QuickCaptureView } from "../capture/QuickCaptureView";
 import { GraphView } from "../graph/GraphView";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -231,7 +232,11 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
     setView("page");
     // Archivos sin uso (RF-2.8): en segundo plano, solo al abrir; un fallo nunca estorba (no borra nada si algo falla, DP-9).
     // En escritorio y en la web el almacén llega por `backup.assetsFor`; sin él no hay almacén que limpiar.
-    if (backup) void gcAssets({ store: r.value.store, assets: backup.assetsFor(r.value.workspace.location) }).catch(() => {});
+    if (backup) {
+      const assets = backup.assetsFor(r.value.workspace.location);
+      // Primero se limpia y después se leen los PDF que falten para la búsqueda (p. ej. tras restaurar).
+      void gcAssets({ store: r.value.store, assets }).then(() => indexPendingPdfs(r.value.store, assets, clock)).catch(() => {});
+    }
     return controller;
   }, [workspaces, clock, ensureLock, backup]);
 

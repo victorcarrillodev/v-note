@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../components/Button";
+import { ClipperHelp } from "./ClipperHelp";
 import { useTranslation } from "react-i18next";
 import { QuickCapture, resolveCaptureTarget, type Clock, type Workspace, type WorkspaceManager } from "@vnote/core";
 
@@ -105,6 +106,7 @@ export function QuickCaptureView({ manager, clock, onSaved, onClose }: { manager
         {(recovered || text !== "") && <Button variant="ghost" onClick={() => void discard()}>{t("capture.discard")}</Button>}
         <p className="ml-auto text-[length:var(--text-note-size)] text-[var(--c-text-muted)]">{t("capture.hint")}</p>
       </div>
+      <ClipperHelp />
     </section>
   );
 }

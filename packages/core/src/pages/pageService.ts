@@ -3,7 +3,7 @@ import type { Clock } from "../clock";
 import type { SqlStore } from "../ports/sqlStore";
 import { DocStore } from "../docs/docStore";
 import { fromYjs } from "../blocks/fromYjs";
-import { blocksToPlainText } from "../search/plainText";
+import { searchBodyIn } from "../assets/assetText";
 import * as Y from "yjs";
 import { setBlockProps } from "../blocks/updateProps";
 import { PagesRepo, type Page, type PageKind } from "./pagesRepo";
@@ -38,7 +38,7 @@ export class PageService {
         const doc = await this.docs.loadIn(tx, pageId);
         const title = (await tx.query<{ title: string }>("SELECT title FROM pages WHERE id = ?", [pageId]))[0]?.title ?? "";
         const blocks = fromYjs(doc.getXmlFragment("doc"));
-        await this.index.upsertIn(tx, pageId, title, blocksToPlainText(blocks));
+        await this.index.upsertIn(tx, pageId, title, await searchBodyIn(tx, blocks));
         await indexPageTasksIn(tx, this.clock.now(), pageId, blocks); // las casillas con fecha son tareas
         await indexPageLinksIn(tx, pageId, blocks); // las menciones son enlaces
         await tx.exec("UPDATE pages SET updated_at = ? WHERE id = ?", [this.clock.now(), pageId]);

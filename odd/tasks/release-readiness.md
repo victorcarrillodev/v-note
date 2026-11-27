@@ -15,7 +15,7 @@ test-runner: bun run typecheck && bun run test
 - S7: "quiero que hagas menos altos las tres opciones del alto de portada de las paginas"
 
 ## Tareas
-- [ ] T-1 (S1) CSP estricta en la app de escritorio, con prueba de hosts permitidos
+- [x] T-1 (S1) CSP estricta en la app de escritorio, con prueba de hosts permitidos (comprobada en la app real con una prueba automática; los destinos de respaldo siguen en B-1)
 - [x] T-2 (S1) README y CHANGELOG
 - [x] T-3 (S5) LICENSE MIT
 - [ ] T-4 (S5) Aviso de versión e instaladores: pospuesto
@@ -38,6 +38,7 @@ test-runner: bun run typecheck && bun run test
 | T-9 | `git grep -nIE "[A-Za-z0-9._-]+@(gmail\|hotmail\|outlook\|proton)"` | Sin coincidencias en archivos versionados | 2026-11-27 |
 | T-10 | `bun run typecheck && bun run test` | typecheck ok; 3610 pruebas pasan (incluye alturas de portada) | 2026-11-27 |
 | T-1 | `bun run tauri build --no-bundle` (apps/desktop); `bun run test tests/desktop-csp.test.ts` | Compila (release, 9 min 40 s); la CSP incluye los hosts de Drive/Dropbox/OAuth; sigue sin verificarse a mano con la app abierta | 2026-11-27 |
+| T-1 (escritorio) | `tauri build --no-bundle`; `dbus-run-session -- bunx vitest run -c vitest.e2e.config.ts study.native` | App de producción en WebKitGTK: Mermaid, KaTeX, zoom, JS y Python ejecutables, PDF dibujado y encontrado en la búsqueda; sin violaciones de CSP. La compilación estaba rota (faltaba `worker.format: "es"` en el escritorio) y se corrigió | 2026-11-27 |
 
 ## Log
 - L1: "empieza por el punto 1 entonces" (reconstruido; petición original de lanzamiento: actualizaciones, firma, CSP, README/LICENSE/CHANGELOG)

@@ -12,6 +12,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - Ecuaciones en línea (`$…$`); importar Markdown con `$$` y ```` ```mermaid ````; los diagramas Mermaid se exportan dibujados.
 - Generar tarjetas de repaso desde las notas (Ctrl+Alt+G o «/») y estadísticas en la vista Repaso.
 - Plantillas de diagrama de flujo, entidad-relación y UML, y enlazar una forma del lienzo con una página.
+- Vista previa de PDF e imágenes adjuntos con notas por zona (el archivo no se modifica; las notas viajan en el respaldo).
+- La búsqueda encuentra el texto de los PDF adjuntos.
+- Recortador web: un marcador copia título, enlace y selección para pegarlos en la captura rápida.
+- Racha diaria en el repaso.
 - Respaldo unificado: todos los espacios en un solo destino (carpeta local, Google Drive, Dropbox o GitHub) que se actualiza en el lugar, sin copias repetidas; respaldo continuo al dejar de escribir y «Restaurar todo».
 
 ### Cambiado
@@ -20,6 +24,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - Conversión de bloques, cabecera con portada e índice en los márgenes.
 
 ### Corregido
+- El menú «/» ya no tiene dos opciones llamadas «Diagrama de flujo».
 - La portada acompaña sin retraso a la barra lateral al abrirla o cerrarla.
 - El editor ya no muestra un marco azul alrededor del contenido.
 

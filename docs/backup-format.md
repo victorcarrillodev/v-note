@@ -42,6 +42,16 @@ Spec 002 (RF-5.9). Opcional: solo existe si el espacio tiene etiquetas; un respa
 
 `color` es uno de los nueve nombres de la paleta (`gray`, `brown`, `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`); el tema decide el valor. Las etiquetas van ordenadas por nombre y las asignaciones por página y etiqueta, para que la salida sea determinista. Al restaurar se valida antes de escribir: nombres no vacíos ni repetidos, colores de la paleta y asignaciones a páginas existentes.
 
+## `asset-notes.json`
+
+Notas sobre zonas de PDF e imágenes. Opcional: solo existe si hay notas; sin él se restaura sin notas y no hace falta subir `formatVersion`.
+
+```
+{ notes: [{ id, hash, page, x, y, w, h, text, createdAt }] }
+```
+
+`hash` es el adjunto en `assets/`; `page` empieza en 1 (las imágenes usan 1); `x, y, w, h` son fracciones de 0 a 1 del ancho y alto. El texto extraído de los PDF para la búsqueda **no** se respalda: se vuelve a leer del archivo.
+
 ## `reminders.json`
 
 `startTime` («HH:mm», la hora de `due`) y `durationMin` (entero positivo) son opcionales (spec 002, RF-7.2): solo se escriben cuando la tarea los tiene; un respaldo anterior sin ellos se restaura igual que siempre.

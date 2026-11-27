@@ -12,6 +12,8 @@ import { isValidHash } from "./hash";
 // solo cuesta conservar algún archivo de más; quedarse corto borraría datos.
 const HEX_RUN = /[0-9a-f]{64,}/g;
 const DOCS_TABLE = "page_docs";
+// Tablas que cuelgan de un adjunto: no cuentan como uso y se limpian junto con él.
+const DEPENDENT_TABLES = ["asset_text", "asset_notes"];
 const decoder = new TextDecoder("utf-8", { fatal: false });
 
 /** Añade a `into` cada posible hash de archivo (64 hexadecimales en minúscula) que aparezca en el texto. */
@@ -30,7 +32,7 @@ export async function collectAssetRefs(db: SqlStore): Promise<Result<Set<string>
   try {
     const tables = await db.query<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
     for (const { name } of tables) {
-      if (name === DOCS_TABLE) continue;
+      if (name === DOCS_TABLE || DEPENDENT_TABLES.includes(name)) continue;
       for (const row of await db.query(`SELECT * FROM "${name.replaceAll('"', '""')}"`)) {
         for (const v of Object.values(row)) if (typeof v === "string") assetRefsIn(v, refs);
       }
@@ -68,6 +70,7 @@ export async function gcAssets(deps: { store: SqlStore; assets: AssetStore }): P
     if (refs.value.has(hash) || !isValidHash(hash)) continue; // un nombre raro en el almacén nunca se toca
     try {
       await deps.assets.delete(hash);
+      for (const table of DEPENDENT_TABLES) await deps.store.exec(`DELETE FROM ${table} WHERE hash = ?`, [hash]);
       removed.push(hash);
     } catch (e) {
       return err(appError("STORAGE", "No se pudo borrar un archivo sin uso", { cause: String(e), removed }));

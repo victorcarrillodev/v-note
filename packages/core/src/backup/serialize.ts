@@ -3,6 +3,7 @@ import type { AssetStore } from "../assets/assetStore";
 import { DocStore } from "../docs/docStore";
 import { systemClock } from "../clock";
 import { serializeTags } from "./tags";
+import { serializeAssetNotes } from "./assetNotes";
 import { loadDiagramDefaults, serializeDiagramDefaults } from "../diagrams/defaults";
 import { fromYjs } from "../blocks/fromYjs";
 import { stableJson } from "./stableJson";
@@ -74,6 +75,8 @@ export async function serializeWorkspace(
   if (reminders) put("reminders.json", reminders);
   const tags = await serializeTags(store);
   if (tags) put("tags.json", tags);
+  const assetNotes = await serializeAssetNotes(store);
+  if (assetNotes) put("asset-notes.json", assetNotes);
   // Estilos predeterminados de diagramas del espacio (spec 003): solo si se definieron; sin ellos el respaldo es idéntico al de antes.
   const diagramDefaults = serializeDiagramDefaults(await loadDiagramDefaults(store));
   if (diagramDefaults) put("diagram-defaults.json", diagramDefaults);

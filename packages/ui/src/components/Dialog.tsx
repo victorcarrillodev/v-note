@@ -12,8 +12,8 @@ const WIDTH = { s: "w-[var(--size-modal-s)]", m: "w-[var(--size-modal-m)]", l: "
  * Modal de formulario: foco atrapado y devuelto, Escape, velo que bloquea el fondo, cuerpo con desplazamiento y pie fijo.
  * Con `dirty`, Escape y el clic en el velo piden confirmar el descarte en lugar de cerrar.
  */
-export function Dialog({ open, onOpenChange, title, description, children, footer, size = "m", dirty = false }: {
-  open: boolean; onOpenChange: (o: boolean) => void; title: string; description?: string; children: ReactNode; footer?: ReactNode; size?: keyof typeof WIDTH; dirty?: boolean;
+export function Dialog({ open, onOpenChange, title, description, children, footer, size = "m", dirty = false, tall = false }: {
+  open: boolean; onOpenChange: (o: boolean) => void; title: string; description?: string; children: ReactNode; footer?: ReactNode; size?: keyof typeof WIDTH; dirty?: boolean; /** Contenido alto (vista previa): empieza arriba para no salirse de la pantalla. */ tall?: boolean;
 }) {
   const { t } = useTranslation();
   const [askDiscard, setAskDiscard] = useState(false);
@@ -41,7 +41,7 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
             onEscapeKeyDown={guard}
             onInteractOutside={guard}
             aria-describedby={description ? undefined : undefined}
-            className={cx("fixed left-1/2 top-1/3 z-[var(--z-dialog)] flex max-h-[calc(100vh-var(--space-12))] max-w-[calc(100vw-var(--space-12))] -translate-x-1/2 flex-col rounded-lg border border-[var(--c-border)] bg-[var(--c-card)] shadow-[var(--elevation-4)]", WIDTH[size])}
+            className={cx("fixed left-1/2 z-[var(--z-dialog)] flex max-h-[calc(100vh-var(--space-12))] max-w-[calc(100vw-var(--space-12))] -translate-x-1/2 flex-col rounded-lg border border-[var(--c-border)] bg-[var(--c-card)] shadow-[var(--elevation-4)]", tall ? "top-6" : "top-1/3", WIDTH[size])}
           >
             <div className="flex shrink-0 items-center justify-between px-6 pt-6">
               <D.Title className="text-[length:var(--text-dialog-title-size)] font-semibold text-[var(--c-text)]">{title}</D.Title>

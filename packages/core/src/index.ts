@@ -132,3 +132,5 @@ export * from "./flashcards/generate";
 export * from "./flashcards/stats";
 export * from "./flashcards/streak";
 export * from "./diagrams/templates";
+export * from "./assets/assetText";
+export * from "./assets/assetNotes";

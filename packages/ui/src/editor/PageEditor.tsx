@@ -23,6 +23,7 @@ import { LargePageNotice } from "./LargePageNotice";
 import { LinkProvider, type LinkApi } from "./LinkContext";
 import { DiagramDefaultsProvider, type DiagramDefaultsApi } from "../diagram/DiagramDefaults";
 import { Backlinks } from "./Backlinks";
+import { PageAttachments } from "../attachments/PageAttachments";
 import { InboxTriage } from "./InboxTriage";
 import type { AssetStore, Page, PageNode } from "@vnote/core";
 import { createFileHandlers } from "./fileHandlers";
@@ -160,6 +161,7 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
         </p>
       ))}
       {session ? <DatabaseEmbedProvider value={{ list: () => controller.listDatabases(), open: (id) => controller.openDatabaseById(id), openRow: (id) => void controller.select(id) }}><LinkProvider value={links}><DiagramDefaultsProvider value={diagramDefaults}><TocProvider value={{ headings, jump: jumpTo }}><Editor key={pageId} session={session} locked={locked} handlers={handlers} findPages={(q) => controller.findPages(q)} /></TocProvider></DiagramDefaultsProvider></LinkProvider></DatabaseEmbedProvider> : <p role="status" className="opacity-70">{t("app.loading")}</p>}
+      {session && assets ? <PageAttachments session={session} assets={assets} store={controller.store} /> : null}
       {session ? <Backlinks controller={controller} pageId={pageId} /> : null}
     </div>
   );

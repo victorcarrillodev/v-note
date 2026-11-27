@@ -256,4 +256,21 @@ export const migrations: Migration[] = [
       await tx.exec(`UPDATE pages SET style = '{"spacing":{"width":"full"}}' WHERE full_width = 1`);
     },
   },
+  {
+    version: 15,
+    name: "texto y notas de adjuntos",
+    up: async (tx) => {
+      // backlog B-9 y B-11: texto extraído de PDF (derivado) y notas por zona sobre PDF e imágenes.
+      await tx.exec("CREATE TABLE asset_text(hash TEXT PRIMARY KEY, text TEXT NOT NULL)");
+      await tx.exec(`CREATE TABLE asset_notes(
+        id TEXT PRIMARY KEY,
+        hash TEXT NOT NULL,
+        page INTEGER NOT NULL,
+        x REAL NOT NULL, y REAL NOT NULL, w REAL NOT NULL, h REAL NOT NULL,
+        text TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )`);
+      await tx.exec("CREATE INDEX asset_notes_hash ON asset_notes(hash)");
+    },
+  },
 ];

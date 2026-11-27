@@ -3,7 +3,7 @@ import { appError, err, ok, type Result } from "../result";
 import { newId } from "../ids";
 import type { Clock } from "../clock";
 import type { SqlStore } from "../ports/sqlStore";
-import { defaultProps, type Block } from "../blocks/types";
+import { defaultProps, type Block, type Inline, type InlineText } from "../blocks/types";
 import { toYjs } from "../blocks/toYjs";
 import { BoardService } from "../databases/boardService";
 import { DatabaseService } from "../databases/databaseService";
@@ -26,7 +26,16 @@ function parseLine(line: string): { type: Block["type"]; props: Block["props"]; 
   if (bullet) return { type: "bulletListItem", props: defaultProps("bulletListItem"), text: bullet[1]! };
   const numbered = /^\d+\. (.*)$/.exec(line);
   if (numbered) return { type: "numberedListItem", props: defaultProps("numberedListItem"), text: numbered[1]! };
+  const quote = /^> (.*)$/.exec(line);
+  if (quote) return { type: "quote", props: defaultProps("quote"), text: quote[1]! };
   return { type: "paragraph", props: defaultProps("paragraph"), text: line };
+}
+
+/** Una dirección sola en su línea (como la del recortador web) queda como enlace. */
+function lineContent(text: string): Inline[] {
+  if (text === "") return [];
+  const plain: InlineText = { type: "text", text, styles: {} };
+  return /^https?:\/\/\S+$/.test(text) ? [{ type: "link", href: text, content: [plain] }] : [plain];
 }
 
 /** Captura rápida de un espacio (RF-13): borrador continuo y notas que caen en la Bandeja de entrada. */
@@ -56,7 +65,7 @@ export class QuickCapture {
     const parsed = lines.map(parseLine);
     const created = await svc.create({ parentId: inbox.value.id, title: parsed[0]!.text.trim().slice(0, TITLE_MAX) });
     if (!created.ok) return created;
-    const blocks: Block[] = parsed.map((l) => ({ id: newId(), type: l.type, props: l.props, content: l.text === "" ? [] : [{ type: "text", text: l.text, styles: {} }], children: [] }));
+    const blocks: Block[] = parsed.map((l) => ({ id: newId(), type: l.type, props: l.props, content: lineContent(l.text), children: [] }));
     const doc = new Y.Doc();
     toYjs(blocks, doc.getXmlFragment("doc"));
     const saved = await svc.saveUpdate(created.value.id, Y.encodeStateAsUpdate(doc));

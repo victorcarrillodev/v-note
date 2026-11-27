@@ -591,7 +591,7 @@ export const esMX = {
   diagram: { moreOptions: "Más opciones", lineSection: "Línea",
     pageLink: { trashed: "La página enlazada está en la papelera.", label: "Enlazar con una página", placeholder: "Buscar página…", none: "No hay páginas con ese nombre.", open: "Abrir página enlazada", remove: "Quitar enlace", missing: "La página enlazada ya no existe.", section: "Página" },
     templates: {
-      flow: { slash: "Diagrama de flujo", hint: "Inicio, pasos, una decisión y fin", start: "Inicio", step: "Paso", decision: "¿Condición?", yes: "Sí", no: "No", doYes: "Hacer esto", doNo: "Hacer lo otro", end: "Fin" },
+      flow: { slash: "Plantilla de flujo", hint: "Inicio, pasos, una decisión y fin", start: "Inicio", step: "Paso", decision: "¿Condición?", yes: "Sí", no: "No", doYes: "Hacer esto", doNo: "Hacer lo otro", end: "Fin" },
       er: { slash: "Diagrama entidad-relación", hint: "Entidades con atributos y relaciones 1:N", user: "Usuario", userFields: "id (PK)\nnombre\ncorreo", order: "Pedido", orderFields: "id (PK)\nusuario_id (FK)\nfecha", product: "Producto", productFields: "id (PK)\nnombre\nprecio", places: "realiza", contains: "contiene" },
       uml: { slash: "Diagrama de clases (UML)", hint: "Clases con atributos, métodos y relaciones", animal: "Animal", animalBody: "nombre: string\nhacerSonido()", dog: "Perro", dogBody: "raza: string\nladrar()", owner: "Dueño", ownerBody: "nombre: string\npasear()", inherits: "hereda de", has: "tiene" },
     },
@@ -651,6 +651,15 @@ export const esMX = {
     computing: "Calculando el grafo…", noLinks: "Aún no hay enlaces entre páginas. Escribe @ o [[ dentro de una página para enlazar otra y aparecerá aquí.",
     noMatches: "Ninguna página coincide con estos filtros.", canvas: "Grafo de páginas: {{nodes}} páginas y {{edges}} enlaces", nodeList: "Páginas del grafo",
     selection: "Página seleccionada", connections: "{{count}} conexión(es)", open: "Abrir página", inTrash: "(en la papelera)",
+  },
+  attachments: {
+    title: "Adjuntos", preview: "Previsualizar {{name}}", untitled: "Archivo sin nombre", hint: "Arrastra sobre la hoja para marcar una zona. El archivo original no se modifica.",
+    failed: "No se pudo abrir el archivo.", previous: "Anterior", next: "Siguiente", page: "Página {{page}} de {{total}}",
+    noteForArea: "Nota para la zona marcada", noteForPage: "Nota para toda la página", add: "Agregar nota", notes: "Notas", remove: "Quitar",
+  },
+  clipper: {
+    title: "Recortar desde el navegador", help: "Crea un marcador en tu navegador y pega este código como su dirección. Al usarlo sobre una página copia el título, el enlace y lo seleccionado; luego pégalo aquí.",
+    copy: "Copiar código del marcador", copied: "Código copiado.", done: "Recorte copiado: pégalo en la captura rápida de {{app}}.", codeLabel: "Código del marcador",
   },
   links: {
     inTrash: "(en la papelera)", restore: "Restaurar", broken: "Enlace roto: la página ya no existe", backlinks: "Enlaces a esta página", noBacklinks: "Ninguna página enlaza aquí.",

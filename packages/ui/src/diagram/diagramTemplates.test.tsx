@@ -26,3 +26,16 @@ describe("plantillas de diagrama", () => {
     for (const id of DIAGRAM_TEMPLATES) expect(i18n.t(`diagram.templates.${id}.hint`)).not.toContain("diagram.templates");
   });
 });
+
+describe("títulos del menú «/»", () => {
+  it("la plantilla de flujo no se llama igual que el lienzo vacío (daba claves repetidas)", async () => {
+    const { createI18n } = await import("../i18n");
+    for (const lng of ["es-MX", "en"]) {
+      const i18n = await createI18n(lng);
+      const keys = ["flow", "er", "uml"].map((id) => `diagram.templates.${id}.slash`);
+      const found = keys.filter((k) => i18n.exists(k));
+      const titles = found.map((k) => i18n.t(k));
+      expect(titles).not.toContain(i18n.t("diagram.slash"));
+    }
+  });
+});

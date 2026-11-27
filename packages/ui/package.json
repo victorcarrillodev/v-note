@@ -45,6 +45,7 @@
     "katex": "^0.19.1",
     "lucide-react": "^1.66.0",
     "mermaid": "^12.3.0",
+    "pdfjs-dist": "^6.5.438",
     "prosemirror-model": "1.25.12",
     "prosemirror-state": "1.4.4",
     "prosemirror-view": "1.42.8",

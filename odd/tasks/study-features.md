@@ -1,6 +1,6 @@
 ---
 feature: study-features
-status: active
+status: done
 created: 2026-11-25
 updated: 2026-11-25
 test-runner: bun run typecheck && bun run test
@@ -28,6 +28,7 @@ test-runner: bun run typecheck && bun run test
 | T-2 | `bun run typecheck && bun run test` | typecheck ok; 3610 pruebas pasan (2026-11-27) | 2026-11-27 |
 | T-3 | `bun run typecheck && bun run test` | idem | 2026-11-27 |
 | T-4 | `bun run typecheck && bun run test` | idem | 2026-11-27 |
+| Escritorio | `tauri build --no-bundle`; `dbus-run-session -- bunx vitest run -c vitest.e2e.config.ts study.native` | App de producción en WebKitGTK: Mermaid, KaTeX, zoom, JS y Python ejecutables, PDF dibujado y encontrado en la búsqueda; sin violaciones de CSP. La compilación estaba rota (faltaba `worker.format: "es"` en el escritorio) y se corrigió | 2026-11-27 |
 
 ## Límites conocidos
 - Solo ecuaciones en bloque (no en línea).

@@ -1,6 +1,6 @@
 ---
 feature: unified-backup
-status: active
+status: done
 created: 2026-11-24
 updated: 2026-11-24
 authorized-by: usuario / 2026-11-24 / ejecución del plan backup_destinations_plan.md

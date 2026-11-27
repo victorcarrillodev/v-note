@@ -12,6 +12,7 @@ import { indexPageLinksIn } from "../links/linkIndex";
 import { systemClock } from "../clock";
 import { FORMAT_VERSION } from "./serialize";
 import { insertTags, validateTags, type TagsFile } from "./tags";
+import { insertAssetNotes, validateAssetNotes, type AssetNoteRow } from "./assetNotes";
 import { insertDatabases, validateDatabases, type DbFile, type RemindersFile } from "./databases";
 import type { BackupError, CommitSummary, GitHubClient } from "./githubClient";
 import { parseStyle, styleToText, type PageStyle } from "../pages/style";
@@ -33,7 +34,7 @@ export async function listBackups(client: GitHubClient, branch: string): Promise
   return r.ok ? ok(r.value) : fromBackupError(r.error);
 }
 
-const NEEDED = (p: string) => p === "workspace.json" || p === "page-defaults.json" || p === "trash.json" || p === "reminders.json" || p === "tags.json" || p === "diagram-defaults.json" || p.startsWith("databases/") || p.startsWith("data/") || p.startsWith("assets/");
+const NEEDED = (p: string) => p === "workspace.json" || p === "page-defaults.json" || p === "trash.json" || p === "reminders.json" || p === "tags.json" || p === "asset-notes.json" || p === "diagram-defaults.json" || p.startsWith("databases/") || p.startsWith("data/") || p.startsWith("assets/");
 
 /** Descarga de un commit los archivos necesarios para restaurar (no los Markdown, que son solo de lectura). */
 export async function readBackup(client: GitHubClient, commitSha: string): Promise<Result<Map<string, Uint8Array>>> {
@@ -70,7 +71,7 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "obj
 const styleFrom = (v: unknown): PageStyle => (isRecord(v) ? parseStyle(JSON.stringify(v)) : {});
 
 /** Valida TODO el respaldo antes de escribir nada. Los campos de estilo dañados se descartan sin abortar (RNF-5). */
-export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ diagramDefaults: DiagramDefaults; pageDefaultStyle: PageStyle; pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null; tags: TagsFile | null }>> {
+export async function validateBackup(files: Map<string, Uint8Array>): Promise<Result<{ diagramDefaults: DiagramDefaults; pageDefaultStyle: PageStyle; pages: PageData[]; assets: [string, Uint8Array][]; databases: DbFile[]; reminders: RemindersFile | null; tags: TagsFile | null; assetNotes: AssetNoteRow[] }>> {
   const ws = parseJson(files.get("workspace.json"), "workspace.json");
   if (!ws.ok) return ws;
   if (typeof ws.value.formatVersion !== "number") return invalid("workspace.json no indica la versión del formato");
@@ -138,6 +139,14 @@ export async function validateBackup(files: Map<string, Uint8Array>): Promise<Re
   }
   const tags = validateTags(tagsRaw, new Set(pages.map((p) => p.id)));
   if (!tags.ok) return tags;
+  let notesRaw: unknown;
+  if (files.has("asset-notes.json")) {
+    const r = parseJson(files.get("asset-notes.json"), "asset-notes.json");
+    if (!r.ok) return r;
+    notesRaw = r.value;
+  }
+  const assetNotes = validateAssetNotes(notesRaw);
+  if (!assetNotes.ok) return assetNotes;
   let diagramDefaults: DiagramDefaults = {};
   if (files.has("diagram-defaults.json")) {
     const r = parseJson(files.get("diagram-defaults.json"), "diagram-defaults.json");
@@ -150,7 +159,7 @@ export async function validateBackup(files: Map<string, Uint8Array>): Promise<Re
   if (files.has("page-defaults.json")) {
     try { pageDefaultStyle = styleFrom(JSON.parse(dec.decode(files.get("page-defaults.json")))); } catch { /* dañado: se ignora */ }
   }
-  return ok({ pageDefaultStyle, pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders, tags: tags.value, diagramDefaults });
+  return ok({ pageDefaultStyle, pages, assets, databases: dbs.value.databases, reminders: dbs.value.reminders, tags: tags.value, assetNotes: assetNotes.value, diagramDefaults });
 }
 
 /**
@@ -184,6 +193,7 @@ export async function restoreFromFiles(files: Map<string, Uint8Array>, target: {
       }
       await insertDatabases(tx, v.value.databases, v.value.reminders);
       await insertTags(tx, v.value.tags);
+      await insertAssetNotes(tx, v.value.assetNotes);
       await restoreDiagramDefaults(tx, v.value.diagramDefaults);
       await savePageDefaultStyle(tx, v.value.pageDefaultStyle);
     });

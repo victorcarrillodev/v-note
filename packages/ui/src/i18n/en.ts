@@ -595,7 +595,7 @@ export const en: Widen<typeof esMX> = {
   diagram: { moreOptions: "More options", lineSection: "Line",
     pageLink: { trashed: "The linked page is in the trash.", label: "Link to a page", placeholder: "Search pages…", none: "No pages with that name.", open: "Open linked page", remove: "Remove link", missing: "The linked page no longer exists.", section: "Page" },
     templates: {
-      flow: { slash: "Flowchart", hint: "Start, steps, a decision and end", start: "Start", step: "Step", decision: "Condition?", yes: "Yes", no: "No", doYes: "Do this", doNo: "Do the other", end: "End" },
+      flow: { slash: "Flowchart template", hint: "Start, steps, a decision and end", start: "Start", step: "Step", decision: "Condition?", yes: "Yes", no: "No", doYes: "Do this", doNo: "Do the other", end: "End" },
       er: { slash: "Entity-relationship diagram", hint: "Entities with attributes and 1:N relationships", user: "User", userFields: "id (PK)\nname\nemail", order: "Order", orderFields: "id (PK)\nuser_id (FK)\ndate", product: "Product", productFields: "id (PK)\nname\nprice", places: "places", contains: "contains" },
       uml: { slash: "Class diagram (UML)", hint: "Classes with attributes, methods and relationships", animal: "Animal", animalBody: "name: string\nmakeSound()", dog: "Dog", dogBody: "breed: string\nbark()", owner: "Owner", ownerBody: "name: string\nwalk()", inherits: "inherits from", has: "has" },
     },
@@ -655,6 +655,15 @@ export const en: Widen<typeof esMX> = {
     computing: "Computing the graph…", noLinks: "There are no links between pages yet. Type @ or [[ inside a page to link another one and it will show up here.",
     noMatches: "No page matches these filters.", canvas: "Page graph: {{nodes}} pages and {{edges}} links", nodeList: "Graph pages",
     selection: "Selected page", connections: "{{count}} connection(s)", open: "Open page", inTrash: "(in the trash)",
+  },
+  attachments: {
+    title: "Attachments", preview: "Preview {{name}}", untitled: "Unnamed file", hint: "Drag over the sheet to mark an area. The original file is not modified.",
+    failed: "The file could not be opened.", previous: "Previous", next: "Next", page: "Page {{page}} of {{total}}",
+    noteForArea: "Note for the marked area", noteForPage: "Note for the whole page", add: "Add note", notes: "Notes", remove: "Remove",
+  },
+  clipper: {
+    title: "Clip from the browser", help: "Create a bookmark in your browser and paste this code as its address. Using it on a page copies the title, link and selection; then paste it here.",
+    copy: "Copy bookmark code", copied: "Code copied.", done: "Clip copied: paste it into {{app}} quick capture.", codeLabel: "Bookmark code",
   },
   links: {
     inTrash: "(in the trash)", restore: "Restore", broken: "Broken link: the page no longer exists", backlinks: "Links to this page", noBacklinks: "No page links here.",
