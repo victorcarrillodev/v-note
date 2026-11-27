@@ -4690,6 +4690,7 @@ dependencies = [
 name = "vnote-desktop"
 version = "0.0.2"
 dependencies = [
+ "base64 0.22.1",
  "keyring",
  "percent-encoding",
  "serde",

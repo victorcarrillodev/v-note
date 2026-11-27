@@ -27,3 +27,6 @@ export { SyncedAppearance } from "./design/SyncedAppearance";
 export * from "./design/themes";
 
 export { hideSplash } from "./app/splash";
+export * from "./backup/UnifiedBackupPanel";
+export * from "./backup/unifiedConfig";
+export * from "./backup/RestoreAllPanel";

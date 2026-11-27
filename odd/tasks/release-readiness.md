@@ -32,3 +32,12 @@ test-runner: bun run typecheck && bun run test
 | T-1 | `bun run typecheck && bun run test`; `bun run tauri build --no-bundle` | 3589 pruebas pasan y compila; falta verificar a mano la app con la CSP | 2026-11-25 |
 | T-2 | `bun run test` | Pasa (incluye brand-hardcode) | 2026-11-25 |
 | T-6, T-7 | `bun run typecheck && bun run test`; `bun run test:e2e pageZoomWeb` (Chrome) y capturas al 150 % | Pasan; falta ver en WebKitGTK (escritorio) | 2026-11-25 |
+| T-3 | `bun run test tests/brand-hardcode.test.ts`; `head -3 LICENSE` | Pasa; LICENSE dice «MIT License» | 2026-11-27 |
+| T-5 | Decisión del usuario (S2): sin firma de Windows | Sin código; no aplica prueba | 2026-11-27 |
+| T-7 | `bun run typecheck && bun run test` | typecheck ok; 341 archivos, 3610 pruebas pasan | 2026-11-27 |
+| T-9 | `git grep -nIE "[A-Za-z0-9._-]+@(gmail\|hotmail\|outlook\|proton)"` | Sin coincidencias en archivos versionados | 2026-11-27 |
+| T-10 | `bun run typecheck && bun run test` | typecheck ok; 3610 pruebas pasan (incluye alturas de portada) | 2026-11-27 |
+| T-1 | `bun run tauri build --no-bundle` (apps/desktop); `bun run test tests/desktop-csp.test.ts` | Compila (release, 9 min 40 s); la CSP incluye los hosts de Drive/Dropbox/OAuth; sigue sin verificarse a mano con la app abierta | 2026-11-27 |
+
+## Log
+- L1: "empieza por el punto 1 entonces" (reconstruido; petición original de lanzamiento: actualizaciones, firma, CSP, README/LICENSE/CHANGELOG)

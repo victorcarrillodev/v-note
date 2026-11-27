@@ -5,7 +5,7 @@ import { useFlowPageZoom } from "../page/zoom/useFlowPageZoom";
 import { useTranslation } from "react-i18next";
 import {
   DiagramHistory, SHAPES, addEdge, addNode, centerOnEdgeEnd, connect, deleteEdge, deleteNode, emptyDiagram, fitToView, inflate, isAttached, magnetRadius, moveNode,
-  nearestAnchor, parseDiagram, reconnectEnd, resizeNode, serializeDiagram, setEdgeLabel, setNodeText,
+  nearestAnchor, parseDiagram, reconnectEnd, resizeNode, serializeDiagram, setEdgeLabel, setNodePage, setNodeText,
   applyDefaultsToDiagramParts, copySelection, copyStyle, pasteClip, pasteStyle, setEdgeStyle, setNodeStyle, addControlPoint, connectorPath, curvatureForPoint, insertIndexFor, moveControlPoint, removeControlPoint, resetRoute, routeWithPin, setCurvature, setRoute, setSmooth, setWaypoints,
   DEFAULT_DIAGRAM_HEIGHT, GRID, MIN_SHAPE, addBendAt, bendsOf, moveBend, pointAtPath, removeBend, snapBox, snapPoint,
   type Attached, type DEdge, type DNode, type Diagram, type DiagramDefaults, type Endpoint, type Point, type Route, type Shape,
@@ -26,6 +26,8 @@ import { ShapeGlyph } from "./ShapeGlyph";
 import { Icon } from "../design/Icon";
 import { FIELD_CONTROL, FIELD_LABEL, PANEL_BUTTON } from "./panelStyles";
 import { endLabel, nodeLabel } from "./labels";
+import { NodePageLink } from "./NodePageLink";
+import { useLinks } from "../editor/LinkContext";
 
 const MIN_ZOOM = 0.02, MAX_ZOOM = 4;
 const nodeTypes = { shape: ShapeNode };
@@ -109,10 +111,21 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     const b = snapRef.current ? snapBox({ x, y, w, h }, MIN_SHAPE) : { x, y, w, h };
     commit(moveNode(resizeNode(history.current.current, id, b.w, b.h), id, b.x, b.y));
   }, [commit]);
+  const links = useLinks();
+  // Antes de abrir se comprueba el destino: una página borrada o en la papelera se avisa en el lienzo en vez de abrir un id inexistente.
+  const openPage = useMemo(() => (links ? (id: string) => {
+    void links.resolve(id).then(
+      (target) => {
+        if (target.state === "ok") links.open(id);
+        else setNotice(t(target.state === "trashed" ? "diagram.pageLink.trashed" : "diagram.pageLink.missing"));
+      },
+      () => setNotice(t("diagram.pageLink.missing")), // no se pudo comprobar: se trata como ausente en vez de quedarse mudo
+    );
+  } : undefined), [links, t]);
   const toRf = useCallback((d: Diagram): Node<NodeData>[] => d.nodes.map((n: DNode) => ({
     id: n.id, type: "shape", position: { x: n.x, y: n.y }, width: n.w, height: n.h, style: { width: n.w, height: n.h },
-    data: { shape: n.shape, text: n.text, style: n.style, label: `${shapeName(n.shape)}: ${n.text}`, onResize },
-  })), [shapeName, onResize]);
+    data: { shape: n.shape, text: n.text, style: n.style, label: `${shapeName(n.shape)}: ${n.text}`, onResize, page: n.page, onOpenPage: openPage },
+  })), [shapeName, onResize, openPage]);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<NodeData>>(toRf(initial));
   useEffect(() => {
     const pending = selectAfter.current; selectAfter.current = null;
@@ -393,6 +406,11 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
       children: (
         <div className="w-full border-t border-[var(--c-border)] pt-1.5">
           <input aria-label={t("diagram.text")} placeholder={t("diagram.text")} value={node.text} onChange={(e) => commit(setNodeText(history.current.current, node.id, e.target.value))} className={`w-full ${FIELD_CONTROL}`} />
+          {links?.find && (
+            <div className="mt-1.5">
+              <NodePageLink page={node.page} resolve={links.resolve} find={links.find} open={links.open} onSet={(id) => commit(setNodePage(history.current.current, node.id, id))} />
+            </div>
+          )}
         </div>
       ),
     });

@@ -6,6 +6,8 @@ export type LinkApi = {
   resolve(pageId: string): Promise<LinkTarget>;
   open(pageId: string): void;
   restore(pageId: string): Promise<void>;
+  /** Busca páginas por título (para elegir a cuál enlazar). */
+  find?(query: string): Promise<{ id: string; title: string }[]>;
 };
 const Ctx = createContext<LinkApi | null>(null);
 export const LinkProvider = Ctx.Provider;

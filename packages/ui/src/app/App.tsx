@@ -7,7 +7,7 @@ import { GraphView } from "../graph/GraphView";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { PageNode } from "@vnote/core";
-import type { BackupService, InstanceLockHandle, RestoreSource, Workspace } from "@vnote/core";
+import { AppBackupService, UnifiedBackupController, createDestination, restoreAllFromBackup, type BackupService, type InstanceLockHandle, type RestoreSource, type Workspace } from "@vnote/core";
 import { AppServicesProvider, useServices, type AppServices } from "./services";
 import { UnsplashProvider } from "../unsplash/UnsplashContext";
 import { ReviewView } from "../study/ReviewView";
@@ -45,10 +45,16 @@ import { WorkspaceManagerView } from "../workspaces/WorkspaceManagerView";
 import { WorkspaceController } from "../workspace/controller";
 import { BackupPanel } from "../backup/BackupPanel";
 import { RestoreWizard } from "../restore/RestoreWizard";
+import { UnifiedBackupPanel } from "../backup/UnifiedBackupPanel";
+import { RestoreAllPanel } from "../backup/RestoreAllPanel";
+import { loadUnifiedConfig } from "../backup/unifiedConfig";
+import { GENERATE_CARDS_EVENT } from "../study/generateCards";
+import { RunnerProvider } from "../runner/RunnerContext";
+import { createBrowserRunner } from "../runner/defaultRunner";
 import { useWorkspace } from "../workspace/useController";
 import { hideSplash } from "./splash";
 
-type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "locked" | "reminders" | "graph" | "import" | "tags" | "review";
+type View = "loading" | "page" | "trash" | "workspaces" | "backup" | "restore" | "restoreAll" | "locked" | "reminders" | "graph" | "import" | "tags" | "review";
 type Opened = { workspace: Workspace; controller: WorkspaceController };
 
 export type AppProps = {
@@ -59,11 +65,17 @@ export type AppProps = {
 };
 
 export function App({ services, preferences, renderPageBody }: AppProps) {
+  // Ejecutor de código: el que indique el cascarón, o el de siempre (un Worker creado a demanda). `null` = sin ejecución.
+  const runner = useMemo(() => (services.codeRunner !== undefined ? services.codeRunner : createBrowserRunner()), [services.codeRunner]);
+  useEffect(() => () => { if (services.codeRunner === undefined) (runner as { dispose?: () => void } | null)?.dispose?.(); }, [runner, services.codeRunner]);
+  const body = (
+    <ToastProvider><AppErrorBoundary><Main renderPageBody={renderPageBody} preferences={preferences} /></AppErrorBoundary></ToastProvider>
+  );
   return (
     <ThemeProvider preferences={preferences}>
       <AppServicesProvider services={services}>
         <UnsplashProvider runtime={services.unsplash} preferences={preferences}>
-          <ToastProvider><AppErrorBoundary><Main renderPageBody={renderPageBody} preferences={preferences} /></AppErrorBoundary></ToastProvider>
+          {runner ? <RunnerProvider value={runner}>{body}</RunnerProvider> : body}
         </UnsplashProvider>
       </AppServicesProvider>
     </ThemeProvider>
@@ -73,7 +85,7 @@ export function App({ services, preferences, renderPageBody }: AppProps) {
 function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["renderPageBody"]; preferences: PreferenceStore }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { workspaces, clock, backup, updates, exporter, pickFolder, onOpenTask, revealLocation, instanceLock, reminders, globalShortcut, onCaptured } = useServices();
+  const { workspaces, clock, backup, unifiedBackup, updates, exporter, pickFolder, onOpenTask, revealLocation, instanceLock, reminders, globalShortcut, onCaptured } = useServices();
   const [view, setView] = useState<View>("loading");
   // La pantalla de carga se quita solo cuando la app ya puede usarse (sale de "loading").
   useEffect(() => { if (view !== "loading") hideSplash(); }, [view]);
@@ -102,6 +114,39 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
     return new ReminderCenter({ workspaces, clock, notifier: reminders.notifier, nowLocal });
   }, [reminders, workspaces, clock]);
   useEffect(() => (center && reminders ? reminders.onTick(() => void center.tick()) : undefined), [center, reminders]);
+
+  // Respaldo unificado: un controlador por aplicación; cada escritura en cualquier espacio avisa para el modo continuo.
+  /** Destino según la configuración vigente (se lee de las preferencias en cada uso, para respetar cambios al instante). */
+  const configuredDestination = useCallback(() => {
+    if (!unifiedBackup) return Promise.resolve({ ok: false as const, error: { kind: "INVALID" as const, message: "", retryable: false } });
+    return createDestination(loadUnifiedConfig(preferences).destination, {
+      fetch: unifiedBackup.fetch, keychain: unifiedBackup.keychain,
+      folderPort: () => { const path = loadUnifiedConfig(preferences).folderPath; return path && unifiedBackup.folderPort ? unifiedBackup.folderPort(path) : null; },
+    });
+  }, [unifiedBackup, preferences]);
+  const unified = useMemo(() => {
+    if (!unifiedBackup || !backup) return null;
+    const service = new AppBackupService({ workspaces, assetsFor: backup.assetsFor, clock });
+    return new UnifiedBackupController({ service, clock, destination: configuredDestination });
+  }, [unifiedBackup, backup, workspaces, clock, configuredDestination]);
+  useEffect(() => {
+    if (!unified) return;
+    const saved = loadUnifiedConfig(preferences);
+    if (saved.folderPath) void unifiedBackup?.restoreFolder?.(saved.folderPath).then((ok) => { if (ok) unified.destinationChanged(); });
+    unified.setContinuous(saved.continuous);
+    const off = workspaces.onWrite((id) => unified.notifyChange(id));
+    return () => { off(); unified.dispose(); };
+  }, [unified, unifiedBackup, workspaces, preferences]);
+  const restoreAll = useCallback(async () => {
+    if (!backup) return { error: t("backupAll.unavailable") };
+    const dest = await configuredDestination();
+    if (!dest.ok) return { error: dest.error.message };
+    const files = await dest.value.downloadAll();
+    if (!files.ok) return { error: files.error.message };
+    const r = await restoreAllFromBackup(workspaces, backup.assetsFor, files.value);
+    if (!r.ok) return { error: r.error.message };
+    return { restored: r.value.restored.length, failed: r.value.failed };
+  }, [backup, configuredDestination, workspaces, t]);
 
   const backupServices = useRef(new Map<string, BackupService>());
   const [restoreSource, setRestoreSource] = useState<RestoreSource | null>(null);
@@ -140,6 +185,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
     "page.new": () => { if (opened) { void opened.controller.createPage(null).then(() => setView("page")); } },
     "palette.open": () => { if (opened) setPaletteOpen(true); },
     "capture.open": () => setCaptureOpen(true),
+    "cards.generate": () => { if (opened && view === "page") window.dispatchEvent(new Event(GENERATE_CARDS_EVENT)); },
     "theme.toggle": () => theme.setMode(theme.resolved === "dark" ? "light" : "dark"),
   };
   useEffect(() => {
@@ -317,7 +363,16 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
       {view === "trash" && opened && <TrashView controller={opened.controller} />}
       {view === "tags" && opened && <TagsView controller={opened.controller} onOpenPage={(id) => { void opened.controller.select(id); setView("page"); }} />}
       {view === "backup" && opened && backup && (
-        <BackupPanelFor ws={opened.workspace} workspaces={workspaces} serviceFor={serviceFor} platform={backup.platform} />
+        <>
+          {unified && unifiedBackup && (
+            <UnifiedBackupPanel controller={unified} preferences={preferences} keychain={unifiedBackup.keychain} fetch={unifiedBackup.fetch}
+              pickFolder={unifiedBackup.pickFolder} oauth={unifiedBackup.oauth} onRestoreAll={() => setView("restoreAll")} />
+          )}
+          <BackupPanelFor ws={opened.workspace} workspaces={workspaces} serviceFor={serviceFor} platform={backup.platform} />
+        </>
+      )}
+      {view === "restoreAll" && unified && (
+        <RestoreAllPanel restore={restoreAll} onDone={() => setView("workspaces")} onCancel={() => setView("backup")} />
       )}
       {view === "restore" && backup && restoreSource && (
         <RestoreWizard

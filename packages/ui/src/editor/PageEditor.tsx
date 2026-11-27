@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TableOfContents, type JumpBehavior } from "../page/TableOfContents";
 import { extractHeadings, type Heading } from "@vnote/core";
 import { useActiveHeading } from "../page/useActiveHeading";
@@ -33,6 +33,8 @@ import { handlePaste } from "./pasteHandler";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import { codeExtension } from "./code/codeExtension";
+import { GENERATE_CARDS_EVENT, cardsToInsert } from "../study/generateCards";
+import { useToasts } from "../feedback/ToastContext";
 import "./editor.css";
 import "./underline.css";
 
@@ -82,6 +84,7 @@ export function PageEditor({ controller, pageId, assets }: { controller: Workspa
     resolve: (id) => controller.resolveLink(id),
     open: (id) => void controller.select(id),
     restore: async (id) => { await controller.restore(id); },
+    find: (query) => controller.findPages(query),
   }), [controller]);
 
   // Estilos predeterminados de los diagramas: viven en la base de este espacio de trabajo.
@@ -191,6 +194,20 @@ function Editor({ session, locked, handlers, findPages }: { session: DocSession;
       onItemClick: () => editor.insertInlineContent([{ type: "mention", props: { pageId: p.id, title: p.title } }, " "]),
     }));
   };
+  // Generar tarjetas (atajo, menú «/» o paleta): de la selección, o de toda la página si no hay selección. No repite preguntas que ya existen.
+  const toasts = useToasts();
+  const generateCards = useCallback(() => {
+    const selected = editor.getSelection()?.blocks;
+    const scope = selected && selected.length > 0 ? selected : editor.document;
+    const cards = cardsToInsert(scope, editor.document);
+    if (cards.length === 0) { toasts.add({ key: "cards-generated", tone: "info", message: t("study.cards.none") }); return; }
+    editor.insertBlocks(cards, scope[scope.length - 1]!, "after");
+    toasts.add({ key: "cards-generated", tone: "success", message: t("study.cards.created", { count: cards.length }) });
+  }, [editor, toasts, t]);
+  useEffect(() => {
+    window.addEventListener(GENERATE_CARDS_EVENT, generateCards);
+    return () => window.removeEventListener(GENERATE_CARDS_EVENT, generateCards);
+  }, [generateCards]);
   const items = async (query: string) => buildSlashItems(editor, t, query);
   // Barra de formato: la de siempre, con «Convertir en» ampliado a los bloques propios y «Subrayado con estilo» en el lugar del subrayado simple (Ctrl+U sigue funcionando).
   const formattingItems = useMemo(() => [...getFormattingToolbarItems(buildBlockTypeItems(editor, t)).filter((i) => i.key !== "underlineStyleButton"), <UnderlineButton key="styledUnderlineButton" />], [editor, t]);

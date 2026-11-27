@@ -3,6 +3,7 @@ import * as Y from "yjs";
 import type { Block, Inline, InlineText, Styles, TableContent } from "./types";
 
 const MENTION = "mention";
+const MATH = "math";
 
 const cleanProps = (attrs: Record<string, unknown>) => {
   const out: Record<string, unknown> = {};
@@ -42,7 +43,11 @@ function inlineOf(node: Y.XmlElement): Inline[] {
   const items: Inline[] = [];
   for (const k of node.toArray()) {
     if (k instanceof Y.XmlText) items.push(...inlineFromText(k));
-    else if (isElement(k, MENTION)) items.push({ type: "mention", pageId: String(k.getAttribute("pageId") ?? ""), title: String(k.getAttribute("title") ?? "") });
+    else if (k instanceof Y.XmlElement) {
+      const name = k.nodeName.toLowerCase();
+      if (name === MATH) items.push({ type: "math", formula: String(k.getAttribute("formula") ?? "") });
+      else if (name === MENTION) items.push({ type: "mention", pageId: String(k.getAttribute("pageId") ?? ""), title: String(k.getAttribute("title") ?? "") });
+    }
   }
   return items;
 }

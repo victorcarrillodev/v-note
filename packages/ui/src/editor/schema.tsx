@@ -12,6 +12,7 @@ import { MermaidView } from "../study/MermaidBlock";
 import { FlashcardBlockView } from "../study/FlashcardBlock";
 import { DiagramEditor } from "../diagram/DiagramEditor";
 import { MentionView } from "./MentionView";
+import { InlineMathView } from "../study/InlineMath";
 import { MatrixEditor, TimelineEditor, TreeEditor } from "../diagram/Organizers";
 import { MindMapEditor } from "../diagram/MindMapEditor";
 import { useToc } from "./TocContext";
@@ -163,6 +164,12 @@ export const mentionInline = createReactInlineContentSpec(
   { render: ({ inlineContent }) => <MentionView pageId={inlineContent.props.pageId} title={inlineContent.props.title} /> },
 );
 
+/** Ecuación en línea (`$…$`): la fórmula en LaTeX, compuesta con KaTeX dentro del texto. */
+export const mathInline = createReactInlineContentSpec(
+  { type: "math", propSchema: { formula: { default: "" } }, content: "none" },
+  { render: ({ inlineContent, updateInlineContent, editor }) => <InlineMathView formula={inlineContent.props.formula} editable={editor.isEditable} onChange={(formula) => updateInlineContent({ type: "math", props: { formula } })} /> },
+);
+
 /** Vista del bloque «Índice» (RF-7.3 a RF-7.6): la lista viva de encabezados de la página, con un enlace a cada uno. */
 export function TocBlockView() {
   const { t } = useTranslation();
@@ -219,12 +226,12 @@ export const mermaidBlock = createReactBlockSpec(
   { render: ({ block, editor }) => <MermaidView code={block.props.code} editable={editor.isEditable} onChange={(code) => editor.updateBlock(block, { props: { code } })} /> },
 );
 export const flashcardBlock = createReactBlockSpec(
-  { type: "flashcard", propSchema: { front: { default: "" }, back: { default: "" }, due: { default: "" }, interval: { default: 0 }, ease: { default: 2.5 }, reps: { default: 0 } }, content: "none" },
+  { type: "flashcard", propSchema: { front: { default: "" }, back: { default: "" }, due: { default: "" }, interval: { default: 0 }, ease: { default: 2.5 }, reps: { default: 0 }, last: { default: "" }, lapses: { default: 0 }, reviews: { default: 0 }, days: { default: "" } }, content: "none" },
   { render: ({ block, editor }) => <FlashcardBlockView front={block.props.front} back={block.props.back} due={block.props.due} editable={editor.isEditable} onChange={(patch) => editor.updateBlock(block, { props: patch })} /> },
 );
 
 export const schema = BlockNoteSchema.create({
-  inlineContentSpecs: { ...defaultInlineContentSpecs, mention: mentionInline },
+  inlineContentSpecs: { ...defaultInlineContentSpecs, mention: mentionInline, math: mathInline },
   styleSpecs: { ...defaultStyleSpecs, underlineStyle },
   blockSpecs: { ...defaultBlockSpecs, equation: equationBlock(), mermaid: mermaidBlock(), flashcard: flashcardBlock(), codeBlock: codeBlock(), callout: calloutBlock(), linkCard: linkCardBlock(), task: taskBlock(), databaseView: databaseViewBlock(), diagram: diagramBlock(), mindmap: mindmapBlock(), orgchart: orgchartBlock(), timeline: timelineBlock(), matrix: matrixBlock(), toc: tocBlock(), gallery: galleryBlock() },
 });

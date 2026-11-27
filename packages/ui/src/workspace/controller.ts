@@ -120,10 +120,10 @@ export class WorkspaceController {
   }
 
   /** Exporta la página (y, si se pide, sus hijas) a un documento HTML autocontenido (RF-24). Se puede cancelar y informa el avance. */
-  async exportPages(pageId: string, o: { withChildren: boolean; viewId?: string; assets: AssetStore; signal?: AbortSignal; onProgress?: (done: number, total: number) => void; palette?: ExportPalette }): Promise<Result<ExportOutcome>> {
+  async exportPages(pageId: string, o: { withChildren: boolean; viewId?: string; assets: AssetStore; signal?: AbortSignal; onProgress?: (done: number, total: number) => void; palette?: ExportPalette; mermaid?: (code: string) => Promise<string | null> }): Promise<Result<ExportOutcome>> {
     const pages = await collectExportPages(this.store, pageId, { withChildren: o.withChildren, ...(o.viewId ? { viewId: o.viewId } : {}) });
     if (!pages.ok) return pages;
-    return ok(await exportHtml({ pages: pages.value }, { assets: o.assets, databaseView: databaseViewProvider(this.store, this.clock) }, { ...(o.signal ? { signal: o.signal } : {}), ...(o.onProgress ? { onProgress: o.onProgress } : {}), ...(o.palette ? { palette: o.palette } : {}) }));
+    return ok(await exportHtml({ pages: pages.value }, { assets: o.assets, databaseView: databaseViewProvider(this.store, this.clock), ...(o.mermaid ? { mermaid: o.mermaid } : {}) }, { ...(o.signal ? { signal: o.signal } : {}), ...(o.onProgress ? { onProgress: o.onProgress } : {}), ...(o.palette ? { palette: o.palette } : {}) }));
   }
 
   /** Las vistas que se pueden elegir al exportar una página de base de datos o tablero (vacío si es una nota). */

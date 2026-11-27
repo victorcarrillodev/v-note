@@ -10,13 +10,15 @@ import { sortedEvents, parseTimeline } from "../diagrams/timeline";
 import { parseTree, type TNode } from "../diagrams/tree";
 import { hasTocBlock, tocEntries, type TocEntry } from "../pages/toc";
 
-const esc = (s: string) => s.replace(/([\\`*_#[\]])/g, "\\$1");
+// `$` también se escapa: un «$» literal no debe reimportarse como ecuación en línea.
+const esc = (s: string) => s.replace(/([\\`*_#[\]$])/g, "\\$1");
 
 function inline(items: Inline[]): string {
   return items
     .map((i) => {
       if (i.type === "link") return `[${inline(i.content)}](${i.href})`;
       if (i.type === "mention") return `[${esc(i.title)}](page:${i.pageId})`;
+      if (i.type === "math") return `$${i.formula}$`;
       const st = i.styles;
       if (st.code) return `\`${i.text}\``;
       let t = esc(i.text);

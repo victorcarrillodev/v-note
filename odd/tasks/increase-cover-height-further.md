@@ -1,6 +1,6 @@
 ---
 feature: increase-cover-height-further
-status: in-progress
+status: superseded
 updated: 2026-11-24
 ---
 ## Specs
@@ -23,8 +23,8 @@ updated: 2026-11-24
 2. Ejecutar `bun run typecheck` y `bun run test` para validar.
 
 ## Evidencia
-- [ ] Compilación exitosa.
-- [ ] Tests exitosos.
+- [x] Compilación exitosa. (reemplazada: ver release-readiness T-10; 2026-11-27 typecheck ok y 3610 pruebas pasan)
+- [x] Tests exitosos. (reemplazada: ver release-readiness T-10; 2026-11-27 typecheck ok y 3610 pruebas pasan)
 
 ## Siguiente paso
 - Verificar visualmente en modo desarrollo que la portada tiene la nueva altura más alta.
@@ -32,3 +32,4 @@ updated: 2026-11-24
 ## Log
 - L1: "(petición literal no recuperada: no consta en Engram ni en la ficha)"
 - L2: 2026-11-24, formato de la ficha completado con autorización del usuario; el contenido previo no se ha reverificado.
+- L3: 2026-11-27 cerrada como reemplazada: alturas vigentes 180/260/340 px (release-readiness T-10), `bun run typecheck` y `bun run test` pasan (3610).

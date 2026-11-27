@@ -1,6 +1,6 @@
 // Catálogo de acciones con atajos reasignables y detección de conflictos (RF-20). Lógica pura: sin DOM.
 
-export type ActionId = "palette.open" | "page.new" | "capture.open" | "search.open" | "edit.undo" | "edit.redo" | "theme.toggle" | "sidebar.toggle";
+export type ActionId = "palette.open" | "page.new" | "capture.open" | "search.open" | "edit.undo" | "edit.redo" | "theme.toggle" | "sidebar.toggle" | "cards.generate";
 export type Action = { id: ActionId; labelKey: string; defaultCombo: string };
 /** Atajo por acción; `null` = la acción se quedó sin atajo. */
 export type Bindings = Record<string, string | null>;
@@ -14,6 +14,7 @@ export const ACTIONS: readonly Action[] = [
   { id: "edit.redo", labelKey: "shortcuts.redo", defaultCombo: "Mod+Shift+Z" },
   { id: "theme.toggle", labelKey: "shortcuts.themeToggle", defaultCombo: "Mod+Alt+T" },
   { id: "sidebar.toggle", labelKey: "shortcuts.sidebarToggle", defaultCombo: "Mod+\\" },
+  { id: "cards.generate", labelKey: "shortcuts.cardsGenerate", defaultCombo: "Mod+Alt+G" },
 ];
 
 const MOD_ORDER = ["Mod", "Alt", "Shift"] as const;

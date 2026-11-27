@@ -6,6 +6,9 @@ import { CODE_LANGUAGES, findLanguage } from "./code/languages";
 import { CODE_THEMES, useCodeTheme, type CodeThemeId } from "./code/codeTheme";
 import "./code/code.css";
 import { Dropdown } from "../components/ChoiceMenu";
+import { RunOutput } from "../runner/RunOutput";
+import { runnableLanguage, useRunner } from "../runner/RunnerContext";
+import type { RunPhase, RunResult } from "../runner/types";
 
 export { CODE_LANGUAGES };
 
@@ -58,6 +61,31 @@ export function CodeBlockView({ block, editor, contentRef }: { block: CodeBlock;
     timer.current = setTimeout(() => setCopied(false), 1500);
   };
 
+  // Ejecución (JavaScript y Python): la salida vive solo en pantalla, no en el documento.
+  const runner = useRunner();
+  const [phase, setPhase] = useState<RunPhase | "idle">("idle");
+  const [output, setOutput] = useState<RunResult | null>(null);
+  const runnable = runnableLanguage(block.props.language);
+  const abort = useRef<AbortController | null>(null);
+  useEffect(() => () => abort.current?.abort(), []); // al desmontar, su ejecución no sigue ocupando la cola
+  const run = async () => {
+    const code = codeRef.current?.textContent ?? "";
+    if (!runner || !runnable || code.trim() === "") return;
+    const mine = new AbortController();
+    abort.current = mine;
+    setOutput(null);
+    setPhase("running");
+    let result: RunResult;
+    try {
+      result = await runner.run(runnable, code, { onPhase: setPhase, signal: mine.signal });
+    } catch (e) {
+      result = { ok: false, stdout: "", stderr: "", ms: 0, errorKey: "start", error: e instanceof Error ? e.message : String(e) };
+    }
+    if (abort.current === mine) abort.current = null;
+    setPhase("idle");
+    setOutput(result);
+  };
+
   const found = findLanguage(block.props.language);
   const known = found !== undefined;
   const language = found ? found.value : block.props.language || "text";
@@ -85,19 +113,28 @@ export function CodeBlockView({ block, editor, contentRef }: { block: CodeBlock;
             {CODE_THEMES.map((th) => <option key={th.value} value={th.value}>{th.label}</option>)}
           </Dropdown>
         </div>
-        <button
-          data-copy-code
-          type="button"
-          aria-label={t("editor.copyCode")}
-          onClick={() => void copy()}
-          className="rounded-[var(--radius-sm)] px-2 text-[length:var(--text-note-size)] opacity-80 hover:bg-[var(--c-raised)] hover:opacity-100"
-        >
-          {copied ? t("editor.copied") : t("editor.copy")}
-        </button>
+        <div className="flex items-center gap-2">
+          {runner && runnable && (phase === "idle"
+            ? <button type="button" data-run-code aria-label={t("editor.run.run")} onClick={() => void run()} className="rounded-[var(--radius-sm)] px-2 text-[length:var(--text-note-size)] font-semibold text-[var(--c-accent)] hover:bg-[var(--c-raised)]">{t("editor.run.run")}</button>
+            : <>
+                <span role="status" className="text-[length:var(--text-note-size)] text-[var(--c-text-muted)]">{phase === "loading" ? t("editor.run.loading", { language: findLanguage(runnable)?.label ?? runnable }) : t("editor.run.running")}</span>
+                <button type="button" aria-label={t("editor.run.stop")} onClick={() => abort.current?.abort()} className="rounded-[var(--radius-sm)] px-2 text-[length:var(--text-note-size)] hover:bg-[var(--c-raised)]">{t("editor.run.stop")}</button>
+              </>)}
+          <button
+            data-copy-code
+            type="button"
+            aria-label={t("editor.copyCode")}
+            onClick={() => void copy()}
+            className="rounded-[var(--radius-sm)] px-2 text-[length:var(--text-note-size)] opacity-80 hover:bg-[var(--c-raised)] hover:opacity-100"
+          >
+            {copied ? t("editor.copied") : t("editor.copy")}
+          </button>
+        </div>
       </div>
       <pre className="m-0 overflow-x-auto p-3 text-[length:var(--text-ui-small-size)] leading-[var(--text-ui-small-line)]">
         <code ref={attach} data-code-content spellCheck={false} className="block whitespace-pre font-[family-name:var(--font-mono)] " />
       </pre>
+      {output && <RunOutput result={output} onClear={() => setOutput(null)} />}
     </div>
   );
 }

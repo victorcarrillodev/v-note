@@ -2,6 +2,7 @@
 //! Valores en JSON: enteros y reales como números, texto como cadenas, nulos como `null` y binarios como `{"$blob": "<base64>"}`.
 
 pub mod assets;
+pub mod backup_fs;
 pub mod fsutil;
 pub use assets::AssetDir;
 

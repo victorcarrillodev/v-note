@@ -1,10 +1,11 @@
 import { filterSuggestionItems, insertOrUpdateBlockForSlashMenu, type BlockNoteEditor } from "@blocknote/core";
 import { getDefaultReactSlashMenuItems, type DefaultReactSuggestionItem } from "@blocknote/react";
-import { serializeMatrix, template2x2 } from "@vnote/core";
+import { DIAGRAM_TEMPLATES, diagramTemplate, serializeDiagram, serializeMatrix, template2x2 } from "@vnote/core";
 import type { ReactElement } from "react";
 import { Icon } from "../design/Icon";
 import type { IconName } from "../design/iconMap";
 
+import { GENERATE_CARDS_EVENT } from "../study/generateCards";
 import { TEMPLATE_IDS, templateBlocks, type TemplateId } from "../study/templates";
 
 type T = (key: string) => string;
@@ -27,12 +28,15 @@ function customItems(editor: BlockNoteEditor<any, any, any>, t: T): Item[] {
   });
   return [
     mk(t("study.equation.slash"), t("study.equation.hint"), ["ecuacion", "ecuación", "formula", "fórmula", "latex", "katex", "math"], "equation", at("equation")),
+    mk(t("study.math.slash"), t("study.math.hint"), ["ecuacion en linea", "ecuación en línea", "inline", "formula en linea", "latex", "$"], "equation", () => (editor as BlockNoteEditor<any, any, any>).insertInlineContent([{ type: "math", props: { formula: "" } }, " "] as never)),
+    mk(t("study.cards.slash"), t("study.cards.hint"), ["generar tarjetas", "tarjetas", "flashcards", "anki", "repaso"], "flashcard", () => { window.dispatchEvent(new Event(GENERATE_CARDS_EVENT)); }),
     mk(t("study.mermaid.slash"), t("study.mermaid.hint"), ["mermaid", "diagrama de texto", "secuencia", "uml"], "graph", at("mermaid")),
     mk(t("study.card.slash"), t("study.card.hint"), ["flashcard", "tarjeta", "repaso", "anki"], "flashcard", at("flashcard")),
     mk(t("editor.callout"), t("editor.calloutHint"), ["aviso", "callout", "nota"], "tip", at("callout")),
     mk(t("task.slash"), t("task.slashHint"), ["tarea", "task", "pendiente", "recordatorio", "todo"], "task", at("task")),
     mk(t("embed.slash"), t("embed.slashHint"), ["base", "database", "tabla", "vista", "tablero"], "database", at("databaseView")),
     mk(t("diagram.slash"), t("diagram.slashHint"), ["diagrama", "flujo", "flowchart", "diagram"], "graph", at("diagram")),
+    ...DIAGRAM_TEMPLATES.map((id) => mk(t(`diagram.templates.${id}.slash`), t(`diagram.templates.${id}.hint`), ["plantilla", "template", ...(id === "flow" ? ["flujo", "flowchart"] : id === "er" ? ["er", "entidad", "relacion", "base de datos"] : ["uml", "clases", "clase"])], "graph", at("diagram", { data: serializeDiagram(diagramTemplate(id, t)) }))),
     mk(t("organizer.mindmap.slash"), t("organizer.mindmap.hint"), ["mapa", "mental", "mindmap", "ideas"], "graph", at("mindmap")),
     mk(t("organizer.orgchart.slash"), t("organizer.orgchart.hint"), ["organigrama", "orgchart", "jerarquia"], "graph", at("orgchart")),
     mk(t("organizer.timeline.slash"), t("organizer.timeline.hint"), ["linea", "tiempo", "timeline", "cronologia"], "time", at("timeline")),

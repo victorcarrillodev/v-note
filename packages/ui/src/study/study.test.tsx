@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithI18n } from "../../tests/renderWithI18n";
 import { makeController } from "../../tests/withController";
@@ -50,7 +50,7 @@ describe("plantillas", () => {
 });
 
 describe("repaso", () => {
-  const card = (id: string, due = ""): StudyCard => ({ blockId: id, pageId: "p", pageTitle: "Pilas", front: `P-${id}`, back: `R-${id}`, due, interval: 0, ease: 2.5, reps: 0 });
+  const card = (id: string, due = ""): StudyCard => ({ blockId: id, pageId: "p", pageTitle: "Pilas", front: `P-${id}`, back: `R-${id}`, due, interval: 0, ease: 2.5, reps: 0, last: "", lapses: 0, reviews: 0, days: "" });
 
   it("recorre las tarjetas de hoy y guarda cada calificación; «Otra vez» la repite", async () => {
     const saved: [string, string][] = [];
@@ -79,7 +79,71 @@ describe("repaso", () => {
     await controller.refresh();
     const [found] = await controller.listFlashcards();
     expect([found?.front, found?.pageTitle]).toEqual(["¿FIFO?", "Estudio"]);
-    expect(await controller.saveFlashcard(page.value.id, "c1", { due: "2026-03-11", interval: 1, ease: 2.5, reps: 1 })).toBe(true);
+    expect(await controller.saveFlashcard(page.value.id, "c1", { due: "2026-03-11", interval: 1, ease: 2.5, reps: 1, last: "2026-03-10", lapses: 0, reviews: 1, days: "2026-03-10" })).toBe(true);
     expect((await controller.listFlashcards())[0]).toMatchObject({ due: "2026-03-11", interval: 1, reps: 1 });
+  });
+});
+
+describe("estadísticas de repaso (study-features-2 T-5)", () => {
+  const mk = (id: string, over: Partial<StudyCard> = {}): StudyCard => ({ blockId: id, pageId: "p", pageTitle: "Pilas", front: `P-${id}`, back: `R-${id}`, due: "", interval: 0, ease: 2.5, reps: 0, last: "", lapses: 0, reviews: 0, days: "", ...over });
+  /** Valor exacto de una estadística (el texto del `dd`, sin la etiqueta). */
+  const stat = (name: string) => within(screen.getByRole("group", { name: "Estadísticas de repaso" })).getByText(name).nextElementSibling!.textContent;
+
+  it("muestra pendientes, nuevas, dominadas y repasadas hoy, y se actualiza al calificar", async () => {
+    const cards = [mk("a"), mk("b", { due: "2026-03-01", interval: 3, reps: 2, last: "2026-02-26" }), mk("c", { due: "2026-05-01", interval: 40, reps: 6, last: "2026-03-01" })];
+    const controller = { listFlashcards: async () => cards, saveFlashcard: async () => true };
+    await renderWithI18n(<ReviewView controller={controller} now={now} onOpenPage={() => {}} />);
+    const user = userEvent.setup();
+    await screen.findByText("P-a");
+    expect(stat("Pendientes hoy")).toBe("2");
+    expect(stat("Nuevas")).toBe("1");
+    expect(stat("Dominadas")).toBe("1");
+    expect(stat("Repasadas hoy")).toBe("0");
+    await user.click(screen.getByRole("button", { name: "Mostrar respuesta" }));
+    await user.click(screen.getByRole("button", { name: "Bien" }));
+    await screen.findByText("P-b");
+    expect(stat("Pendientes hoy")).toBe("1");
+    expect(stat("Repasadas hoy")).toBe("1");
+    expect(stat("Retención estimada")).toBe("100 %");
+  });
+
+  it("sin repasos previos la retención aparece como «—» y «Otra vez» cuenta un olvido", async () => {
+    const controller = { listFlashcards: async () => [mk("a")], saveFlashcard: async () => true };
+    await renderWithI18n(<ReviewView controller={controller} now={now} onOpenPage={() => {}} />);
+    const user = userEvent.setup();
+    await screen.findByText("P-a");
+    expect(stat("Retención estimada")).toBe("—");
+    await user.click(screen.getByRole("button", { name: "Mostrar respuesta" }));
+    await user.click(screen.getByRole("button", { name: "Otra vez" }));
+    expect(stat("Olvidos")).toBe("1");
+  });
+
+  it("muestra la racha diaria y la mejor racha, y al repasar hoy la racha crece", async () => {
+    const cards = [mk("a", { due: "2026-03-01", interval: 1, reps: 1, last: "2026-03-09", days: "2026-03-08,2026-03-09" })];
+    const controller = { listFlashcards: async () => cards, saveFlashcard: async () => true };
+    await renderWithI18n(<ReviewView controller={controller} now={now} onOpenPage={() => {}} />);
+    const user = userEvent.setup();
+    await screen.findByText("P-a");
+    expect(stat("Racha")).toBe("2 días");
+    expect(stat("Mejor racha")).toBe("2 días");
+    await user.click(screen.getByRole("button", { name: "Mostrar respuesta" }));
+    await user.click(screen.getByRole("button", { name: "Bien" }));
+    expect(stat("Racha")).toBe("3 días");
+    expect(stat("Mejor racha")).toBe("3 días");
+  });
+
+  it("sin días de repaso la racha es 0 días", async () => {
+    const controller = { listFlashcards: async () => [mk("a")], saveFlashcard: async () => true };
+    await renderWithI18n(<ReviewView controller={controller} now={now} onOpenPage={() => {}} />);
+    await screen.findByText("P-a");
+    expect(stat("Racha")).toBe("0 días");
+  });
+
+  it("también se ven cuando ya no quedan tarjetas por repasar", async () => {
+    const controller = { listFlashcards: async () => [mk("x", { due: "2026-06-01", interval: 25, reps: 4, last: "2026-03-10" })], saveFlashcard: async () => true };
+    await renderWithI18n(<ReviewView controller={controller} now={now} onOpenPage={() => {}} />);
+    expect(await screen.findByText("No quedan tarjetas por repasar hoy.")).toBeInTheDocument();
+    expect(stat("Dominadas")).toBe("1");
+    expect(stat("Repasadas hoy")).toBe("1");
   });
 });

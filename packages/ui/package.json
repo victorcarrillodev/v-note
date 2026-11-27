@@ -48,6 +48,8 @@
     "prosemirror-model": "1.25.12",
     "prosemirror-state": "1.4.4",
     "prosemirror-view": "1.42.8",
+    "pyodide": "314.0.8",
+    "quickjs-emscripten": "0.32.0",
     "react": "^19",
     "react-dom": "^19",
     "react-i18next": "^16",

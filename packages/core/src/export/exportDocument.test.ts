@@ -144,3 +144,79 @@ describe("vista de base de datos elegida (T-406)", () => {
     expect(r.status === "done" && r.html).toContain("<td>Fila 1</td>");
   });
 });
+
+describe("diagramas Mermaid dibujados (study-features-2 T-2)", () => {
+  const mer = (id: string, code: string): Block => ({ id, type: "mermaid", props: { code }, content: undefined, children: [] });
+  const run = (blocks: Block[], mermaid?: (code: string) => Promise<string | null>) =>
+    exportHtml({ pages: [page("1", "Doc", 0, blocks)] }, { assets: new MemoryAssetStore(), ...(mermaid ? { mermaid } : {}) });
+
+  it("con un dibujante, el diagrama sale como figura SVG y no como código", async () => {
+    const calls: string[] = [];
+    const r = await run([mer("m1", "graph TD\nA-->B")], async (code) => { calls.push(code); return '<svg viewBox="0 0 10 10"><rect width="10" height="10"/></svg>'; });
+    if (r.status !== "done") throw new Error("done");
+    expect(calls).toEqual(["graph TD\nA-->B"]);
+    expect(r.html).toContain('<figure class="mermaid"><svg');
+    expect(r.html).not.toContain("language-mermaid");
+  });
+  it("sin dibujante o si falla, conserva el código y lo anota en el informe", async () => {
+    const plain = await run([mer("m1", "graph TD\nA-->B")]);
+    if (plain.status !== "done") throw new Error("done");
+    expect(plain.html).toContain('class="language-mermaid"');
+    const failed = await run([mer("m1", "graph TD\nA-->B")], async () => { throw new Error("sintaxis"); });
+    if (failed.status !== "done") throw new Error("done");
+    expect(failed.html).toContain('class="language-mermaid"');
+    expect(failed.report.warnings.some((w) => /Mermaid/.test(w))).toBe(true);
+  });
+  it("rechaza un SVG con scripts, controladores de eventos o javascript: y deja el código", async () => {
+    for (const bad of ['<svg><script>alert(1)</script></svg>', '<svg onload="x()"></svg>', '<svg><a href="javascript:x()"></a></svg>', "<svg><foreignObject><iframe src=a></iframe></foreignObject></svg>"]) {
+      const r = await run([mer("m1", "A-->B")], async () => bad);
+      if (r.status !== "done") throw new Error("done");
+      expect(r.html).not.toContain(bad);
+      expect(r.html).toContain('class="language-mermaid"');
+    }
+  });
+  it("dibuja cada diagrama repetido una sola vez", async () => {
+    let n = 0;
+    await run([mer("a", "X-->Y"), mer("b", "X-->Y")], async () => { n++; return "<svg></svg>"; });
+    expect(n).toBe(1);
+  });
+});
+
+describe("SVG ajeno en el documento exportado (revisión de riesgo)", () => {
+  const mer = (code: string): Block => ({ id: "m", type: "mermaid", props: { code }, content: undefined, children: [] });
+  const html = async (svg: string) => {
+    const r = await exportHtml({ pages: [page("1", "Doc", 0, [mer("A-->B")])] }, { assets: new MemoryAssetStore(), mermaid: async () => svg });
+    if (r.status !== "done") throw new Error("done");
+    return r.html;
+  };
+
+  it("rechaza los desvíos clásicos: entidades, separadores raros, <use>/<image> externos, estilos con red, enlaces y animaciones", async () => {
+    const bad = [
+      '<svg><a href="jav&#x61;script:alert(1)"><text>x</text></a></svg>',
+      '<svg><a href="&#106;avascript:alert(1)">x</a></svg>',
+      '<svg><image/onerror=alert(1) href="x"/></svg>',
+      '<svg><rect/onclick=alert(1) /></svg>',
+      '<svg><use href="https://evil.example/s.svg#a"/></svg>',
+      '<svg><use xlink:href="//evil.example/s.svg#a"/></svg>',
+      '<svg><image href="https://evil.example/pixel.png"/></svg>',
+      '<svg><style>@import url(https://evil.example/x.css);</style></svg>',
+      '<svg><style>.a{background:url(https://evil.example/p.png)}</style></svg>',
+      '<svg><a xlink:href="https://evil.example">x</a></svg>',
+      '<svg><set attributeName="href" to="javascript:alert(1)"/></svg>',
+      '<svg><animate attributeName="href" values="javascript:alert(1)"/></svg>',
+      '<svg><foreignObject><div>x</div></foreignObject></svg>',
+      '<svg><script>alert(1)</script></svg>',
+      '<svg><iframe src="x"></iframe></svg>',
+      '<svg><rect onload="x()"/></svg>',
+      "<svg><a href='JaVaScRiPt:alert(1)'>x</a></svg>",
+      '<svg><style>.a{background:u\\72l(https://evil.example/p.png)}</style></svg>',
+      '<svg><rect style="fill:u\\72l(https://evil.example/p.png)"/></svg>',
+    ];
+    for (const svg of bad) { const out = await html(svg); expect(out, svg).toContain('class="language-mermaid"'); expect(out, svg).not.toContain("evil.example"); }
+  });
+
+  it("acepta un SVG tipo Mermaid: estilos con url(#…), marcadores, referencias internas y texto con entidades de texto", async () => {
+    const good = '<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg"><style>.n{fill:#eee;stroke:#333}.m{marker-end:url(#arrow)}</style><defs><marker id="arrow"><path d="M0,0L5,2.5L0,5z"/></marker></defs><g class="n"><rect width="40" height="20"/><text x="5" y="12">A &amp; B &lt; C</text></g><use href="#arrow"/></svg>';
+    expect(await html(good)).toContain('<figure class="mermaid">');
+  });
+});

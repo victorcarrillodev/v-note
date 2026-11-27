@@ -1,6 +1,6 @@
 ---
 feature: icon-margin
-status: in-progress
+status: done
 updated: 2026-11-24
 ---
 ## Specs
@@ -20,7 +20,7 @@ updated: 2026-11-24
 - Todas las pruebas unitarias relacionadas (`pageHeaderCard.test.tsx`) pasan.
 
 ## Tareas
-- [ ] T-1 (S1) Estado sin reverificar: ver «Detalle»
+- [x] T-1 (S1) Ícono con margen y sin desborde (el cabecero actual lo resuelve con overflow-hidden y rounded-md). Risk: none
 
 ## Detalle
 - Modificado `packages/ui/src/page/icon/PageIcon.tsx` para usar `rounded-sm` en lugar de `rounded-[var(--radius-base)]`.
@@ -29,6 +29,10 @@ updated: 2026-11-24
 - Actualizado clase del `descriptionField` para incluir `mt-2` (opcional ajuste visual).
 
 ## Evidencia
+| Tarea | Comando / comprobación | Resultado observado | Fecha |
+|---|---|---|---|
+| T-1 | `bun run test packages/ui/src/page/pageHeaderCard.test.tsx` | 35 pruebas pasan | 2026-11-27 |
+
 - [x] `bun run test packages/ui/src/page/pageHeaderCard.test.tsx` muestra que todas las pruebas pasan (35/35).
 
 ## Siguiente paso
@@ -37,3 +41,5 @@ updated: 2026-11-24
 ## Log
 - L1: "(petición literal no recuperada: no consta en Engram ni en la ficha)"
 - L2: 2026-11-24, formato de la ficha completado con autorización del usuario; el contenido previo no se ha reverificado.
+- L3: 2026-11-27 reverificado: `PageHeader.tsx` mantiene el ícono con `overflow-hidden`; las clases exactas (`rounded-2xl`) cambiaron en rediseños posteriores del cabecero.
+

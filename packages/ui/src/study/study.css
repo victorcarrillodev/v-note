@@ -10,3 +10,8 @@
 /* Con zoom de página: la ecuación crece con la letra; el dibujo Mermaid y el texto de las tarjetas, con el factor. */
 [data-page-zoom] .bn-editor .vn-mermaid { zoom: var(--page-zoom); }
 [data-page-zoom] .bn-editor .vn-flashcard .vn-study-source { font-size: calc(var(--text-ui-size) * var(--page-zoom)); }
+
+/* Ecuación en línea: se comporta como una palabra más del texto. */
+.vn-inline-math { display: inline; padding: 0 0.15em; border-radius: var(--radius-sm, 4px); cursor: pointer; background: transparent; color: inherit; font: inherit; }
+.vn-inline-math:hover, .vn-inline-math:focus-visible { background: var(--c-raised); }
+.vn-inline-math-input { font-family: var(--font-mono, monospace); font-size: 0.9em; padding: 0 0.3em; border: 1px solid var(--c-border); border-radius: var(--radius-sm, 4px); background: var(--c-card); color: inherit; min-width: 3ch; }

@@ -1,6 +1,6 @@
 ---
 feature: increase-overlay-height
-status: in-progress
+status: superseded
 updated: 2026-11-24
 ---
 ## Specs
@@ -22,8 +22,8 @@ updated: 2026-11-24
 3. Ejecutar `bun run typecheck` y `bun run test` para validar.
 
 ## Evidencia
-- [ ] Compilación exitosa.
-- [ ] Tests pasan.
+- [x] Compilación exitosa. (reemplazada: ver release-readiness T-10; 2026-11-27 typecheck ok y 3610 pruebas pasan)
+- [x] Tests pasan. (reemplazada: ver release-readiness T-10; 2026-11-27 typecheck ok y 3610 pruebas pasan)
 
 ## Siguiente paso
 - Ajustar la altura del overlay usando CSS (p.ej., aumentando `height` del elemento con `bg-[var(--c-scrim)]`).
@@ -31,3 +31,4 @@ updated: 2026-11-24
 ## Log
 - L1: "(petición literal no recuperada: no consta en Engram ni en la ficha)"
 - L2: 2026-11-24, formato de la ficha completado con autorización del usuario; el contenido previo no se ha reverificado.
+- L3: 2026-11-27 cerrada como reemplazada: alturas vigentes 180/260/340 px (release-readiness T-10), `bun run typecheck` y `bun run test` pasan (3610).

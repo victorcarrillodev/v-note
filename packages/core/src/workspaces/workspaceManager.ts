@@ -3,7 +3,7 @@ import type { Clock } from "../clock";
 import { newId } from "../ids";
 import { migrate } from "../db/migrate";
 import { migrations } from "../db/migrations";
-import type { SqlStore } from "../ports/sqlStore";
+import type { SqlExecutor, SqlStore } from "../ports/sqlStore";
 import { parseCustomAccent, type CustomAccent } from "../pages/accent";
 import type { AppConfigStore, WorkspaceStorage } from "./ports";
 
@@ -11,9 +11,30 @@ export type Workspace = { id: string; name: string; location: string; isCaptureD
 type Registry = { version: 1; workspaces: Workspace[] };
 const REGISTRY_VERSION = 1;
 
+/** Envuelve un almacén para avisar en cada escritura (exec o transacción); las lecturas no avisan. */
+function notifyingStore(store: SqlStore, notify: () => void): SqlStore {
+  return {
+    exec: async (sql, params) => { await store.exec(sql, params); notify(); },
+    query: (sql, params) => store.query(sql, params),
+    transaction: async <T,>(fn: (tx: SqlExecutor) => Promise<T>) => { const r = await store.transaction(fn); notify(); return r; },
+    close: () => store.close(),
+  };
+}
+
 export class WorkspaceManager {
   private open_ = new Map<string, SqlStore>();
+  private writeListeners = new Set<(workspaceId: string) => void>();
   constructor(private config: AppConfigStore, private storage: WorkspaceStorage, private clock: Clock) {}
+
+  /** Suscribe un aviso que recibe el id del espacio cada vez que se escribe en su base (para el respaldo continuo). */
+  onWrite(cb: (workspaceId: string) => void): () => void {
+    this.writeListeners.add(cb);
+    return () => void this.writeListeners.delete(cb);
+  }
+
+  private track(id: string, store: SqlStore): SqlStore {
+    return notifyingStore(store, () => this.writeListeners.forEach((l) => l(id)));
+  }
 
   private async load(): Promise<Result<Registry>> {
     const text = await this.config.read();
@@ -56,7 +77,7 @@ export class WorkspaceManager {
     const ws: Workspace = { id, name, location, isCaptureDefault: reg.value.workspaces.length === 0 };
     reg.value.workspaces.push(ws);
     await this.save(reg.value);
-    this.open_.set(id, store);
+    this.open_.set(id, this.track(id, store));
     return ok(ws);
   }
 
@@ -85,8 +106,9 @@ export class WorkspaceManager {
     const store = await this.storage.open(ws.location);
     const migrated = await migrate(store, migrations);
     if (!migrated.ok) { await store.close(); return migrated; }
-    this.open_.set(id, store);
-    return ok({ workspace: ws, store });
+    const tracked = this.track(id, store);
+    this.open_.set(id, tracked);
+    return ok({ workspace: ws, store: tracked });
   }
 
   /** Cierra la base abierta de un espacio (la siguiente apertura la reabre desde su ubicación). */

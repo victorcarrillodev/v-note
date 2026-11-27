@@ -40,6 +40,16 @@ describe("controlador", () => {
   });
 });
 
+describe("diagramas Mermaid al exportar (study-features-2 T-2)", () => {
+  it("el diálogo entrega a exportPages un dibujante de Mermaid; la exportación sigue funcionando si no hay diagramas", async () => {
+    const { controller, user, runtime } = await open(null);
+    const spy = vi.spyOn(controller, "exportPages");
+    await user.click(screen.getByRole("button", { name: "Exportar" }));
+    await waitFor(() => expect(runtime.saveHtml).toHaveBeenCalled());
+    expect(spy).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ mermaid: expect.any(Function) }));
+  });
+});
+
 describe("grupo «Aspecto»", () => {
   it("«Estándar» viene seleccionado y exportar sin tocar nada no pasa paleta", async () => {
     const { user, runtime } = await open("oceano");

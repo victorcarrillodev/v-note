@@ -45,7 +45,7 @@ async function start() {
   const i18n = await createI18n(preferences.get("language") === "en" ? "en" : undefined);
   createRoot(document.getElementById("root")!).render(
     <I18nextProvider i18n={i18n}>
-      <App services={{ workspaces, clock: systemClock, backup, unsplash: { platform: "web", keychain, fetch: unsplashFetch }, exporter: { assetsFor, runtime: webExportRuntime }, instanceLock: new WebInstanceLock(), reminders: { notifier: new WebNotifier(), onTick: (cb) => { const t = setInterval(cb, tickMs); return () => clearInterval(t); } } }} preferences={preferences} renderPageBody={(id, controller, ws) => <PageEditor controller={controller} pageId={id} assets={assetsFor(ws.location)} />} />
+      <App services={{ workspaces, clock: systemClock, backup, unifiedBackup: { keychain, fetch: fetchLike }, unsplash: { platform: "web", keychain, fetch: unsplashFetch }, exporter: { assetsFor, runtime: webExportRuntime }, instanceLock: new WebInstanceLock(), reminders: { notifier: new WebNotifier(), onTick: (cb) => { const t = setInterval(cb, tickMs); return () => clearInterval(t); } } }} preferences={preferences} renderPageBody={(id, controller, ws) => <PageEditor controller={controller} pageId={id} assets={assetsFor(ws.location)} />} />
     </I18nextProvider>,
   );
 }

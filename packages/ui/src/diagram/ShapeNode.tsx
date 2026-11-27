@@ -3,8 +3,10 @@ import { NodeResizer, type Node, type NodeProps } from "@xyflow/react";
 import type { NodeStyle, Shape } from "@vnote/core";
 import { fillFor, strokeFor } from "../design/diagramPalette";
 import { StretchSvg } from "../design/StretchSvg";
+import { useTranslation } from "react-i18next";
+import { Icon } from "../design/Icon";
 
-export type NodeData = { shape: Shape; text: string; style: NodeStyle; label: string; onResize: (id: string, x: number, y: number, w: number, h: number) => void };
+export type NodeData = { shape: Shape; text: string; style: NodeStyle; label: string; onResize: (id: string, x: number, y: number, w: number, h: number) => void; page?: string | undefined; onOpenPage?: ((pageId: string) => void) | undefined };
 
 const dashOf = (d: NodeStyle["strokeDash"]): CSSProperties["borderStyle"] => (d === "dashed" ? "dashed" : d === "dotted" ? "dotted" : "solid");
 
@@ -39,6 +41,21 @@ export const shapeStyle = (shape: Shape, st: NodeStyle): CSSProperties => {
   }
 };
 
+/** Insignia de una forma enlazada con una página: abre la página sin seleccionar ni arrastrar la forma. */
+export function LinkBadge({ page, onOpen }: { page: string; onOpen: (pageId: string) => void }) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button" aria-label={t("diagram.pageLink.open")} title={t("diagram.pageLink.open")} data-page-link={page}
+      className="nodrag nopan absolute -right-2 -top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--c-accent)] text-[var(--c-on-accent)] shadow"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => { e.stopPropagation(); onOpen(page); }}
+    >
+      <Icon name="link" size={14} />
+    </button>
+  );
+}
+
 /** Forma del lienzo. Sin puntos de unión de la librería: los anclajes los dibuja la capa propia (spec 003, RF-1). */
 export function ShapeNode({ id, data, selected, positionAbsoluteX, positionAbsoluteY, width, height }: NodeProps<Node<NodeData>>) {
   return (
@@ -46,6 +63,7 @@ export function ShapeNode({ id, data, selected, positionAbsoluteX, positionAbsol
       <NodeResizer isVisible={selected} minWidth={40} minHeight={24} onResizeEnd={(_e, p) => data.onResize(id, p.x, p.y, p.width, p.height)} />
       <div role="group" aria-label={data.label} data-shape={data.shape} data-fill={data.style.fill} data-fill-opacity={data.style.fillOpacity} data-x={Math.round(positionAbsoluteX)} data-y={Math.round(positionAbsoluteY)} data-w={width} data-h={height} style={shapeStyle(data.shape, data.style)}>
         {data.shape === "decision" && <DecisionOutline style={data.style} />}
+        {data.page && data.onOpenPage && <LinkBadge page={data.page} onOpen={data.onOpenPage} />}
         <span style={data.shape === "io" ? { transform: "skewX(15deg)" } : data.shape === "decision" ? { position: "relative" } : undefined}>{data.text}</span>
       </div>
     </>

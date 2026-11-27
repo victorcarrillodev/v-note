@@ -1,6 +1,6 @@
 ---
 feature: backup_integration
-status: in-progress
+status: superseded
 updated: 2026-11-24
 ---
 ## Specs
@@ -23,8 +23,14 @@ User asked: "ya está entonces la integración completa?"
 Await user approval to modify the application code, docs, and run the full tests.
 
 ## Tareas
-- [ ] T-1 (S1) Estado sin verificar: ficha reconstruida
+- [x] T-1 (S1) Absorbida por unified-backup T-5 (UI, modo continuo, restauración). Risk: none
+
+## Evidencia
+| Tarea | Comando / comprobación | Resultado observado | Fecha |
+|---|---|---|---|
+| T-1 | `bun run test packages/ui/src/app/AppUnifiedBackup.test.tsx` | Integración completa por UI: respaldar, no reescribir sin cambios y restaurar todo | 2026-11-27 |
 
 ## Log
 - L1: "ya está entonces la integración completa?"
 - L2: 2026-11-24, formato de la ficha completado con autorización del usuario; el contenido previo no se ha reverificado.
+- L3: 2026-11-27 sustituida por unified-backup (T-2 a T-6), cerrada con pruebas.

@@ -36,6 +36,11 @@ function inlineNodes(items: Inline[]): Array<Y.XmlText | Y.XmlElement> {
       const m = new Y.XmlElement("mention");
       m.setAttribute("pageId", item.pageId); m.setAttribute("title", item.title);
       out.push(m);
+    } else if (item.type === "math") {
+      flush();
+      const m = new Y.XmlElement("math");
+      m.setAttribute("formula", item.formula);
+      out.push(m);
     } else run.push(item);
   }
   flush();

@@ -1,9 +1,10 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { create } from "zustand";
+import type { RunnerApi } from "../runner/RunnerContext";
 import type { Notifier } from "../reminders/notifier";
 import type { ExportRuntime } from "../page/ExportDialog";
 import type { UnsplashRuntime } from "../unsplash/UnsplashContext";
-import type { UpdateInfo, AssetStore, GlobalShortcutService, InstanceLock, BackupService, Clock, RestoreSource, SqlStore, Workspace, WorkspaceManager } from "@vnote/core";
+import type { FetchLike, FolderSyncPort, Keychain, OAuthPort, UpdateInfo, AssetStore, GlobalShortcutService, InstanceLock, BackupService, Clock, RestoreSource, SqlStore, Workspace, WorkspaceManager } from "@vnote/core";
 
 /** Servicios del núcleo y de la plataforma que la interfaz necesita; se inyectan desde cada cascarón (web o escritorio). */
 /** Lo que cada cascarón aporta para el respaldo y la restauración (llavero, red, adjuntos y el tic periódico). */
@@ -14,6 +15,18 @@ export type BackupRuntime = {
   createRestoreSource(): RestoreSource;
   /** Suscripción al tic periódico (cada minuto): dispara los respaldos programados. */
   onTick(cb: () => void): () => void;
+};
+
+/** Respaldo unificado: lo que cada cascarón aporta (llavero, red y, solo en escritorio, carpeta nativa y retorno de OAuth). */
+export type UnifiedBackupRuntime = {
+  keychain: Keychain;
+  fetch: FetchLike;
+  folderPort?: (path: string) => FolderSyncPort;
+  /** Diálogo nativo que además AUTORIZA esa carpeta para el respaldo (escritorio). */
+  pickFolder?: () => Promise<string | null>;
+  /** Al abrir la app: vuelve a autorizar la carpeta elegida antes. */
+  restoreFolder?: (path: string) => Promise<boolean>;
+  oauth?: OAuthPort;
 };
 
 /** Recordatorios (RF-11): el notificador de la plataforma y el tic periódico que dispara la revisión. */
@@ -28,6 +41,9 @@ export type AppServices = {
   workspaces: WorkspaceManager;
   clock: Clock;
   backup?: BackupRuntime;
+  unifiedBackup?: UnifiedBackupRuntime;
+  /** Ejecutor de código de los bloques (JavaScript y Python). Sin indicar, la aplicación crea el suyo; `null` lo desactiva. */
+  codeRunner?: RunnerApi | null;
   /** Fotos de portada de Unsplash (RF-2.4, RF-9): el llavero y el `fetch` de cada cascarón. Sin él, la función no existe. */
   unsplash?: UnsplashRuntime;
   reminders?: RemindersRuntime;

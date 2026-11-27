@@ -10,11 +10,13 @@ export type InlineText = { type: "text"; text: string; styles: Styles };
 export type InlineLink = { type: "link"; href: string; content: InlineText[] };
 /** Mención de otra página (RF-6): guarda el id de destino; el título es solo el último texto conocido. */
 export type InlineMention = { type: "mention"; pageId: string; title: string };
-export type Inline = InlineText | InlineLink | InlineMention;
+/** Ecuación en línea (`$…$`): la fórmula en LaTeX, dibujada con KaTeX dentro del texto. */
+export type InlineMath = { type: "math"; formula: string };
+export type Inline = InlineText | InlineLink | InlineMention | InlineMath;
 
 /** Texto plano de contenido en línea (menciones: su título). */
 export const inlineToText = (items: Inline[]): string =>
-  items.map((i) => (i.type === "text" ? i.text : i.type === "mention" ? i.title : i.content.map((t) => t.text).join(""))).join("");
+  items.map((i) => (i.type === "text" ? i.text : i.type === "mention" ? i.title : i.type === "math" ? i.formula : i.content.map((t) => t.text).join(""))).join("");
 export type TableContent = { type: "table"; rows: Inline[][][] };
 
 export type Block = {

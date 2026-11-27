@@ -2,7 +2,7 @@
 
 ## Proyecto
 
-Aplicación de notas estilo notion, affine y obsidian todo en uno. Una aplicación con funciones avanzadas para poder crear notas de estudio enfocado a programación para poder crear mapas de flujos, diagramas y diferentes tipos de organizadores gráficos, además de poder enlazar archivos entre si por medio de nodos.
+Aplicación de notas y apuntes profesional. Una aplicación con funciones avanzadas para poder crear notas de estudio enfocado a sistemas computacionales o estudio en general.
 
 ## Comandos
 
@@ -30,7 +30,7 @@ bun run tauri build    # AppImage/.deb/.rpm en Linux, .msi/.exe en Windows
 
 ## Estilo
 
-- TypeScript estricto en todo el proyecto; React 19 + Vite + Tailwind + Radix/shadcn.
+- Typescript estricto en toddo el proyecto; React19 + Vite + Vite Plus + sass
 - Monorepo con bun workspaces (sin Turborepo). El núcleo de dominio (páginas, bloques, propiedades, fórmulas) es TypeScript puro, sin dependencias de UI ni de Tauri.
 - Lo específico de plataforma (almacenamiento, llavero, planificador, ventana, OAuth) va solo en la capa adaptador, para poder cambiar Tauri por Electron sin tocar el editor ni el núcleo.
 - Identificadores en inglés; textos de interfaz en español, con i18n desde el inicio (es/en).

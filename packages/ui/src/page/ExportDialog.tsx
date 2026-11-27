@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { drawMermaidForExport } from "../study/MermaidBlock";
 import { ProgressIndicator } from "../components/ProgressIndicator";
 import { InlineAlert } from "../components/InlineAlert";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
@@ -56,7 +57,7 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
     const controllerAbort = new AbortController();
     ac.current = controllerAbort;
     try {
-      const r = await controller.exportPages(pageId, { withChildren, ...(viewId ? { viewId } : {}), assets, signal: controllerAbort.signal, onProgress: (done, total) => setProgress({ done, total }), ...(theme && look === "theme" ? { palette: exportPaletteFor(theme.mode, theme.resolved === "dark") } : {}) });
+      const r = await controller.exportPages(pageId, { withChildren, ...(viewId ? { viewId } : {}), assets, mermaid: drawMermaidForExport, signal: controllerAbort.signal, onProgress: (done, total) => setProgress({ done, total }), ...(theme && look === "theme" ? { palette: exportPaletteFor(theme.mode, theme.resolved === "dark") } : {}) });
       if (!r.ok) { setError(r.error.message); setPhase("idle"); return; }
       if (r.value.status === "cancelled") { setNotice(t("export.cancelled")); setPhase("idle"); return; }
       const { html, report } = r.value;

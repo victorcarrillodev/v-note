@@ -17,7 +17,11 @@ export type Attached = { node: string; anchor: Anchor };
 export type Endpoint = Attached | Point;
 export const isAttached = (e: Endpoint): e is Attached => "node" in e;
 
-export type DNode = { id: string; shape: Shape; x: number; y: number; w: number; h: number; text: string; style: NodeStyle };
+export type DNode = {
+  id: string; shape: Shape; x: number; y: number; w: number; h: number; text: string; style: NodeStyle;
+  /** Página a la que enlaza la forma (se abre desde el lienzo); sin campo = sin enlace. */
+  page?: string;
+};
 export type DEdge = {
   id: string; from: Endpoint; to: Endpoint; route: Route; label: string; style: EdgeStyle;
   waypoints?: Point[]; curvature?: number; points?: Point[]; smooth?: boolean;
@@ -44,6 +48,16 @@ export function addNode(d: Diagram, input: { shape: Shape; x: number; y: number;
 }
 export const moveNode = (d: Diagram, id: string, x: number, y: number): Diagram => (finite(x, y) ? mapNode(d, id, (n) => ({ ...n, x, y })) : d);
 export const resizeNode = (d: Diagram, id: string, w: number, h: number): Diagram => (finite(w, h) ? mapNode(d, id, (n) => ({ ...n, w: Math.max(MIN_W, w), h: Math.max(MIN_H, h) })) : d);
+/** Enlaza la forma con una página, o quita el enlace con `null`. Un id vacío equivale a quitarlo; una forma inexistente no cambia nada. */
+export function setNodePage(d: Diagram, id: string, pageId: string | null): Diagram {
+  const page = pageId?.trim() ?? "";
+  return mapNode(d, id, (n) => {
+    const { page: _old, ...rest } = n;
+    return page === "" ? rest : { ...rest, page };
+  });
+}
+/** Formas que enlazan con la página indicada. */
+export const nodesLinkedTo = (d: Diagram, pageId: string): DNode[] => d.nodes.filter((n) => n.page === pageId);
 export const setNodeText = (d: Diagram, id: string, text: string): Diagram => mapNode(d, id, (n) => ({ ...n, text }));
 /** Fija el relleno de la forma (color de paleta, hexadecimal o «none»); un valor inválido se ignora. */
 export const setNodeColor = (d: Diagram, id: string, color: string): Diagram => (isFillColor(color) ? mapNode(d, id, (n) => ({ ...n, style: { ...n.style, fill: color } })) : d);
@@ -293,9 +307,10 @@ function readV2(raw: Record<string, unknown>): Result<Diagram> {
       || typeof n.x !== "number" || typeof n.y !== "number" || typeof n.w !== "number" || typeof n.h !== "number" || !finite(n.x, n.y, n.w, n.h)) return bad("Una forma del diagrama es inválida");
     const sp = styleProblem(n.style, "node");
     if (sp) return bad(sp);
+    if (n.page !== undefined && typeof n.page !== "string") return bad("El enlace de una forma del diagrama es inválido");
     if (ids.has(n.id)) return bad("Hay formas con el mismo id");
     ids.add(n.id);
-    nodes.push({ id: n.id, shape: n.shape as Shape, x: n.x, y: n.y, w: n.w, h: n.h, text: n.text, style: completeNodeStyle(n.shape as Shape, n.style as Partial<NodeStyle> | undefined) });
+    nodes.push({ id: n.id, shape: n.shape as Shape, x: n.x, y: n.y, w: n.w, h: n.h, text: n.text, style: completeNodeStyle(n.shape as Shape, n.style as Partial<NodeStyle> | undefined), ...(typeof n.page === "string" && n.page !== "" ? { page: n.page } : {}) });
   }
   const edges: DEdge[] = [], edgeIds = new Set<string>();
   const endpoint = (v: unknown): Endpoint | null => {

@@ -27,9 +27,38 @@ export type RenderContext = {
   /** Páginas que también se exportan: id → ancla, para que sus menciones sean enlaces internos. */
   pageAnchors: Map<string, string>;
   report: ExportReport;
+  /** Diagramas Mermaid ya dibujados (SVG) por id de bloque; sin entrada, se conserva el código. */
+  mermaid?: Map<string, string>;
   /** Entradas del índice del documento (solo si tiene un bloque `toc`): cada encabezado lleva el `id` de su ancla. */
   toc?: { entries: readonly TocEntry[]; byBlock: Map<string, string> };
 };
+/**
+ * Un SVG ajeno solo entra al documento si no puede ejecutar ni pedir nada. Ante la duda se rechaza (se conserva el código, que es seguro):
+ * - sin elementos activos o que cargan recursos: script, iframe, object, embed, foreignObject, image, a, link, meta, base, set, animate;
+ * - sin controladores `on…=` (con espacio, barra u otro separador delante) ni esquemas `javascript:`/`data:`/`vbscript:`;
+ * - sin entidades numéricas o con nombre de separadores (`&#…;`, `&colon;`, `&Tab;`, `&NewLine;`) que disfracen un esquema;
+ * - `href` solo hacia un fragmento interno (`#…`), y en estilos solo `url(#…)`; nada de `@import`.
+ */
+export function svgProblems(svg: string): string[] {
+  const found: string[] = [];
+  if (!/^\s*<svg[\s>]/i.test(svg)) found.push("no empieza por <svg>");
+  const active = /<\s*\/?\s*(script|iframe|object|embed|foreignObject|image|a|link|meta|base|set|animate|animateTransform|animateMotion)[\s/>]/i.exec(svg);
+  if (active) found.push(`elemento activo <${active[1]}>`);
+  const handler = /[\s/"'`]on[a-z]+\s*=/i.exec(svg);
+  if (handler) found.push(`controlador de evento «${handler[0].trim()}»`);
+  const scheme = /(javascript|data|vbscript)\s*:/i.exec(svg);
+  if (scheme) found.push(`esquema «${scheme[0]}»`);
+  const entity = /&(#|colon;|tab;|newline;)/i.exec(svg);
+  if (entity) found.push(`entidad «${entity[0]}»`);
+  if (/@import/i.test(svg)) found.push("@import");
+  // Un escape CSS (`u\72l(` es `url(`) disfraza una carga externa: se rechaza cualquier barra invertida dentro de estilos.
+  if (/<style[^>]*>[^<]*\\/i.test(svg) || /\sstyle\s*=\s*(["'])[^"']*\\/i.test(svg)) found.push("escape CSS dentro de un estilo");
+  const url = /url\(\s*(?!["']?#)[^)]{0,40}/i.exec(svg);
+  if (url) found.push(`url() externa «${url[0]}»`);
+  for (const m of svg.matchAll(/(?:xlink:)?href\s*=\s*(["']?)([^"'\s>]*)/gi)) if (!m[2]!.startsWith("#")) found.push(`href externo «${m[2]}»`);
+  return found;
+}
+export const isSafeSvg = (svg: string): boolean => svgProblems(svg).length === 0;
 export const newReport = (): ExportReport => ({ missing: [], warnings: [] });
 
 const esc = escapeXml;
@@ -58,6 +87,7 @@ function inline(items: Inline[], ctx: RenderContext): string {
       const href = safeHref(i.href);
       return href ? `<a href="${esc(href)}">${inner}</a>` : inner;
     }
+    if (i.type === "math") return `<span class="math">${katex.renderToString(i.formula, { displayMode: false, output: "mathml", throwOnError: false })}</span>`;
     if (i.type === "mention") {
       const anchor = ctx.pageAnchors.get(i.pageId);
       return anchor ? `<a class="mention" href="#${esc(anchor)}">${esc(i.title)}</a>` : `<span class="mention">${esc(i.title)}</span>`;
@@ -203,8 +233,11 @@ function renderOne(b: Block, ctx: RenderContext): string {
     case "timeline": return organizer(b, ctx, "Línea de tiempo", (d) => { const r = parseTimeline(d); return r.ok ? timelineToSvg(r.value) : null; });
     case "matrix": return organizer(b, ctx, "Matriz", (d) => { const r = parseMatrix(d); return r.ok ? matrixToSvg(r.value) : null; });
     case "equation": return `<div class="equation">${katex.renderToString(str(b.props.formula), { displayMode: true, output: "mathml", throwOnError: false })}</div>${kids}`;
-    // Dibujar Mermaid necesita un navegador: el documento exportado conserva su texto.
-    case "mermaid": return `<pre><code class="language-mermaid">${esc(str(b.props.code))}</code></pre>${kids}`;
+    // Dibujar Mermaid necesita un navegador: lo aporta quien exporta (ctx.mermaid); sin dibujo, el documento conserva su texto.
+    case "mermaid": {
+      const svg = ctx.mermaid?.get(b.id);
+      return svg ? `<figure class="mermaid">${svg}</figure>${kids}` : `<pre><code class="language-mermaid">${esc(str(b.props.code))}</code></pre>${kids}`;
+    }
     case "flashcard": return `<details class="flashcard"><summary>${esc(str(b.props.front))}</summary><p>${esc(str(b.props.back))}</p></details>${kids}`;
     case "databaseView": return database(b, ctx);
     default: return `<p>${inner}</p>${kids}`;

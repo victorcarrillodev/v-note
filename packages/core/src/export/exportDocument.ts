@@ -2,7 +2,7 @@ import { parseGallery } from "../blocks/gallery";
 import type { AssetStore } from "../assets/assetStore";
 import { parseAssetUrl } from "../assets/attach";
 import type { Block } from "../blocks/types";
-import { blocksToHtml, collectAssetUrls, newReport, type DatabaseSnapshot, type ExportReport, type RenderContext, type ResolvedAsset } from "./html";
+import { blocksToHtml, collectAssetUrls, isSafeSvg, newReport, type DatabaseSnapshot, type ExportReport, type RenderContext, type ResolvedAsset } from "./html";
 import { escapeXml } from "./svg";
 import { buildExportCss, type ExportPalette } from "./exportCss";
 
@@ -13,6 +13,8 @@ export type ExportDeps = {
   assets: AssetStore;
   /** Entrega la vista elegida de un bloque de base de datos (RF-24); `null` = no disponible. */
   databaseView?: (block: Block) => Promise<DatabaseSnapshot | null>;
+  /** Dibuja un diagrama Mermaid como SVG (necesita un navegador, por eso lo aporta la plataforma); `null` = no se pudo. */
+  mermaid?: (code: string) => Promise<string | null>;
 };
 export type ExportOptions = {
   signal?: AbortSignal;
@@ -71,7 +73,8 @@ export async function exportHtml(input: ExportInput, deps: ExportDeps, opts: Exp
   const allBlocks = input.pages.flatMap((p) => p.blocks);
   const urls = collectAssetUrls(allBlocks);
   const dbBlocks = deps.databaseView ? findBlocks(allBlocks, "databaseView") : [];
-  const total = urls.length + dbBlocks.length + input.pages.length;
+  const mermaidBlocks = deps.mermaid ? findBlocks(allBlocks, "mermaid") : [];
+  const total = urls.length + dbBlocks.length + mermaidBlocks.length + input.pages.length;
   let done = 0;
   const tick = async () => { opts.onProgress?.(++done, total); await yieldNow(); };
   if (signal?.aborted) return { status: "cancelled" };
@@ -98,8 +101,26 @@ export async function exportHtml(input: ExportInput, deps: ExportDeps, opts: Exp
     await tick();
   }
 
+  // Cada texto distinto se dibuja una sola vez; un fallo o un SVG no seguro deja el código y se anota.
+  const mermaid = new Map<string, string>();
+  const drawn = new Map<string, string | null>();
+  for (const b of mermaidBlocks) {
+    if (signal?.aborted) return { status: "cancelled" };
+    const code = String(b.props.code ?? "");
+    if (!drawn.has(code)) {
+      let svg: string | null = null;
+      try { svg = code.trim() ? await deps.mermaid!(code) : null; } catch { svg = null; }
+      if (svg !== null && !isSafeSvg(svg)) svg = null;
+      if (svg === null && code.trim()) report.warnings.push("Un diagrama Mermaid no se pudo dibujar; se conservó su código");
+      drawn.set(code, svg);
+    }
+    const svg = drawn.get(code);
+    if (svg) mermaid.set(b.id, svg);
+    await tick();
+  }
+
   const pageAnchors = new Map(input.pages.map((p, i) => [p.id, `page-${i}`]));
-  const ctx: RenderContext = { assets, databases, pageAnchors, report };
+  const ctx: RenderContext = { assets, databases, pageAnchors, report, mermaid };
   const sections: string[] = [];
   for (const [i, p] of input.pages.entries()) {
     if (signal?.aborted) return { status: "cancelled" };

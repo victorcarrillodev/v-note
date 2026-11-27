@@ -19,7 +19,14 @@ const FRONT_MATTER = /^---\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/;
 
 const block = (type: BlockType, props: Record<string, unknown>, content: Block["content"], children: Block[] = []): Block =>
   ({ id: newId(), type, props: { ...defaultProps(type), ...props }, content, children });
-const text = (t: string, styles: Styles = {}): InlineText => ({ type: "text", text: t, styles });
+/** Bloques propios del editor (ecuación, Mermaid): no están en `BlockType`, así que se arman con sus propiedades exactas. */
+const custom = (type: string, props: Record<string, unknown>): Block => ({ id: newId(), type, props, content: undefined, children: [] });
+/** Marcador privado de un «\$» escrito en el original: el analizador de Markdown le quita la barra, y sin él «\$b\$» se leería como ecuación. */
+const DOLLAR = "\uE000";
+/** En texto, el «\$» escapado vuelve a ser un «$» literal; en código se restaura tal cual estaba escrito (con su barra). */
+const literal = (t: string) => t.replaceAll(DOLLAR, "$");
+const asWritten = (t: string) => t.replaceAll(DOLLAR, "\\$");
+const text = (t: string, styles: Styles = {}): InlineText => ({ type: "text", text: literal(t), styles });
 
 /** Convierte Markdown (CommonMark + GFM) al modelo canónico de bloques. Nunca lanza: lo que no entiende se aproxima y se anota. */
 export function markdownToBlocks(source: string, opts: MarkdownOptions = {}): MarkdownResult {
@@ -29,6 +36,22 @@ export function markdownToBlocks(source: string, opts: MarkdownOptions = {}): Ma
 
   let md = source.replace(/^﻿/, "");
   if (FRONT_MATTER.test(md)) { md = md.replace(FRONT_MATTER, ""); note("Se omitió el encabezado de propiedades (YAML) del archivo"); }
+
+  md = md.replace(/\\\$/g, DOLLAR);
+
+  /** Separa `$…$` (ecuación en línea) del resto del texto. Regla de Pandoc: nada de espacios pegados a los `$` y el cierre no va seguido de un dígito, para no confundir importes ($5 y $6). */
+  const withMath = (t: string, styles: Styles): Inline[] => {
+    if (!t.includes("$")) return wikilinks(t, styles);
+    const out: Inline[] = [];
+    let last = 0;
+    for (const m of t.matchAll(/(?<![\\$])\$(?![\s$])((?:[^$\n\\]|\\.)*?[^\s$\\])\$(?![\d$])/g)) {
+      if (m.index! > last) out.push(...wikilinks(t.slice(last, m.index), styles));
+      out.push({ type: "math", formula: asWritten(m[1]!) });
+      last = m.index! + m[0].length;
+    }
+    if (last < t.length) out.push(...wikilinks(t.slice(last), styles));
+    return out;
+  };
 
   const wikilinks = (t: string, styles: Styles): Inline[] => {
     if (!opts.wikilinks || !t.includes("[[")) return [text(t, styles)];
@@ -48,14 +71,15 @@ export function markdownToBlocks(source: string, opts: MarkdownOptions = {}): Ma
     const out: Inline[] = [];
     for (const n of nodes) {
       switch (n.type) {
-        case "text": out.push(...wikilinks(n.value, styles)); break;
+        case "text": out.push(...withMath(n.value, styles)); break;
         case "strong": out.push(...inline(n.children, { ...styles, bold: true })); break;
         case "emphasis": out.push(...inline(n.children, { ...styles, italic: true })); break;
         case "delete": out.push(...inline(n.children, { ...styles, strike: true })); break;
-        case "inlineCode": out.push(text(n.value, { ...styles, code: true })); break;
+        case "inlineCode": out.push({ type: "text", text: asWritten(n.value), styles: { ...styles, code: true } }); break;
         case "break": out.push(text("\n", styles)); break;
         case "link": {
-          const inner = inline(n.children, styles).filter((i): i is InlineText => i.type === "text");
+          // Un enlace solo admite texto: una ecuación dentro de él se conserva como «$…$» en vez de perderse.
+          const inner = inline(n.children, styles).map((i) => (i.type === "math" ? text(`$${i.formula}$`, styles) : i)).filter((i): i is InlineText => i.type === "text");
           out.push({ type: "link", href: n.url, content: inner.length ? inner : [text(n.url)] });
           break;
         }
@@ -100,6 +124,12 @@ export function markdownToBlocks(source: string, opts: MarkdownOptions = {}): Ma
           break;
         }
         case "paragraph": {
+          // «$$ … $$» ocupando todo el párrafo (una o varias líneas) es una ecuación en bloque.
+          // Se lee del texto FUENTE: el parser interpreta `\\` como una sola barra y destruiría los saltos de línea de LaTeX.
+          const start = n.position?.start.offset, end = n.position?.end.offset;
+          const raw = start !== undefined && end !== undefined ? md.slice(start, end) : null;
+          const eq = raw === null ? null : /^\$\$((?:(?!\$\$)[\s\S])+?)\$\$$/.exec(raw.trim());
+          if (eq) { out.push(custom("equation", { formula: asWritten(eq[1]!.trim()) })); break; }
           const only = n.children.length === 1 ? n.children[0]! : null;
           if (only && only.type === "image") {
             const b = block("image", { url: only.url, caption: only.alt ?? "", name: only.alt ?? "" }, undefined);
@@ -116,11 +146,15 @@ export function markdownToBlocks(source: string, opts: MarkdownOptions = {}): Ma
           break;
         }
         case "list": out.push(...items(n.children, n.ordered === true)); break;
-        case "code": out.push(block("codeBlock", { language: n.lang ?? "text" }, n.value === "" ? [] : [text(n.value)])); break;
+        case "code": {
+          if (n.lang === "mermaid") out.push(custom("mermaid", { code: asWritten(n.value) }));
+          else out.push(block("codeBlock", { language: n.lang ?? "text" }, n.value === "" ? [] : [{ type: "text", text: asWritten(n.value), styles: {} }]));
+          break;
+        }
         case "thematicBreak": out.push(block("divider", {}, undefined)); break;
         case "table": out.push(tableOf(n)); break;
         case "html": {
-          const t = n.value.replace(/<[^>]+>/g, "").trim();
+          const t = literal(n.value.replace(/<[^>]+>/g, "").trim());
           if (t !== "") out.push(block("paragraph", {}, [text(t)]));
           note("Se conservó solo el texto de un bloque HTML");
           break;

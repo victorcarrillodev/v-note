@@ -3,6 +3,7 @@ use percent_encoding::percent_decode_str;
 use tauri::{ipc::{InvokeBody, Request, Response}, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder};
 use vnote_db::{fsutil, AssetDir, Database};
 use std::path::PathBuf;
+use base64::Engine as _;
 
 /// Conexiones abiertas, por identificador. Una conexión por espacio de trabajo (plan D-1).
 #[derive(Default)]
@@ -243,6 +244,112 @@ fn keychain_delete(service: String, account: String) -> Result<(), String> {
     }
 }
 
+
+// ---- Respaldo en carpeta local (acotado a la carpeta elegida) y retorno de OAuth por bucle local ----
+
+fn b64() -> base64::engine::GeneralPurpose { base64::engine::general_purpose::STANDARD }
+
+/// Única carpeta de respaldo autorizada: la que la persona eligió en el diálogo nativo (se recuerda en la configuración de la app).
+#[derive(Default)]
+struct BackupFolder(std::sync::Mutex<Option<String>>);
+
+fn backup_folder_file(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    Ok(app.path().app_config_dir().map_err(|e| e.to_string())?.join("backup-folder.txt"))
+}
+
+fn check_root(state: &State<BackupFolder>, root: &str) -> Result<(), String> {
+    if vnote_db::backup_fs::is_authorized_root(state.0.lock().unwrap().as_deref(), root) { Ok(()) } else { Err("Carpeta de respaldo no autorizada".into()) }
+}
+
+/// Diálogo nativo para elegir la carpeta de respaldo; solo esa carpeta queda autorizada para los comandos `folder_*`.
+#[tauri::command]
+async fn pick_backup_folder(app: tauri::AppHandle, state: State<'_, BackupFolder>) -> Result<Option<String>, String> {
+    use tauri_plugin_dialog::DialogExt;
+    let picked = tauri::async_runtime::spawn_blocking({ let app = app.clone(); move || app.dialog().file().blocking_pick_folder() }).await.map_err(|e| e.to_string())?;
+    let Some(path) = picked else { return Ok(None) };
+    let path = path.into_path().map_err(|e| e.to_string())?.to_string_lossy().to_string();
+    let file = backup_folder_file(&app)?;
+    vnote_db::fsutil::atomic_write(&file, &path)?;
+    *state.0.lock().unwrap() = Some(path.clone());
+    Ok(Some(path))
+}
+
+/// Al abrir la app: vuelve a autorizar la carpeta que la persona eligió antes (si `path` coincide con la guardada).
+#[tauri::command]
+fn restore_backup_folder(app: tauri::AppHandle, state: State<BackupFolder>, path: String) -> Result<bool, String> {
+    let saved = vnote_db::fsutil::read_text(&backup_folder_file(&app)?)?;
+    if saved.as_deref() == Some(path.as_str()) { *state.0.lock().unwrap() = Some(path); Ok(true) } else { Ok(false) }
+}
+
+#[tauri::command]
+fn folder_read(state: State<BackupFolder>, root: String, rel: String) -> Result<Option<String>, String> {
+    check_root(&state, &root)?;
+    vnote_db::backup_fs::folder_read(std::path::Path::new(&root), &rel).map(|o| o.map(|b| b64().encode(b)))
+}
+
+#[tauri::command]
+fn folder_write(state: State<BackupFolder>, root: String, rel: String, data: String) -> Result<(), String> {
+    check_root(&state, &root)?;
+    let bytes = b64().decode(data).map_err(|e| e.to_string())?;
+    vnote_db::backup_fs::folder_write(std::path::Path::new(&root), &rel, &bytes)
+}
+
+#[tauri::command]
+fn folder_remove(state: State<BackupFolder>, root: String, rel: String) -> Result<(), String> { check_root(&state, &root)?; vnote_db::backup_fs::folder_remove(std::path::Path::new(&root), &rel) }
+
+#[tauri::command]
+fn folder_list(state: State<BackupFolder>, root: String) -> Result<Vec<String>, String> { check_root(&state, &root)?; vnote_db::backup_fs::folder_list(std::path::Path::new(&root)) }
+
+#[derive(Default)]
+struct OAuthListener(std::sync::Mutex<Option<std::net::TcpListener>>);
+
+/// Abre un puerto local efímero (solo 127.0.0.1) para recibir la redirección de OAuth y devuelve el puerto.
+#[tauri::command]
+fn oauth_listen(state: State<OAuthListener>) -> Result<u16, String> {
+    let l = std::net::TcpListener::bind("127.0.0.1:0").map_err(|e| e.to_string())?;
+    let port = l.local_addr().map_err(|e| e.to_string())?.port();
+    *state.0.lock().unwrap() = Some(l);
+    Ok(port)
+}
+
+/// Abre en el navegador la página de autorización (solo Google o Dropbox).
+#[tauri::command]
+fn open_oauth_url(url: String) -> Result<(), String> {
+    if !vnote_db::backup_fs::is_oauth_url(&url) { return Err("Dirección no permitida".into()); }
+    open_in_browser(&url)
+}
+
+/// Espera (máx. 3 minutos) la redirección, responde una página breve y devuelve la ruta con `code` y `state`.
+#[tauri::command]
+async fn oauth_wait(state: State<'_, OAuthListener>) -> Result<String, String> {
+    let listener = state.0.lock().unwrap().take().ok_or("No hay una conexión en curso")?;
+    tauri::async_runtime::spawn_blocking(move || {
+        use std::io::{Read, Write};
+        listener.set_nonblocking(true).map_err(|e| e.to_string())?;
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+        loop {
+            match listener.accept() {
+                Ok((mut s, _)) => {
+                    s.set_nonblocking(false).ok();
+                    s.set_read_timeout(Some(std::time::Duration::from_secs(5))).ok();
+                    let mut buf = [0u8; 4096];
+                    let n = s.read(&mut buf).unwrap_or(0);
+                    let req = String::from_utf8_lossy(&buf[..n]).to_string();
+                    let target = vnote_db::backup_fs::redirect_target(&req);
+                    let body = "<html><body style=\"font-family:sans-serif\"><p>Listo, ya puedes cerrar esta pestaña y volver a la aplicación.</p></body></html>";
+                    let _ = write!(s, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
+                    if let Some(t) = target { return Ok(t); }
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    if std::time::Instant::now() > deadline { return Err("Tiempo de espera agotado".to_string()); }
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
+                Err(e) => return Err(e.to_string()),
+            }
+        }
+    }).await.map_err(|e| e.to_string())?
+}
+
 #[tauri::command]
 fn tick_count() -> u64 { ticker::EMITTED.load(std::sync::atomic::Ordering::SeqCst) }
 
@@ -410,11 +517,14 @@ fn main() {
             }
         })
         .manage(Dbs::default())
+        .manage(OAuthListener::default())
+        .manage(BackupFolder::default())
         .invoke_handler(tauri::generate_handler![
             db_open, db_exec, db_query, db_begin, db_commit, db_rollback, db_close,
             asset_put, asset_get, asset_has, asset_delete, asset_list,
             app_dirs, config_read, config_write, path_exists, reveal_path, open_release_url, open_unsplash_url, export_save, show_reminder, open_task, workspace_remove,
             keychain_set, keychain_get, keychain_delete,
+            pick_backup_folder, restore_backup_folder, folder_read, folder_write, folder_remove, folder_list, oauth_listen, oauth_wait, open_oauth_url,
             tick_count, window_visible, open_capture, capture_shortcut_set, exe_path, print_html
         ])
         .run(tauri::generate_context!())

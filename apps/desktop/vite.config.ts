@@ -1,5 +1,6 @@
 import { brandPlugin } from "../../packages/ui/src/identity/brandPlugin";
 import { themeBootPlugin } from "../../packages/ui/src/theme/bootPlugin";
+import { pyodideAssets } from "../../packages/ui/src/runner/pyodidePlugin";
 import { defineConfig, type Plugin } from "vite";
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
@@ -17,7 +18,7 @@ const noDomEntities = (): Plugin => ({
 });
 
 export default defineConfig({
-  plugins: [themeBootPlugin(), brandPlugin(), tailwindcss()],
+  plugins: [themeBootPlugin(), brandPlugin(), pyodideAssets(), tailwindcss()],
   clearScreen: false,
   worker: { plugins: () => [noDomEntities()] },
   server: { port: 1430, strictPort: true },

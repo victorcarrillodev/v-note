@@ -24,6 +24,18 @@ async function draw(id: string, code: string, dark: boolean): Promise<string> {
   return (await mermaid.render(id, code)).svg;
 }
 
+/** Dibuja un diagrama para el documento exportado: tema claro y etiquetas SVG (sin HTML incrustado), para que se vea igual fuera de la app. */
+export async function drawMermaidForExport(code: string): Promise<string | null> {
+  try {
+    const { default: mermaid } = await import("mermaid");
+    mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "default", htmlLabels: false, flowchart: { htmlLabels: false } });
+    await mermaid.parse(code);
+    return (await mermaid.render(`vn-export-${Math.random().toString(36).slice(2)}`, code)).svg;
+  } catch {
+    return null;
+  }
+}
+
 /** Diagrama escrito como texto (Mermaid): dibujo arriba y código editable. */
 export function MermaidView({ code, editable, onChange, render = draw }: { code: string; editable: boolean; onChange: (code: string) => void; render?: typeof draw }) {
   const { t } = useTranslation();

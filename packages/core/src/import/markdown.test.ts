@@ -75,3 +75,33 @@ describe("enlaces [[ ]] de Obsidian (T-388)", () => {
     expect(b!.content).toEqual([text("Ver [[Otra]]")]);
   });
 });
+
+describe("ecuaciones y diagramas Mermaid (study-features-2 T-1)", () => {
+  it("«$$ … $$» en varias líneas es un bloque de ecuación con la fórmula tal cual", () => {
+    const bs = one("$$\nE = mc^2\n$$");
+    expect(strip(bs)).toEqual([{ type: "equation", props: { formula: "E = mc^2" }, content: undefined, children: [] }]);
+  });
+  it("«$$ … $$» en una sola línea y fórmulas de varias líneas", () => {
+    expect((one("$$ x^2 + y^2 $$")[0]!).props.formula).toBe("x^2 + y^2");
+    expect((one("$$\na &= b \\\\\n c &= d\n$$")[0]!).props.formula).toBe("a &= b \\\\\n c &= d");
+  });
+  it("un párrafo con dos ecuaciones «$$a$$ y $$b$$» no se funde en una sola fórmula", () => {
+    const bs = one("$$a$$ y $$b$$");
+    expect(bs.some((b) => b.type === "equation" && String(b.props.formula).includes("$$"))).toBe(false);
+  });
+  it("un párrafo que solo contiene $$ dentro de otro texto NO se convierte en ecuación", () => {
+    const [b] = one("El precio es $$ caro $$ hoy");
+    expect(b!.type).toBe("paragraph");
+  });
+  it("un bloque ```mermaid es un bloque Mermaid con su código; otros lenguajes siguen siendo código", () => {
+    const [m, c] = one("```mermaid\ngraph TD\n  A-->B\n```\n\n```js\nlet a = 1;\n```");
+    expect(m!.type).toBe("mermaid");
+    expect(m!.props).toEqual({ code: "graph TD\n  A-->B" });
+    expect(m!.content).toBeUndefined();
+    expect(c!.type).toBe("codeBlock");
+    expect(c!.props.language).toBe("js");
+  });
+  it("no reporta aproximaciones por estos bloques", () => {
+    expect(markdownToBlocks("$$\nx\n$$\n\n```mermaid\nA-->B\n```").approximations).toEqual([]);
+  });
+});
