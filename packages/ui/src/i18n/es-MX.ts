@@ -339,6 +339,7 @@ export const esMX = {
     saveFailed: "No se pudo guardar el cambio: {{message}}. Se reintentará automáticamente.",
   },
   backupAll: {
+    cancelAuthorize: "Cancelar autorización",
     title: "Respaldo unificado",
     hint: "Todos tus espacios en un solo destino. Solo se actualiza lo que cambió, sin crear copias repetidas.",
     destination: "Destino del respaldo",
@@ -653,6 +654,7 @@ export const esMX = {
     selection: "Página seleccionada", connections: "{{count}} conexión(es)", open: "Abrir página", inTrash: "(en la papelera)",
   },
   attachments: {
+    surface: "Hoja: Intro marca una zona, las flechas la mueven, Mayús y flechas cambian su tamaño, Supr la quita", area: "Zona en {{x}} % y {{y}} %, de {{w}} % por {{h}} %",
     title: "Adjuntos", preview: "Previsualizar {{name}}", untitled: "Archivo sin nombre", hint: "Arrastra sobre la hoja para marcar una zona. El archivo original no se modifica.",
     failed: "No se pudo abrir el archivo.", previous: "Anterior", next: "Siguiente", page: "Página {{page}} de {{total}}",
     noteForArea: "Nota para la zona marcada", noteForPage: "Nota para toda la página", add: "Agregar nota", notes: "Notas", remove: "Quitar",

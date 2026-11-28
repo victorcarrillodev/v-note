@@ -37,9 +37,12 @@ describe("TauriOAuthPort", () => {
     const port = new TauriOAuthPort(invoke);
     await port.prepare();
     expect(port.redirectUri).toBe("http://127.0.0.1:4567/cb");
-    const url = await port.authorize("https://accounts.google.com/o/oauth2/v2/auth?x=1", port.redirectUri);
+    const url = await port.authorize("https://accounts.google.com/o/oauth2/v2/auth?x=1&state=s", port.redirectUri);
     expect(url).toBe("http://127.0.0.1:4567/cb?code=abc&state=s");
     expect(calls.map((c) => c.cmd)).toEqual(["oauth_listen", "oauth_wait", "open_oauth_url"]);
-    expect(calls.find((c) => c.cmd === "open_oauth_url")?.args).toEqual({ url: "https://accounts.google.com/o/oauth2/v2/auth?x=1" });
+    expect(calls.find((c) => c.cmd === "open_oauth_url")?.args).toEqual({ url: "https://accounts.google.com/o/oauth2/v2/auth?x=1&state=s" });
+    expect(calls.find((c) => c.cmd === "oauth_wait")?.args).toEqual({ expectedState: "s" });
+    await port.cancel();
+    expect(calls.at(-1)?.cmd).toBe("oauth_cancel");
   });
 });

@@ -73,3 +73,12 @@ fn solo_se_acepta_la_carpeta_autorizada() {
     assert!(!is_authorized_root(Some(&p), "/"));
     assert!(!is_authorized_root(Some(""), ""));
 }
+
+#[test]
+fn solo_acepta_el_state_de_la_solicitud() {
+    use vnote_db::backup_fs::has_state;
+    assert!(has_state("/cb?code=a&state=abc", "abc"));
+    assert!(!has_state("/cb?code=a&state=abcd", "abc"));
+    assert!(!has_state("/cb?code=a", "abc"));
+    assert!(!has_state("/cb?state=", ""));
+}

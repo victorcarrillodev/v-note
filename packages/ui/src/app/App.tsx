@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { UpdateNotice } from "./UpdateNotice";
 import { InlineAlert } from "../components/InlineAlert";
 import { ImportView } from "../import/ImportView";
@@ -141,11 +142,11 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
   const restoreAll = useCallback(async () => {
     if (!backup) return { error: t("backupAll.unavailable") };
     const dest = await configuredDestination();
-    if (!dest.ok) return { error: dest.error.message };
+    if (!dest.ok) return { error: coreText(dest.error.message) };
     const files = await dest.value.downloadAll();
-    if (!files.ok) return { error: files.error.message };
+    if (!files.ok) return { error: coreText(files.error.message) };
     const r = await restoreAllFromBackup(workspaces, backup.assetsFor, files.value);
-    if (!r.ok) return { error: r.error.message };
+    if (!r.ok) return { error: coreText(r.error.message) };
     return { restored: r.value.restored.length, failed: r.value.failed };
   }, [backup, configuredDestination, workspaces, t]);
 
@@ -329,7 +330,7 @@ function Main({ renderPageBody, preferences }: { renderPageBody: AppProps["rende
       {view === "loading" && <p role="status" className="p-4 opacity-70">{t("app.loading")}</p>}
       {view === "workspaces" && noWorkspaces && !opened && (
         <WelcomeScreen
-          onCreate={(name) => void workspaces.create({ name }).then((r) => { if (r.ok) { setNoWorkspaces(false); void openWorkspace(r.value.id); } else setError(r.error.message); })}
+          onCreate={(name) => void workspaces.create({ name }).then((r) => { if (r.ok) { setNoWorkspaces(false); void openWorkspace(r.value.id); } else setError(coreText(r.error.message)); })}
           {...(backup ? { onRestore: () => { setRestoreSource(backup.createRestoreSource()); setView("restore"); } } : {})}
         />
       )}

@@ -42,12 +42,12 @@ async function mount() {
       />
     </I18nextProvider>,
   );
-  return { user, workspaces, disk, writes };
+  return { user, workspaces, disk, writes, clock };
 }
 
 describe("respaldo unificado en la aplicación", () => {
   it("respalda todos los espacios en la carpeta elegida y no reescribe si nada cambió", async () => {
-    const { user, workspaces, disk, writes } = await mount();
+    const { user, workspaces, disk, writes, clock } = await mount();
     await user.click(await screen.findByRole("button", { name: "Respaldo" }));
     await user.click(await screen.findByRole("button", { name: "Elegir carpeta" }));
     await screen.findByText("/respaldo");
@@ -57,9 +57,13 @@ describe("respaldo unificado en la aplicación", () => {
     for (const w of ids.value) expect([...disk.keys()].some((k) => k.startsWith(`workspaces/${w.id}/`))).toBe(true);
     expect(disk.has("app/workspaces.json")).toBe(true);
 
-    writes.length = 0;
-    await user.click(screen.getByRole("button", { name: "Respaldar ahora" }));
+    // El segundo respaldo cuenta solo si de verdad terminó: con el reloj adelantado cambia la hora del último respaldo.
     await waitFor(() => expect(screen.getByRole("button", { name: "Respaldar ahora" })).toBeEnabled(), { timeout: 15_000 });
+    const before = (await screen.findByText(/Último respaldo/)).textContent;
+    writes.length = 0;
+    clock.set(Date.UTC(2026, 10, 28, 12, 0));
+    await user.click(screen.getByRole("button", { name: "Respaldar ahora" }));
+    await waitFor(() => expect(screen.getByText(/Último respaldo/).textContent).not.toBe(before), { timeout: 15_000 });
     expect(writes).toEqual([]);
   }, 30_000);
 

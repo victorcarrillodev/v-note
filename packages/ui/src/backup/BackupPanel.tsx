@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { InlineAlert } from "../components/InlineAlert";
 import { Button } from "../components/Button";
@@ -39,7 +40,7 @@ export function BackupPanel({ service, platform = "desktop" }: { service: Backup
       setAskPublic(false);
       setTokenNotSaved(!r.value.tokenPersisted);
     } else if (r.error.code === "NEEDS_CONFIRMATION") setAskPublic(true);
-    else setConnectError(r.error.details && "kind" in r.error.details ? errorText(String(r.error.details.kind)) : r.error.message);
+    else setConnectError(r.error.details && "kind" in r.error.details ? errorText(String(r.error.details.kind)) : coreText(r.error.message));
     await load();
   };
   const onSubmit = (e: FormEvent) => { e.preventDefault(); void connect(); };

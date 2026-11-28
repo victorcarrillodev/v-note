@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { PROPERTY_TYPES, VIEW_TYPES, type PropertyType, type ViewType } from "@vnote/core";
@@ -44,11 +45,11 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
     let stale = false;
     void controller.previewFormula(expression).then((r) => {
       if (stale) return;
-      if (!r.ok) { setPreview({ text: r.error.message, isError: true }); return; }
+      if (!r.ok) { setPreview({ text: coreText(r.error.message), isError: true }); return; }
       if (!r.value.hasRow) { setPreview({ text: t("databases.previewValid"), isError: false }); return; }
       const v = r.value.value as never;
       const isErr = typeof v === "object" && v !== null && "error" in (v as object);
-      setPreview({ text: isErr ? (v as { error: { message: string } }).error.message : format({ type: "formula", config: {} } as never, v) || t("databases.previewEmpty"), isError: isErr });
+      setPreview({ text: isErr ? coreText((v as { error: { message: string } }).error.message) : format({ type: "formula", config: {} } as never, v) || t("databases.previewEmpty"), isError: isErr });
     });
     return () => { stale = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,7 +58,7 @@ export function DatabaseView({ controller, onOpenRow, showTitle = true, today }:
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const r = type === "formula" ? await controller.addFormula(name, expression) : await controller.addProperty({ name, type });
-    if (!r.ok) { setError(r.error.message); return; }
+    if (!r.ok) { setError(coreText(r.error.message)); return; }
     setError(null); setName(""); setExpression(""); setAdding(false);
   };
   const active = snap.views.find((v) => v.id === snap.activeViewId);

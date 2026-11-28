@@ -144,6 +144,8 @@ export interface OAuthPort {
   /** Reserva lo necesario (p. ej. un puerto local) antes de conocer `redirectUri`. */
   prepare?(): Promise<void>;
   readonly redirectUri: string;
+  /** Abandona la espera en curso: `authorize` termina con error. */
+  cancel?(): Promise<void>;
 }
 
 /** Flujo completo de conexión: PKCE → navegador → intercambio → refresh token al llavero. */

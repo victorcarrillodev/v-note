@@ -24,6 +24,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - Conversión de bloques, cabecera con portada e índice en los márgenes.
 
 ### Corregido
+- Se puede cancelar la autorización de Google Drive o Dropbox, y una petición ajena ya no gasta el intento.
+- Los mensajes de error se muestran en inglés cuando la interfaz está en inglés.
+- Las notas sobre PDF e imágenes se pueden marcar con teclado.
 - El menú «/» ya no tiene dos opciones llamadas «Diagrama de flujo».
 - La portada acompaña sin retraso a la barra lateral al abrirla o cerrarla.
 - El editor ya no muestra un marco azul alrededor del contenido.

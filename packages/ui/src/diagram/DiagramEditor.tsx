@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { Background, ReactFlow, ReactFlowProvider, ViewportPortal, useNodesState, useReactFlow, useStore, type Node } from "@xyflow/react";
@@ -211,10 +212,10 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
       if (cur.kind === "edit") { commit(cur.apply(d, snapPt(p))); return; }
       if (cur.kind === "new") {
         const r = connect(d, cur.from, target, applyDefaultsToDiagramParts(defaultsRef.current).edge);
-        if (r.ok) { commit(r.value.diagram); setSelectedEdge(r.value.edge.id); } else setNotice(r.error.message);
+        if (r.ok) { commit(r.value.diagram); setSelectedEdge(r.value.edge.id); } else setNotice(coreText(r.error.message));
       } else {
         const r = reconnectEnd(d, cur.edgeId, cur.end, target);
-        if (r.ok) commit(r.value); else setNotice(r.error.message);
+        if (r.ok) commit(r.value); else setNotice(coreText(r.error.message));
       }
     };
     const onKey = (k: KeyboardEvent) => { if (k.key === "Escape") cancelDrag(); };
@@ -263,7 +264,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     setSelectedPoint({ edgeId, index });
     startDrag({ kind: "edit", edgeId, point: toFlow(e), apply: (d, p) => { const r = moveBend(d, edgeId, index, p); return r.ok ? r.value : d; } });
   };
-  const applyEdit = (r: { ok: true; value: Diagram } | { ok: false; error: { message: string } }) => { if (r.ok) commit(r.value); else setNotice(r.error.message); };
+  const applyEdit = (r: { ok: true; value: Diagram } | { ok: false; error: { message: string } }) => { if (r.ok) commit(r.value); else setNotice(coreText(r.error.message)); };
   // Doble clic sobre un tramo: agrega un punto de quiebre en ese lugar (en recto, el conector pasa a libre); acomoda a la cuadrícula si está activa.
   const addPointAt = (edgeId: string, p: Point) => {
     applyEdit(addBendAt(history.current.current, edgeId, p, snapOnRef.current ? { snap: snapPoint } : {}));
@@ -272,7 +273,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
   const removePointAt = (edgeId: string, index: number) => { applyEdit(removeBend(history.current.current, edgeId, index)); setSelectedPoint(null); };
   const changeRoute = (edgeId: string, route: Route) => {
     const r = setRoute(history.current.current, edgeId, route);
-    if (!r.ok) { setNotice(r.error.message); return; }
+    if (!r.ok) { setNotice(coreText(r.error.message)); return; }
     commit(r.value.diagram); setSelectedPoint(null);
     if (r.value.discarded) setNotice(t("diagram.routeDiscarded"));
   };
@@ -436,7 +437,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
             onPointChange={(i, p) => applyEdit(moveControlPoint(history.current.current, edge.id, i, p))} onRemovePoint={(i) => applyEdit(removeControlPoint(history.current.current, edge.id, i))}
             onAddPoint={() => { const path = connectorPath(history.current.current, edge); if (!path) return; const P = [path.start, ...(edge.points ?? []), path.end]; const a = P[P.length - 2]!, b = P[P.length - 1]!; addPointAt(edge.id, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }); }}
           />
-          <EdgeEnds diagram={diagram} edge={edge} onChange={(end, target) => { const r = reconnectEnd(history.current.current, edge.id, end, target); if (r.ok) commit(r.value); else setNotice(r.error.message); }} />
+          <EdgeEnds diagram={diagram} edge={edge} onChange={(end, target) => { const r = reconnectEnd(history.current.current, edge.id, end, target); if (r.ok) commit(r.value); else setNotice(coreText(r.error.message)); }} />
         </div>
       ),
     });

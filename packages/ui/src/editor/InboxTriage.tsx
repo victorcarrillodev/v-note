@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useEffect, useState } from "react";
 import { InlineAlert } from "../components/InlineAlert";
 import { useTranslation } from "react-i18next";
@@ -34,8 +35,8 @@ export function InboxTriage({ controller, pageId }: { controller: WorkspaceContr
 
   if (!isNote) return message ? <InlineAlert tone="success">{message}</InlineAlert> : null;
   const done = () => { setIsNote(false); setMessage(t("capture.moved")); };
-  const move = async (parent: string | null) => { const r = await controller.moveInboxNote(pageId, parent); if (r.ok) done(); else setError(r.error.message); };
-  const toCard = async () => { const r = await controller.inboxToCard(pageId, board); if (r.ok) done(); else setError(r.error.message); };
+  const move = async (parent: string | null) => { const r = await controller.moveInboxNote(pageId, parent); if (r.ok) done(); else setError(coreText(r.error.message)); };
+  const toCard = async () => { const r = await controller.inboxToCard(pageId, board); if (r.ok) done(); else setError(coreText(r.error.message)); };
   return (
     <div role="region" aria-label={t("capture.triage")} className="mb-3 flex flex-col gap-2 rounded border p-2 text-sm">
       <strong>{t("capture.triage")}</strong>

@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { ClipperHelp } from "./ClipperHelp";
@@ -60,7 +61,7 @@ export function QuickCaptureView({ manager, clock, onSaved, onClose }: { manager
     if (!cap.current || text.trim() === "" || state.phase !== "ready") return;
     clearTimeout(timer.current); pending.current = null;
     const r = await cap.current.confirm(text);
-    if (!r.ok) { setError(r.error.message); return; }
+    if (!r.ok) { setError(coreText(r.error.message)); return; }
     setError(null); setText(""); setRecovered(false);
     setMessage(t("capture.saved", { space: state.workspace.name }));
     onSaved?.(state.workspace.id);

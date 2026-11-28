@@ -2,6 +2,7 @@ import i18next, { type i18n } from "i18next";
 import { initReactI18next } from "react-i18next";
 import { esMX } from "./es-MX";
 import { en } from "./en";
+import { setCoreLanguage } from "./coreText";
 
 export const DEFAULT_LANGUAGE = "es-MX";
 export const resources = { "es-MX": { translation: esMX }, en: { translation: en } } as const;
@@ -18,5 +19,7 @@ export async function createI18n(lng: string = DEFAULT_LANGUAGE): Promise<i18n> 
     interpolation: { escapeValue: false },
     returnNull: false,
   });
+  setCoreLanguage(lng);
+  instance.on("languageChanged", setCoreLanguage);
   return instance;
 }

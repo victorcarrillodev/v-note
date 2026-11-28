@@ -343,6 +343,7 @@ export const en: Widen<typeof esMX> = {
     saveFailed: "The change could not be saved: {{message}}. It will be retried automatically.",
   },
   backupAll: {
+    cancelAuthorize: "Cancel authorization",
     title: "Unified backup",
     hint: "All your workspaces in a single destination. Only what changed is updated, with no repeated copies.",
     destination: "Backup destination",
@@ -657,6 +658,7 @@ export const en: Widen<typeof esMX> = {
     selection: "Selected page", connections: "{{count}} connection(s)", open: "Open page", inTrash: "(in the trash)",
   },
   attachments: {
+    surface: "Sheet: Enter marks an area, arrows move it, Shift and arrows resize it, Delete removes it", area: "Area at {{x}}% and {{y}}%, {{w}}% by {{h}}%",
     title: "Attachments", preview: "Preview {{name}}", untitled: "Unnamed file", hint: "Drag over the sheet to mark an area. The original file is not modified.",
     failed: "The file could not be opened.", previous: "Previous", next: "Next", page: "Page {{page}} of {{total}}",
     noteForArea: "Note for the marked area", noteForPage: "Note for the whole page", add: "Add note", notes: "Notes", remove: "Remove",

@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { createContext, useContext, useEffect, useState } from "react";
 import { toNativeCombo, type GlobalShortcutService } from "@vnote/core";
 import { BINDINGS_CHANGED, loadBindings } from "../settings/bindingsStore";
@@ -19,7 +20,7 @@ export function useGlobalShortcut(service: GlobalShortcutService | undefined, pr
       const combo = loadBindings(preferences)["capture.open"] ?? null;
       const r = await service.set(combo === null ? null : toNativeCombo(combo));
       if (cancelled) return;
-      if (!r.ok) setState({ status: "unavailable", message: r.error.message, command });
+      if (!r.ok) setState({ status: "unavailable", message: coreText(r.error.message), command });
       else setState({ status: combo === null ? "off" : "active", command });
     };
     void apply();

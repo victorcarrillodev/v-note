@@ -1,4 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { coreText } from "../i18n/coreText";
+import { useEffect, useState, type FormEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { GITHUB_BACKUP_ACCOUNT, OAuthTokenStore, connectOAuth, type DestinationConfig, type FetchLike, type Keychain, type OAuthPort, type OAuthProviderId, type UnifiedBackupController } from "@vnote/core";
 import { Button } from "../components/Button";
@@ -85,11 +86,18 @@ export function UnifiedBackupPanel({ controller, preferences, keychain, fetch, p
     }
   };
 
+  const [connecting, setConnecting] = useState(false);
+  const cancelled = useRef(false);
+  // Salir de la pantalla no deja el puerto local esperando.
+  useEffect(() => () => { void oauth?.cancel?.(); }, [oauth]);
+
   const connect = async () => {
     if (!oauth || !provider) return;
     const clientId = clientIdOf(cfg.destination);
     if (!clientId) { setMsg({ tone: "error", text: t("backupAll.needClientId") }); return; }
     setBusy(true);
+    setConnecting(true);
+    cancelled.current = false;
     let r: Awaited<ReturnType<typeof connectOAuth>>;
     try {
       r = await connectOAuth({ port: oauth, fetch, provider, clientId, keychain });
@@ -97,10 +105,14 @@ export function UnifiedBackupPanel({ controller, preferences, keychain, fetch, p
       r = { ok: false, message: err instanceof Error ? err.message : String(err) };
     } finally {
       setBusy(false);
+      setConnecting(false);
     }
+    if (!r.ok && cancelled.current) { setMsg(null); return; }
     if (r.ok) { setConnected(true); controller.destinationChanged(); setMsg({ tone: "success", text: t("backupAll.connected") }); }
-    else setMsg({ tone: "error", text: r.message });
+    else setMsg({ tone: "error", text: coreText(r.message) });
   };
+
+  const cancelConnect = () => { cancelled.current = true; void oauth?.cancel?.(); };
 
   const disconnect = async () => {
     if (!provider) return;
@@ -118,7 +130,7 @@ export function UnifiedBackupPanel({ controller, preferences, keychain, fetch, p
     setMsg(null);
     try {
       const o = await controller.syncNow();
-      if (o.status === "failed") setMsg({ tone: "error", text: o.error.message });
+      if (o.status === "failed") setMsg({ tone: "error", text: coreText(o.error.message) });
     } catch (e) {
       setMsg({ tone: "error", text: e instanceof Error ? e.message : String(e) });
     } finally {
@@ -179,6 +191,7 @@ export function UnifiedBackupPanel({ controller, preferences, keychain, fetch, p
               {provider && (connected
                 ? <Button size="sm" onClick={() => void disconnect()}>{t("backup.disconnect")}</Button>
                 : <Button size="sm" variant="primary" disabled={busy} onClick={() => void connect()}>{t("backupAll.authorize")}</Button>)}
+              {connecting && oauth?.cancel && <Button size="sm" onClick={cancelConnect}>{t("backupAll.cancelAuthorize")}</Button>}
             </div>
           </form>
         )}
@@ -192,7 +205,7 @@ export function UnifiedBackupPanel({ controller, preferences, keychain, fetch, p
         <p className={MUTED}>{t("backupAll.continuousHint")}</p>
 
         {msg && <InlineAlert tone={msg.tone}>{msg.text}</InlineAlert>}
-        {status.state === "error" && status.message && <InlineAlert tone="error">{status.message}</InlineAlert>}
+        {status.state === "error" && status.message && <InlineAlert tone="error">{coreText(status.message)}</InlineAlert>}
         {status.state === "retrying" && <InlineAlert tone="warning">{t("backupAll.retrying")}</InlineAlert>}
 
         <div className="flex flex-wrap items-center gap-3">

@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { commitImport, planImport, type AssetStore, type Clock, type ImportKind, type ImportPlan, type ImportReport, type SourceFile, type SqlStore } from "@vnote/core";
 
 export type ImportProgress = { phase: "analyze" | "save"; done: number; total: number };
@@ -43,5 +44,5 @@ export async function runImport(a: {
     onProgress: (done, total) => a.onProgress({ phase: "save", done, total }),
   });
   if (r.ok) return { status: "done", containerId: r.value.containerId, report: planned.plan.report };
-  return r.error.code === "CANCELLED" ? { status: "cancelled" } : { status: "error", message: r.error.message };
+  return r.error.code === "CANCELLED" ? { status: "cancelled" } : { status: "error", message: coreText(r.error.message) };
 }

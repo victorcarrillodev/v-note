@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { InlineAlert } from "../components/InlineAlert";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -39,7 +40,7 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onD
     if (name.trim() === "") return;
     const r = await manager.create({ name, ...(folder ? { location: folder } : {}) });
     if (r.ok) { setError(null); setName(""); setFolder(null); await reload(); onCreated?.(r.value); }
-    else setError(r.error.message);
+    else setError(coreText(r.error.message));
   };
   const startDelete = async (ws: Workspace) => {
     setDeleting(ws); setTyped(""); setInfo(null); setDeleteError(null);
@@ -52,7 +53,7 @@ export function WorkspaceManagerView({ manager, activeId, onOpen, onCreated, onD
     const r = await manager.delete(deleting.id, { typedName: typed }).catch(() => null);
     setBusy(false);
     if (r?.ok) { const id = deleting.id; setDeleting(null); await reload(); onDeleted?.(id); }
-    else setDeleteError(r && !r.ok ? r.error.message : t("workspace.deleteFailed"));
+    else setDeleteError(r && !r.ok ? coreText(r.error.message) : t("workspace.deleteFailed"));
   };
 
   return (

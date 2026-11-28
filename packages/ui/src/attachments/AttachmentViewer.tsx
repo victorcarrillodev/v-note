@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { AssetNotesService, type AssetNote, type AssetStore, type Clock, type NoteRect, type SqlStore } from "@vnote/core";
 import { Button } from "../components/Button";
@@ -84,6 +84,23 @@ export function AttachmentViewer({ attachment, assets, store, clock, onClose }: 
     setText(""); setRect(null);
     await reload();
   };
+  // Teclado: Intro crea una zona al centro, las flechas la mueven, con Mayús cambian su tamaño y Supr la quita.
+  const key = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const step = 0.02;
+    const arrows: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    const move = arrows[e.key];
+    if (e.key === "Enter") setRect((r) => r ?? { x: 0.4, y: 0.4, w: 0.2, h: 0.2 });
+    else if (e.key === "Delete" || e.key === "Backspace") setRect(null);
+    else if (move && rect) {
+      const [dx, dy] = move;
+      setRect((r) => {
+        if (!r) return r;
+        if (!e.shiftKey) return { ...r, x: Math.min(1 - r.w, Math.max(0, r.x + dx)), y: Math.min(1 - r.h, Math.max(0, r.y + dy)) };
+        return { ...r, w: Math.min(1 - r.x, Math.max(step, r.w + dx)), h: Math.min(1 - r.y, Math.max(step, r.h + dy)) };
+      });
+    } else return;
+    e.preventDefault();
+  };
   const goTo = (n: number) => { setPage(n); setRect(null); };
   const here = notes.filter((n) => n.page === page);
 
@@ -99,6 +116,10 @@ export function AttachmentViewer({ attachment, assets, store, clock, onClose }: 
       )}
       <div
         data-testid="note-surface"
+        role="application"
+        tabIndex={0}
+        aria-label={t("attachments.surface")}
+        onKeyDown={key}
         className="relative cursor-crosshair touch-none select-none border border-[var(--c-border)]"
         onPointerDown={(e) => { start.current = point(e); setRect(null); e.currentTarget.setPointerCapture?.(e.pointerId); }}
         onPointerMove={drag}
@@ -111,6 +132,7 @@ export function AttachmentViewer({ attachment, assets, store, clock, onClose }: 
             <span className="absolute left-0 top-0 bg-[var(--chip-warning-bg)] px-1 text-[length:var(--text-note-size)] text-[var(--chip-warning-fg)]">{i + 1}</span>
           </span>
         ))}
+        <span className="sr-only" role="status">{rect ? t("attachments.area", { x: Math.round(rect.x * 100), y: Math.round(rect.y * 100), w: Math.round(rect.w * 100), h: Math.round(rect.h * 100) }) : ""}</span>
         {rect && <span aria-hidden="true" style={pct(rect)} className="pointer-events-none absolute border-2 border-dashed border-[var(--c-accent)]" />}
       </div>
       <form className="mt-3 flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); void save(); }}>

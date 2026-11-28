@@ -5,7 +5,8 @@ import { resolve } from "node:path";
 
 const PORT = 4444;
 const BASE = `http://127.0.0.1:${PORT}`;
-export const DESKTOP_BIN = resolve(__dirname, "../apps/desktop/src-tauri/target/debug/vnote-desktop");
+// Binario de producción (`bunx tauri build --no-bundle`); VNOTE_E2E_BIN permite probar otro. La app es de instancia única: con otra abierta, usar `dbus-run-session`.
+export const DESKTOP_BIN = process.env.VNOTE_E2E_BIN ?? resolve(__dirname, "../apps/desktop/src-tauri/target/release/vnote-desktop");
 const EL = "element-6066-11e4-a52e-4f735466cecf";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

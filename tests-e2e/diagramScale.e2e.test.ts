@@ -21,7 +21,7 @@ async function openDiagram(p: Page) {
   await p.waitFor("document.querySelector('.bn-editor[contenteditable=true]')");
   await p.eval("document.querySelector('.bn-editor').focus()"); await sleep(300);
   await p.send("Input.dispatchKeyEvent", { type: "keyDown", key: "/", text: "/" }); await p.send("Input.dispatchKeyEvent", { type: "keyUp", key: "/" });
-  await sleep(400); await p.typeText("diagrama"); await sleep(500); await p.key("Enter", "Enter", 13);
+  await sleep(400); await p.typeText("diagrama de flujo"); await sleep(500); await p.key("Enter", "Enter", 13);
   await p.waitFor("document.querySelector('[data-testid=diagram] .react-flow')", 10000);
 }
 

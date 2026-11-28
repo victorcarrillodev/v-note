@@ -83,6 +83,13 @@ pub fn redirect_target(request: &str) -> Option<String> {
     (path == "/cb").then(|| target.to_string())
 }
 
+/// ¿El retorno trae exactamente el `state` de la solicitud en curso?
+pub fn has_state(target: &str, expected: &str) -> bool {
+    if expected.is_empty() { return false; }
+    let query = target.split_once('?').map_or("", |(_, q)| q);
+    query.split('&').any(|pair| pair.strip_prefix("state=") == Some(expected))
+}
+
 /// ¿`root` es exactamente la carpeta que la persona autorizó con el diálogo nativo? Compara rutas canónicas: `..`, enlaces o `/` no pasan.
 pub fn is_authorized_root(allowed: Option<&str>, root: &str) -> bool {
     let Some(allowed) = allowed else { return false };

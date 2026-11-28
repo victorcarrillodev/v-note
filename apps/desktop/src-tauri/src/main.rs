@@ -301,7 +301,7 @@ fn folder_remove(state: State<BackupFolder>, root: String, rel: String) -> Resul
 fn folder_list(state: State<BackupFolder>, root: String) -> Result<Vec<String>, String> { check_root(&state, &root)?; vnote_db::backup_fs::folder_list(std::path::Path::new(&root)) }
 
 #[derive(Default)]
-struct OAuthListener(std::sync::Mutex<Option<std::net::TcpListener>>);
+struct OAuthListener(std::sync::Mutex<Option<std::net::TcpListener>>, std::sync::Arc<std::sync::atomic::AtomicBool>);
 
 /// Abre un puerto local efímero (solo 127.0.0.1) para recibir la redirección de OAuth y devuelve el puerto.
 #[tauri::command]
@@ -309,6 +309,7 @@ fn oauth_listen(state: State<OAuthListener>) -> Result<u16, String> {
     let l = std::net::TcpListener::bind("127.0.0.1:0").map_err(|e| e.to_string())?;
     let port = l.local_addr().map_err(|e| e.to_string())?.port();
     *state.0.lock().unwrap() = Some(l);
+    state.1.store(false, std::sync::atomic::Ordering::SeqCst);
     Ok(port)
 }
 
@@ -321,13 +322,15 @@ fn open_oauth_url(url: String) -> Result<(), String> {
 
 /// Espera (máx. 3 minutos) la redirección, responde una página breve y devuelve la ruta con `code` y `state`.
 #[tauri::command]
-async fn oauth_wait(state: State<'_, OAuthListener>) -> Result<String, String> {
+async fn oauth_wait(state: State<'_, OAuthListener>, expected_state: String) -> Result<String, String> {
     let listener = state.0.lock().unwrap().take().ok_or("No hay una conexión en curso")?;
+    let cancelled = state.1.clone();
     tauri::async_runtime::spawn_blocking(move || {
         use std::io::{Read, Write};
         listener.set_nonblocking(true).map_err(|e| e.to_string())?;
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
         loop {
+            if cancelled.load(std::sync::atomic::Ordering::SeqCst) { return Err("Conexión cancelada".to_string()); }
             match listener.accept() {
                 Ok((mut s, _)) => {
                     s.set_nonblocking(false).ok();
@@ -335,8 +338,8 @@ async fn oauth_wait(state: State<'_, OAuthListener>) -> Result<String, String> {
                     let mut buf = [0u8; 4096];
                     let n = s.read(&mut buf).unwrap_or(0);
                     let req = String::from_utf8_lossy(&buf[..n]).to_string();
-                    let target = vnote_db::backup_fs::redirect_target(&req);
-                    let body = "<html><body style=\"font-family:sans-serif\"><p>Listo, ya puedes cerrar esta pestaña y volver a la aplicación.</p></body></html>";
+                    let target = vnote_db::backup_fs::redirect_target(&req).filter(|t| vnote_db::backup_fs::has_state(t, &expected_state));
+                    let body = if target.is_some() { "<html><body style=\"font-family:sans-serif\"><p>Listo, ya puedes cerrar esta pestaña y volver a la aplicación.</p></body></html>" } else { "" };
                     let _ = write!(s, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
                     if let Some(t) = target { return Ok(t); }
                 }
@@ -348,6 +351,13 @@ async fn oauth_wait(state: State<'_, OAuthListener>) -> Result<String, String> {
             }
         }
     }).await.map_err(|e| e.to_string())?
+}
+
+/// Abandona la espera en curso (botón «Cancelar» o al salir de la pantalla).
+#[tauri::command]
+fn oauth_cancel(state: State<OAuthListener>) {
+    state.1.store(true, std::sync::atomic::Ordering::SeqCst);
+    state.0.lock().unwrap().take();
 }
 
 #[tauri::command]
@@ -524,7 +534,7 @@ fn main() {
             asset_put, asset_get, asset_has, asset_delete, asset_list,
             app_dirs, config_read, config_write, path_exists, reveal_path, open_release_url, open_unsplash_url, export_save, show_reminder, open_task, workspace_remove,
             keychain_set, keychain_get, keychain_delete,
-            pick_backup_folder, restore_backup_folder, folder_read, folder_write, folder_remove, folder_list, oauth_listen, oauth_wait, open_oauth_url,
+            pick_backup_folder, restore_backup_folder, folder_read, folder_write, folder_remove, folder_list, oauth_listen, oauth_wait, oauth_cancel, open_oauth_url,
             tick_count, window_visible, open_capture, capture_shortcut_set, exe_path, print_html
         ])
         .run(tauri::generate_context!())

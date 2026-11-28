@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { Background, ReactFlow, ReactFlowProvider, ViewportPortal, useReactFlow, useStore, type Node, type NodeProps } from "@xyflow/react";
 import { useFlowPageZoom } from "../page/zoom/useFlowPageZoom";
@@ -280,7 +281,7 @@ function Inner({ value, onChange }: { value: string; onChange: (data: string) =>
     if (editingRef.current && selectedRef.current) commitDraft(selectedRef.current, draftRef.current);
     const base = treeRef.current;
     const r = kind === "child" ? addChild(base, id, "") : addSibling(base, id, "");
-    if (!r.ok) { setNotice({ text: r.error.message }); return; }
+    if (!r.ok) { setNotice({ text: coreText(r.error.message) }); return; }
     const next = placeNewNode(r.value.tree, r.value.node.id);
     commit(next); setNotice(null); select(r.value.node.id, true); reveal(next, r.value.node.id);
   };

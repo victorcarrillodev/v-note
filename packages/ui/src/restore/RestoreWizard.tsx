@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InlineAlert } from "../components/InlineAlert";
 import { Button } from "../components/Button";
@@ -52,9 +53,9 @@ export function RestoreWizard({ source, workspaces, assetsFor, onDone, onCancel 
 
   const show = (e: { code: string; message: string; details?: Record<string, unknown> | undefined }) => {
     if (e.code === "UNSUPPORTED_VERSION") setError({ code: e.code, message: t("restore.futureVersion") });
-    else if (e.details && "kind" in e.details) setError({ code: e.code, message: t(`backup.error.${String(e.details.kind)}`, { defaultValue: e.message }) });
-    else if (e.code === "INVALID") setError({ code: e.code, message: t("restore.damaged", { message: e.message }) });
-    else setError({ code: e.code, message: t("restore.failed", { message: e.message }) });
+    else if (e.details && "kind" in e.details) setError({ code: e.code, message: t(`backup.error.${String(e.details.kind)}`, { defaultValue: coreText(e.message) }) });
+    else if (e.code === "INVALID") setError({ code: e.code, message: t("restore.damaged", { message: coreText(e.message) }) });
+    else setError({ code: e.code, message: t("restore.failed", { message: coreText(e.message) }) });
   };
 
   const connect = async (confirmPublic = false) => {

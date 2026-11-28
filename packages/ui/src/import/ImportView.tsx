@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useRef, useState } from "react";
 import { InlineAlert } from "../components/InlineAlert";
 import { Button } from "../components/Button";
@@ -43,7 +44,7 @@ export function ImportView({ store, assets, clock, onOpen, parentId }: { store: 
       let title = name.trim();
       if (isZip) {
         const zip = readZip(await readBytes(picked[0]!));
-        if (!zip.ok) { setState({ phase: "error", message: zip.error.message }); return; }
+        if (!zip.ok) { setState({ phase: "error", message: coreText(zip.error.message) }); return; }
         files = zip.value;
         title ||= picked[0]!.name.replace(/\.zip$/i, "");
       } else {

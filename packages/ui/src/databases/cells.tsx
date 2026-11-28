@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { COMPUTED_TYPES, type CellValue, type DateValue, type ErrorValue, type Property, type Result } from "@vnote/core";
@@ -19,7 +20,7 @@ const isError = (v: unknown): v is ErrorValue => typeof v === "object" && v !== 
 export function useFormatValue() {
   const { t } = useTranslation();
   return (prop: Property, v: CellValue | ErrorValue | null | undefined): string => {
-    if (isError(v)) return `⚠ ${v.error.message}`;
+    if (isError(v)) return `⚠ ${coreText(v.error.message)}`;
     if (v === null || v === undefined) return prop.type === "rollup" || prop.type === "relation" ? "" : "";
     if (prop.type === "checkbox") return v === true ? t("databases.checked") : t("databases.unchecked");
     if (prop.type === "relation") return Array.isArray(v) ? t("databases.linked", { count: v.length }) : "";
@@ -53,7 +54,7 @@ export function CellEditor({ prop, value, onCommit }: CellProps) {
   };
 
   if (COMPUTED_TYPES.has(prop.type)) {
-    return <span className={isError(value) ? "text-[var(--c-danger)]" : ""} title={isError(value) ? value.error.message : undefined}>{format(prop, value)}</span>;
+    return <span className={isError(value) ? "text-[var(--c-danger)]" : ""} title={isError(value) ? coreText(value.error.message) : undefined}>{format(prop, value)}</span>;
   }
 
   switch (prop.type) {

@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { attachFile, parseAssetUrl, type AssetStore } from "@vnote/core";
 
 const readBytes = (f: Blob): Promise<Uint8Array> =>
@@ -19,7 +20,7 @@ export function createFileHandlers(store: AssetStore, hooks: Hooks) {
     async uploadFile(file: File): Promise<string> {
       const data = await readBytes(file);
       const r = await attachFile(store, { name: file.name, data });
-      if (!r.ok) { hooks.onError(r.error.message); throw new Error(r.error.message); }
+      if (!r.ok) { hooks.onError(coreText(r.error.message)); throw new Error(r.error.message); }
       if (r.value.warning) hooks.onWarning(r.value.name);
       return r.value.url;
     },

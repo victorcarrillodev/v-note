@@ -42,8 +42,14 @@ export class TauriOAuthPort implements OAuthPort {
 
   async authorize(authUrl: string, _redirectUri?: string): Promise<string> {
     if (!this.port) await this.prepare();
-    const waiting = this.invoke("oauth_wait", {}) as Promise<string>;
+    // Rust solo acepta el retorno que traiga este `state`: una petición ajena al puerto local no gasta el intento.
+    const state = new URL(authUrl).searchParams.get("state") ?? "";
+    const waiting = this.invoke("oauth_wait", { expectedState: state }) as Promise<string>;
     await this.invoke("open_oauth_url", { url: authUrl });
     return `http://127.0.0.1:${this.port}${await waiting}`;
+  }
+
+  async cancel(): Promise<void> {
+    await this.invoke("oauth_cancel", {});
   }
 }

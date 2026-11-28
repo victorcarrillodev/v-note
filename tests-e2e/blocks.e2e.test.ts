@@ -103,7 +103,8 @@ describe("bloques propios (T-123, T-125)", () => {
   });
 
   it("T-125: inserta un enlace web y se ve la tarjeta; sobrevive al reiniciar", async () => {
-    await launch(env);
+    const own = isolatedEnv(); // el árbol está virtualizado: con los datos de las otras pruebas la página buscada quedaría fuera de la vista
+    await launch(own);
     try {
       await ensureWorkspace();
       const ed = await freshEditor("Enlace");
@@ -119,7 +120,7 @@ describe("bloques propios (T-123, T-125)", () => {
       expect(await run<string>("return document.querySelector('.bn-editor a[data-link-card]').innerText")).toContain("example.com");
       await sleep(1200);
     } finally { await stopApp(); }
-    await launch(env);
+    await launch(own);
     try {
       await ensureWorkspace();
       const { findX } = await import("./webdriver");
@@ -229,8 +230,9 @@ describe("deshacer y rehacer (T-131)", () => {
   const CTRL = String.fromCharCode(0xe009);
   const SHIFT = String.fromCharCode(0xe008);
   it("deshace y rehace, también después de salir de la página y volver", async () => {
+    const own = isolatedEnv(); // el árbol está virtualizado: con los datos de las otras pruebas la página buscada quedaría fuera de la vista
     const { clickX } = await import("./webdriver");
-    await launch(env);
+    await launch(own);
     try {
       await ensureWorkspace();
       const ed = await freshEditor("Deshacer");

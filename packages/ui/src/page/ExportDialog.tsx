@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { useEffect, useRef, useState } from "react";
 import { drawMermaidForExport } from "../study/MermaidBlock";
 import { ProgressIndicator } from "../components/ProgressIndicator";
@@ -58,7 +59,7 @@ export function ExportDialog({ controller, pageId, assets, runtime, onClose }: {
     ac.current = controllerAbort;
     try {
       const r = await controller.exportPages(pageId, { withChildren, ...(viewId ? { viewId } : {}), assets, mermaid: drawMermaidForExport, signal: controllerAbort.signal, onProgress: (done, total) => setProgress({ done, total }), ...(theme && look === "theme" ? { palette: exportPaletteFor(theme.mode, theme.resolved === "dark") } : {}) });
-      if (!r.ok) { setError(r.error.message); setPhase("idle"); return; }
+      if (!r.ok) { setError(coreText(r.error.message)); setPhase("idle"); return; }
       if (r.value.status === "cancelled") { setNotice(t("export.cancelled")); setPhase("idle"); return; }
       const { html, report } = r.value;
       const savedTo = format === "html" ? await runtime.saveHtml(exportFileName(title, "html"), html) : await runtime.printHtml(html);

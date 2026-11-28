@@ -1,3 +1,4 @@
+import { coreText } from "../i18n/coreText";
 import { SvgLayer } from "../design/SvgLayer";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -65,11 +66,11 @@ export function TreeEditor({ kind, value, onChange }: Props & { kind: "mindmap" 
   const current = findNode(tree, selected) ?? tree.root;
   const label = (id: string, text: string) => `${text === "" ? t("organizer.untitled") : text}${id === "root" ? ` (${t("organizer.rootRole")})` : ""}`;
 
-  const act = (r: { ok: true; value: Tree } | { ok: false; error: { message: string } }) => { if (r.ok) { setNotice(null); commit(r.value); } else setNotice(r.error.message); };
+  const act = (r: { ok: true; value: Tree } | { ok: false; error: { message: string } }) => { if (r.ok) { setNotice(null); commit(r.value); } else setNotice(coreText(r.error.message)); };
   const onAddChild = () => {
  const r = addChild(tree, current.id, t("organizer.newNode")); if (r.ok) { setNotice(null); commit(r.value.tree); setSelected(r.value.node.id); } };
-  const onAddSibling = () => { const r = addSibling(tree, current.id, t("organizer.newNode")); if (r.ok) { setNotice(null); commit(r.value.tree); setSelected(r.value.node.id); } else setNotice(r.error.message); };
-  const onDelete = () => { const r = deleteTreeNode(tree, current.id); if (r.ok) { commit(r.value.tree); setSelected("root"); setNotice(t("organizer.removed", { count: r.value.removed })); } else setNotice(r.error.message); };
+  const onAddSibling = () => { const r = addSibling(tree, current.id, t("organizer.newNode")); if (r.ok) { setNotice(null); commit(r.value.tree); setSelected(r.value.node.id); } else setNotice(coreText(r.error.message)); };
+  const onDelete = () => { const r = deleteTreeNode(tree, current.id); if (r.ok) { commit(r.value.tree); setSelected("root"); setNotice(t("organizer.removed", { count: r.value.removed })); } else setNotice(coreText(r.error.message)); };
   const drop = (id: string, under: Element | null) => {
     const targetId = under?.closest("[data-node-id]")?.getAttribute("data-node-id");
     if (!targetId || targetId === id) return;
@@ -188,7 +189,7 @@ export function MatrixEditor({ value, onChange }: Props) {
     if (r.ok) { commit(r.value.matrix); setDraft((d) => ({ ...d, [key]: "" })); }
   };
   const remove = (r: { ok: true; value: { matrix: Matrix; removedItems: number } } | { ok: false; error: { message: string } }) => {
-    if (r.ok) { commit(r.value.matrix); setNotice(r.value.removedItems > 0 ? t("organizer.matrix.removedItems", { count: r.value.removedItems }) : null); } else setNotice(r.error.message);
+    if (r.ok) { commit(r.value.matrix); setNotice(r.value.removedItems > 0 ? t("organizer.matrix.removedItems", { count: r.value.removedItems }) : null); } else setNotice(coreText(r.error.message));
   };
   const drop = (itemId: string, under: Element | null) => {
     const cell = under?.closest("[data-cell]");
